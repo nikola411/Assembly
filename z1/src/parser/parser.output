@@ -1,0 +1,147 @@
+Nonterminals useless in grammar
+
+    expr
+    directives
+
+
+Terminals unused in grammar
+
+    ":="
+    "-"
+    "+"
+    "*"
+    "/"
+    "("
+    ")"
+    GLOBAL
+    EXTERN
+    SECTION
+    WORD
+    SKIP
+    ASCII
+    EQU
+    END
+
+
+Grammar
+
+    0 $accept: program "end of file"
+
+    1 program: lines "end of file"
+    2        | "end of file"
+
+    3 lines: line lines
+    4      | line
+
+    5 line: SYMBOL
+
+
+Terminals, with rules where they appear
+
+    "end of file" (0) 0 1 2
+    error (256)
+    ":=" (258)
+    "-" (259)
+    "+" (260)
+    "*" (261)
+    "/" (262)
+    "(" (263)
+    ")" (264)
+    SYMBOL (265) 5
+    GLOBAL (266)
+    EXTERN (267)
+    SECTION (268)
+    WORD (269)
+    SKIP (270)
+    ASCII (271)
+    EQU (272)
+    END (273)
+
+
+Nonterminals, with rules where they appear
+
+    $accept (19)
+        on left: 0
+    program (20)
+        on left: 1 2
+        on right: 0
+    lines (21)
+        on left: 3 4
+        on right: 1 3
+    line (22)
+        on left: 5
+        on right: 3 4
+
+
+State 0
+
+    0 $accept: . program "end of file"
+
+    "end of file"  shift, and go to state 1
+    SYMBOL         shift, and go to state 2
+
+    program  go to state 3
+    lines    go to state 4
+    line     go to state 5
+
+
+State 1
+
+    2 program: "end of file" .
+
+    $default  reduce using rule 2 (program)
+
+
+State 2
+
+    5 line: SYMBOL .
+
+    $default  reduce using rule 5 (line)
+
+
+State 3
+
+    0 $accept: program . "end of file"
+
+    "end of file"  shift, and go to state 6
+
+
+State 4
+
+    1 program: lines . "end of file"
+
+    "end of file"  shift, and go to state 7
+
+
+State 5
+
+    3 lines: line . lines
+    4      | line .
+
+    SYMBOL  shift, and go to state 2
+
+    $default  reduce using rule 4 (lines)
+
+    lines  go to state 8
+    line   go to state 5
+
+
+State 6
+
+    0 $accept: program "end of file" .
+
+    $default  accept
+
+
+State 7
+
+    1 program: lines "end of file" .
+
+    $default  reduce using rule 1 (program)
+
+
+State 8
+
+    3 lines: line lines .
+
+    $default  reduce using rule 3 (lines)
