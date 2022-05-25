@@ -36,14 +36,6 @@ blank [ \t\r]
 {blank}+   loc.step ();
 \n+        loc.lines (yyleng); loc.step ();
 
-"-"        return yy::parser::make_MINUS  (loc);
-"+"        return yy::parser::make_PLUS   (loc);
-"*"        return yy::parser::make_STAR   (loc);
-"/"        return yy::parser::make_SLASH  (loc);
-"("        return yy::parser::make_LPAREN (loc);
-")"        return yy::parser::make_RPAREN (loc);
-":="       return yy::parser::make_ASSIGN (loc);
-
 .global return yy::parser::make_GLOBAL (loc);
 .extern return yy::parser::make_EXTERN (loc);
 .word   return yy::parser::make_WORD   (loc);
@@ -51,11 +43,53 @@ blank [ \t\r]
 .equ    return yy::parser::make_EQU    (loc);
 .end    return yy::parser::make_END    (loc);
 
+halt  return yy::parser::make_HALT (loc);
+int   return yy::parser::make_INT  (loc);
+iret  return yy::parser::make_IRET (loc);
+ret   return yy::parser::make_RET  (loc);
 
-"[\w]+" return yy::parser::make_SYMBOL (loc);
+call return yy::parser::make_CALL (loc);
+jmp  return yy::parser::make_JMP  (loc);
+jeq  return yy::parser::make_JEQ  (loc);
+jne  return yy::parser::make_JNE  (loc);
+jgt  return yy::parser::make_JGT  (loc);
+
+push return yy::parser::make_PUSH  (loc);
+pop  return yy::parser::make_POP   (loc);
+xchg return yy::parser::make_XCHG  (loc);
+
+add return yy::parser::make_ADD (loc);
+sub return yy::parser::make_SUB (loc);
+div return yy::parser::make_DIV (loc);
+mul return yy::parser::make_MUL (loc);
+
+cmp  return yy::parser::make_CMP  (loc);
+not  return yy::parser::make_NOT  (loc);
+and  return yy::parser::make_AND  (loc);
+or   return yy::parser::make_OR   (loc);
+xor  return yy::parser::make_XOR  (loc);
+test return yy::parser::make_TEST (loc);
+shl  return yy::parser::make_SHL  (loc);
+shr  return yy::parser::make_SHR  (loc);
+
+ldr return yy::parser::make_LDR (loc);
+str return yy::parser::make_STR (loc);
+
+[a-z]+      return yy::parser::make_SYMBOL (loc);
+[0-9]{1,8}  return yy::parser::make_LITERAL (loc);
+
+"-"        return yy::parser::make_MINUS  (loc);
+"+"        return yy::parser::make_PLUS   (loc);
+"*"        return yy::parser::make_STAR   (loc);
+"/"        return yy::parser::make_SLASH  (loc);
+"("        return yy::parser::make_LPAREN (loc);
+")"        return yy::parser::make_RPAREN (loc);
+":="       return yy::parser::make_ASSIGN (loc);
+"\,"        return yy::parser::make_COMMA (loc);
 
 
 <<EOF>>    return yy::parser::make_EOF (loc);
+
 %%
 
 void Driver::scan_begin ()

@@ -2,9 +2,7 @@
 %require "3.5.1"
 
 %{
-#include <iostream>
-#include <string>
-#include <cmath>
+   
 %}
 
 %language "C++"
@@ -33,6 +31,9 @@
 %code
 {
     #include "driver.hpp"
+    #include <iostream>
+    #include <string>
+    #include <cmath>
 }
  
 %define api.token.prefix {TOK_}
@@ -45,33 +46,62 @@
   SLASH   "/"
   LPAREN  "("
   RPAREN  ")"
-  
-  SYMBOL
+  COMMA   ","
 ;
 %token GLOBAL EXTERN SECTION WORD SKIP ASCII EQU END;
+%token LITERAL SYMBOL;
+%token HALT INT IRET RET;
+%token CALL;
+%token JMP JEQ JNE JGT;
+%token PUSH POP XCHG ;
+%token ADD SUB DIV MUL ;
+%token CMP NOT AND OR XOR TEST SHL SHR;
+%token LDR STR;
+
 %token EOF 0 "end of file"
 
 // NONTERMINALS
 %nterm program
 %nterm expr
-%nterm directives
+%nterm directive instruction jump
+%nterm parameter_list
  
 %%
 
-program :
-    lines EOF
+program:
+    program line
+    | line
     | EOF
     ;
 
-lines :
-    line lines {std::cout << "Line! "; }
-    | line
+line:
+    directive
+    | instruction
+    | jump
     ;
 
-line :
-    SYMBOL
+directive:
+    GLOBAL symbol_list
+    | EXTERN symbol_list
+    | SECTION SYMBOL
     ;
 
+symbol_list:
+    symbol_list COMMA SYMBOL
+    | SYMBOL
+    ;
+
+jump:
+    JMP
+    | JEQ
+    | JNE
+    | JGT
+    ;
+
+instruction:
+    LDR
+    | STR
+    ;
  
 %%
 

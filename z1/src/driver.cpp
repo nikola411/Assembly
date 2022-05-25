@@ -2,8 +2,8 @@
 #include "parser.hpp"
 
 
-Driver::Driver ()
-  : trace_parsing (false), trace_scanning (false)
+Driver::Driver (bool parsing, bool scanning)
+  : trace_parsing (parsing), trace_scanning (scanning)
 {
   variables["one"] = 1;
   variables["two"] = 2;

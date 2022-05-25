@@ -1,5 +1,6 @@
-asdfasdf
-sasdffdsa
-aasdadffdsa
-aasdadffdsaasdf
-af23123sf2
+.global symbol , symb
+.extern sy
+jmp
+jgt
+sec:
+jne

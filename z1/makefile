@@ -18,15 +18,14 @@ FLEX_SOURCE = ${SCANNER_SRC}scanner.l
 BISON_SOURCE = ./src/parser.yy
 BISON_OUTPUT = ${PARSER_SRC}parser.cpp
 
-
 all: flex bison
 	g++ ${INCLUDES} -g ${SOURCE} ${OUTPUT}
 
 flex:
-	flex  ${FLEX_SOURCE}
+	flex ${FLEX_SOURCE}
 
 bison:
-	bison -o ${BISON_OUTPUT} ${BISON_SOURCE} -v
+	bison  -o ${BISON_OUTPUT} ${BISON_SOURCE} -v
 
 clean:
 	rm -rf src/scanner/*.cpp src/scanner/*.hpp

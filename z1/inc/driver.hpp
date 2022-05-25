@@ -15,7 +15,7 @@ YY_DECL;
 class Driver
 {
 public:
-    Driver ();
+    Driver (bool, bool);
 
     std::map<std::string, int> variables;
 
