@@ -24,14 +24,14 @@
     #include <vector>
     #include <string>
     class Driver;
-    // class Assembly;
+    class Assembly;
 
     using std::vector;
     using std::string;
 }
 
 %param { Driver& drv }
-// %param { Assembly& asm }
+%param { Assembly& assembly }
 %locations
 
 %define parse.trace
@@ -96,10 +96,10 @@ line:
     ;
 
 directive:
-    GLOBAL symbol_list { $$ = new Directive(); $$->set_type(Directive_type::GLOBAL); $$->set_arguments($2); Assembly::add_new_line($$); }
-    | EXTERN symbol_list { $$ = new Directive(); $$->set_type(Directive_type::EXTERN); $$->set_arguments($2); Assembly::add_new_line($$); }
-    | SECTION SYMBOL { $$ = new Directive(); $$->set_type(Directive_type::SECTION); $$->add_argument($2); Assembly::add_new_line($$); }
-    | WORD label_list { $$ = new Directive(); $$->set_type(Directive_type::WORD); $$->set_arguments($2); Assembly::add_new_line($$); }
+    GLOBAL symbol_list { $$ = new Directive(); $$->set_type(Directive_type::GLOBAL); $$->set_arguments($2); assembly.add_new_line($$); }
+    | EXTERN symbol_list { $$ = new Directive(); $$->set_type(Directive_type::EXTERN); $$->set_arguments($2); assembly.add_new_line($$); }
+    | SECTION SYMBOL { $$ = new Directive(); $$->set_type(Directive_type::SECTION); $$->add_argument($2); assembly.add_new_line($$); }
+    | WORD label_list { $$ = new Directive(); $$->set_type(Directive_type::WORD); $$->set_arguments($2); assembly.add_new_line($$); }
     ;
 
 symbol_list:

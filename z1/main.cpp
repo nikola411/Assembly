@@ -36,12 +36,14 @@ int main(int argc, char* argv[])
     }
 
     std::cout << "Starting to read the input file.\n";
-    Driver driver(parsing, scanning);
+
+    Assembly* assembly = new Assembly();
+    Driver driver(parsing, scanning, assembly);
     driver.parse(input_file);
 
-    Assembly::print();
+    assembly->print();
 
-    Assembly::clean();
+    delete assembly;
     // MAKE INTERPRETER CLASS
 
 

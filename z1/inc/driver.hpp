@@ -7,7 +7,7 @@
 
 // Give Flex the prototype of yylex we want ...
 # define YY_DECL \
-  yy::parser::symbol_type yylex (Driver& drv)
+  yy::parser::symbol_type yylex (Driver& drv, Assembly& asem)
 // ... and declare it for the parser's sake.
 YY_DECL;
 
@@ -15,9 +15,11 @@ YY_DECL;
 class Driver
 {
 public:
-    Driver (bool, bool);
+    Driver (bool, bool, Assembly*);
 
     std::map<std::string, int> variables;
+
+    Assembly* assembly;
 
     int result;
     // Run the parser on file F.  Return 0 on success.
