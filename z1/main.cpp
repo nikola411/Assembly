@@ -2,6 +2,7 @@
 #include <string>
 
 #include "driver.hpp"
+#include "assembly.hpp"
 
 using std::string;
 
@@ -38,6 +39,9 @@ int main(int argc, char* argv[])
     Driver driver(parsing, scanning);
     driver.parse(input_file);
 
+    Assembly::print();
+
+    Assembly::clean();
     // MAKE INTERPRETER CLASS
 
 

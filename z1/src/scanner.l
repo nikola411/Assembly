@@ -36,12 +36,13 @@ blank [ \t\r]
 {blank}+   loc.step ();
 \n+        loc.lines (yyleng); loc.step ();
 
-.global return yy::parser::make_GLOBAL (loc);
-.extern return yy::parser::make_EXTERN (loc);
-.word   return yy::parser::make_WORD   (loc);
-.skip   return yy::parser::make_SKIP   (loc);
-.equ    return yy::parser::make_EQU    (loc);
-.end    return yy::parser::make_END    (loc);
+.global  return yy::parser::make_GLOBAL (loc);
+.extern  return yy::parser::make_EXTERN (loc);
+.section return yy::parser::make_SECTION(loc);
+.word    return yy::parser::make_WORD   (loc);
+.skip    return yy::parser::make_SKIP   (loc);
+.equ     return yy::parser::make_EQU    (loc);
+.end     return yy::parser::make_END    (loc);
 
 halt  return yy::parser::make_HALT (loc);
 int   return yy::parser::make_INT  (loc);
@@ -75,8 +76,8 @@ shr  return yy::parser::make_SHR  (loc);
 ldr return yy::parser::make_LDR (loc);
 str return yy::parser::make_STR (loc);
 
-[a-z]+      return yy::parser::make_SYMBOL (loc);
-[0-9]{1,8}  return yy::parser::make_LITERAL (loc);
+[a-z]+      return yy::parser::make_SYMBOL  (yytext, loc);
+[0-9]{1,8}  return yy::parser::make_LITERAL (yytext, loc);
 
 "-"        return yy::parser::make_MINUS  (loc);
 "+"        return yy::parser::make_PLUS   (loc);

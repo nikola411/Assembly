@@ -1,5 +1,5 @@
-#ifndef DRIVER_HH
-#define DRIVER_HH
+#ifndef DRIVER_HPP
+#define DRIVER_HPP
 
 #include <string>
 #include <map>

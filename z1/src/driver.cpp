@@ -2,6 +2,7 @@
 #include "parser.hpp"
 
 
+
 Driver::Driver (bool parsing, bool scanning)
   : trace_parsing (parsing), trace_scanning (scanning)
 {
@@ -9,8 +10,7 @@ Driver::Driver (bool parsing, bool scanning)
   variables["two"] = 2;
 }
 
-int
-Driver::parse (const std::string &f)
+int Driver::parse (const std::string &f)
 {
   file = f;
   location.initialize (&file);
@@ -19,5 +19,6 @@ Driver::parse (const std::string &f)
   parse.set_debug_level(trace_parsing);
   int res = parse();
   scan_end ();
+
   return res;
 }

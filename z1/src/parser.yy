@@ -17,11 +17,21 @@
  
 %code requires
 {
+    #include "define.hpp"
+    #include "directive.hpp"
+    #include "assembly.hpp"
+    
+    #include <vector>
     #include <string>
     class Driver;
+    // class Assembly;
+
+    using std::vector;
+    using std::string;
 }
 
 %param { Driver& drv }
+// %param { Assembly& asm }
 %locations
 
 %define parse.trace
@@ -33,7 +43,9 @@
     #include "driver.hpp"
     #include <iostream>
     #include <string>
+    #include <vector>
     #include <cmath>
+    #include "directive.hpp"
 }
  
 %define api.token.prefix {TOK_}
@@ -49,7 +61,8 @@
   COMMA   ","
 ;
 %token GLOBAL EXTERN SECTION WORD SKIP ASCII EQU END;
-%token LITERAL SYMBOL;
+%token <string> LITERAL;
+%token <string> SYMBOL;
 %token HALT INT IRET RET;
 %token CALL;
 %token JMP JEQ JNE JGT;
@@ -62,16 +75,18 @@
 
 // NONTERMINALS
 %nterm program
-%nterm expr
-%nterm directive instruction jump
-%nterm parameter_list
+
+%nterm <Directive*> directive
+%nterm instruction jump
+%nterm <vector<string>> symbol_list
+%nterm <vector<string>> label_list
  
 %%
 
 program:
-    program line
+    program line  
     | line
-    | EOF
+    | EOF  
     ;
 
 line:
@@ -81,14 +96,22 @@ line:
     ;
 
 directive:
-    GLOBAL symbol_list
-    | EXTERN symbol_list
-    | SECTION SYMBOL
+    GLOBAL symbol_list { $$ = new Directive(); $$->set_type(Directive_type::GLOBAL); $$->set_arguments($2); Assembly::add_new_line($$); }
+    | EXTERN symbol_list { $$ = new Directive(); $$->set_type(Directive_type::EXTERN); $$->set_arguments($2); Assembly::add_new_line($$); }
+    | SECTION SYMBOL { $$ = new Directive(); $$->set_type(Directive_type::SECTION); $$->add_argument($2); Assembly::add_new_line($$); }
+    | WORD label_list { $$ = new Directive(); $$->set_type(Directive_type::WORD); $$->set_arguments($2); Assembly::add_new_line($$); }
     ;
 
 symbol_list:
-    symbol_list COMMA SYMBOL
-    | SYMBOL
+    symbol_list COMMA SYMBOL { $$ = $1; $$.emplace_back($3); }
+    | SYMBOL { $$.emplace_back($1); }
+    ;
+
+label_list:
+    symbol_list COMMA SYMBOL { $$ = $1; $$.emplace_back($3); }
+    | symbol_list COMMA LITERAL { $$ = $1; $$.emplace_back($3); }
+    | LITERAL { $$.emplace_back($1); }
+    | SYMBOL { $$.emplace_back($1); }
     ;
 
 jump:

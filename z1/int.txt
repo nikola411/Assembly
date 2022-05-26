@@ -1,6 +1,8 @@
-.global symbol , symb
-.extern sy
+.global symbol, ss
+.extern as
 jmp
 jgt
-sec:
+
+.section asdfasdfasdf
+
 jne
