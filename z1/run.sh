@@ -1,0 +1,1 @@
+./asembler -o out.txt ./tests/int.txt

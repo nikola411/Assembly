@@ -10,8 +10,8 @@ using std::string;
 int main(int argc, char* argv[])
 {
     // PARSE ARGUMENTS
-    std::cout << "Parsing arguments.\n";
-    if (argc > 6 || argc < 4)
+    //std::cout << "Parsing arguments.\n";
+    if (argc > 5 || argc < 4)
     {
         std::cout << "FATAL! Wrong number of arguments! \n";
         exit(-1);
@@ -21,14 +21,13 @@ int main(int argc, char* argv[])
     string output_file = string(argv[2]);
     string input_file = string(argv[3]);
 
-    bool parsing = false, scanning = false;
+    bool debug = false;
     if (argc > 4)
     {
-        parsing = bool(argv[4]);
-        scanning = bool(argv[5]);
+        debug = bool(argv[4]);
     }
 
-    std::cout << "Parsing: " << parsing << " Scanning: " << scanning << std::endl;
+    std::cout << "Debug enabled: " << debug << "\n";
     
     if (flag != "-o")
     {
@@ -38,7 +37,7 @@ int main(int argc, char* argv[])
     std::cout << "Starting to read the input file.\n";
 
     Assembly* assembly = new Assembly();
-    Driver driver(parsing, scanning, assembly);
+    Driver driver(debug, assembly);
     driver.parse(input_file);
 
     assembly->print();

@@ -1,8 +1,8 @@
 #include "driver.hpp"
 #include "parser.hpp"
 
-Driver::Driver (bool parsing, bool scanning, Assembly* assembly)
-  : trace_parsing (parsing), trace_scanning (scanning)
+Driver::Driver (bool debug, Assembly* assembly)
+  : trace_parsing (debug), trace_scanning (debug)
 {
   this->assembly = assembly;
 }

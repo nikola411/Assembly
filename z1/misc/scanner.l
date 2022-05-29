@@ -8,7 +8,7 @@
 # include "parser.hpp"
 %}
 
-%option noyywrap nounput noinput batch debug outfile="./src/scanner/scanner.cpp" header="./src/scanner/scanner.hpp"
+%option noyywrap nounput noinput batch debug outfile="./misc/scanner/scanner.cpp" header="./misc/scanner/scanner.hpp"
 
 %{
   // A number symbol corresponding to the value in S.
@@ -18,6 +18,7 @@
 id    [a-zA-Z][a-zA-Z_0-9]*
 int   [0-9]+
 blank [ \t\r]
+
 
 %{
   // Code run each time a pattern is matched.
@@ -76,8 +77,11 @@ shr  return yy::parser::make_SHR  (loc);
 ldr return yy::parser::make_LDR (loc);
 str return yy::parser::make_STR (loc);
 
-[a-z]+      return yy::parser::make_SYMBOL  (yytext, loc);
-[0-9]{1,8}  return yy::parser::make_LITERAL (yytext, loc);
+r[0-7]|sp|pc|psw      return yy::parser::make_REGISTER (yytext, loc);
+[a-zA-Z][a-zA-Z0-9]*  return yy::parser::make_SYMBOL  (yytext, loc);
+(0x){0,1}[0-9]+       return yy::parser::make_LITERAL (yytext, loc);
+
+
 
 "-"        return yy::parser::make_MINUS  (loc);
 "+"        return yy::parser::make_PLUS   (loc);
@@ -86,8 +90,11 @@ str return yy::parser::make_STR (loc);
 "("        return yy::parser::make_LPAREN (loc);
 ")"        return yy::parser::make_RPAREN (loc);
 ":="       return yy::parser::make_ASSIGN (loc);
-"\,"        return yy::parser::make_COMMA (loc);
-
+"\,"       return yy::parser::make_COMMA (loc);
+"\$"       return yy::parser::make_DOLLAR (loc);
+"\%"       return yy::parser::make_PERCENT (loc);
+"\["       return yy::parser::make_LBRACKET (loc);
+"\]"       return yy::parser::make_RBRACKET (loc);
 
 <<EOF>>    return yy::parser::make_EOF (loc);
 

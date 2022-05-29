@@ -1,8 +1,0 @@
-.global symbol, ss
-.extern as
-jmp
-jgt
-
-.section asdfasdfasdf
-
-jne
