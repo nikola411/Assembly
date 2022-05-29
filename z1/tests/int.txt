@@ -1,12 +1,1 @@
-.global symbol, sym, su123
-ldr r1, $123123
-ldr r2, 123123
-ldr r3, sym
-str r2, $sym
-str r3, [r1 + sym]
-shl r1, r2
-shr r2, pc
-sub r1, r2
-add r3, r5
-mul r3  , r6
-xchg r1, r7
+.word sym1, 123, sym2, lit2, 9092

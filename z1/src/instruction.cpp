@@ -19,16 +19,23 @@ std::map<Instruction_type, std::string> Instruction::instruction_map = {
                     {Instruction_type::XCHG, "xchg"},
                     };
 
+Instruction::Instruction(Instruction_type type) : type(type), number_of_arguments(0)
+{
+
+}
+
 Instruction::Instruction(Instruction_type type, std::string destination_register) : 
             type(type),
-            destination_register(destination_register)
+            destination_register(destination_register),
+            number_of_arguments(1)
 {
     
 }
 
 Instruction::Instruction(Instruction_type type, std::string r1, std::string r2) : 
             type(type),
-            destination_register(r1)
+            destination_register(r1),
+            number_of_arguments(2)
 {
     this->second_argument = std::pair<Addressing_type, std::string>(Addressing_type::ABSOLUTE, r2);
     this->second_argument_type = Label_type::REGISTER;

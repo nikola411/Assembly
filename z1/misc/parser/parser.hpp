@@ -50,6 +50,7 @@
     #include "directive.hpp"
     #include "assembly.hpp"
     #include "instruction.hpp"
+    #include "jump.hpp"
     
     #include <vector>
     #include <string>
@@ -59,7 +60,7 @@
     using std::vector;
     using std::string;
 
-#line 63 "./misc/parser/parser.hpp"
+#line 64 "./misc/parser/parser.hpp"
 
 # include <cassert>
 # include <cstdlib> // std::abort
@@ -193,7 +194,7 @@
 #endif
 
 namespace yy {
-#line 197 "./misc/parser/parser.hpp"
+#line 198 "./misc/parser/parser.hpp"
 
 
 
@@ -398,26 +399,31 @@ namespace yy {
     union union_type
     {
       // directive
+      // label_list
       char dummy1[sizeof (Directive*)];
 
       // instruction
       // load_store_instructions
       // two_argument_instructions
       // one_argument_instructions
+      // zero_argument_instructions
       char dummy2[sizeof (Instruction*)];
 
       // load_store
       // instruction_type
       char dummy3[sizeof (Instruction_type)];
 
+      // jump_operand
+      // jump
+      char dummy4[sizeof (Jump*)];
+
       // LITERAL
       // SYMBOL
       // REGISTER
-      char dummy4[sizeof (string)];
+      char dummy5[sizeof (string)];
 
       // symbol_list
-      // label_list
-      char dummy5[sizeof (vector<string>)];
+      char dummy6[sizeof (vector<string>)];
     };
 
     /// The size of the largest semantic type.
@@ -608,6 +614,19 @@ namespace yy {
       {}
 #endif
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, Jump*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const Jump*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, string&& v, location_type&& l)
         : Base (t)
         , value (std::move (v))
@@ -657,6 +676,7 @@ namespace yy {
 switch (yytype)
     {
       case 55: // directive
+      case 64: // label_list
         value.template destroy< Directive* > ();
         break;
 
@@ -664,12 +684,18 @@ switch (yytype)
       case 57: // load_store_instructions
       case 58: // two_argument_instructions
       case 59: // one_argument_instructions
+      case 60: // zero_argument_instructions
         value.template destroy< Instruction* > ();
         break;
 
-      case 63: // load_store
-      case 64: // instruction_type
+      case 65: // load_store
+      case 66: // instruction_type
         value.template destroy< Instruction_type > ();
+        break;
+
+      case 61: // jump_operand
+      case 62: // jump
+        value.template destroy< Jump* > ();
         break;
 
       case 23: // LITERAL
@@ -678,8 +704,7 @@ switch (yytype)
         value.template destroy< string > ();
         break;
 
-      case 61: // symbol_list
-      case 62: // label_list
+      case 63: // symbol_list
         value.template destroy< vector<string> > ();
         break;
 
@@ -1658,7 +1683,7 @@ switch (yytype)
     static const char* const yytname_[];
 #if YYDEBUG
     // YYRLINE[YYN] -- Source line where rule number YYN was defined.
-    static const unsigned char yyrline_[];
+    static const short yyrline_[];
     /// Report on the debug stream that the rule \a r is going to be reduced.
     virtual void yy_reduce_print_ (int r);
     /// Print the state stack on the debug stream.
@@ -1894,9 +1919,9 @@ switch (yytype)
     enum
     {
       yyeof_ = 0,
-      yylast_ = 103,     ///< Last index in yytable_.
-      yynnts_ = 13,  ///< Number of nonterminal symbols.
-      yyfinal_ = 47, ///< Termination state number.
+      yylast_ = 122,     ///< Last index in yytable_.
+      yynnts_ = 15,  ///< Number of nonterminal symbols.
+      yyfinal_ = 66, ///< Termination state number.
       yyntokens_ = 52  ///< Number of tokens.
     };
 
@@ -1924,6 +1949,7 @@ switch (yytype)
     switch (this->type_get ())
     {
       case 55: // directive
+      case 64: // label_list
         value.move< Directive* > (std::move (that.value));
         break;
 
@@ -1931,12 +1957,18 @@ switch (yytype)
       case 57: // load_store_instructions
       case 58: // two_argument_instructions
       case 59: // one_argument_instructions
+      case 60: // zero_argument_instructions
         value.move< Instruction* > (std::move (that.value));
         break;
 
-      case 63: // load_store
-      case 64: // instruction_type
+      case 65: // load_store
+      case 66: // instruction_type
         value.move< Instruction_type > (std::move (that.value));
+        break;
+
+      case 61: // jump_operand
+      case 62: // jump
+        value.move< Jump* > (std::move (that.value));
         break;
 
       case 23: // LITERAL
@@ -1945,8 +1977,7 @@ switch (yytype)
         value.move< string > (std::move (that.value));
         break;
 
-      case 61: // symbol_list
-      case 62: // label_list
+      case 63: // symbol_list
         value.move< vector<string> > (std::move (that.value));
         break;
 
@@ -1966,6 +1997,7 @@ switch (yytype)
     switch (this->type_get ())
     {
       case 55: // directive
+      case 64: // label_list
         value.copy< Directive* > (YY_MOVE (that.value));
         break;
 
@@ -1973,12 +2005,18 @@ switch (yytype)
       case 57: // load_store_instructions
       case 58: // two_argument_instructions
       case 59: // one_argument_instructions
+      case 60: // zero_argument_instructions
         value.copy< Instruction* > (YY_MOVE (that.value));
         break;
 
-      case 63: // load_store
-      case 64: // instruction_type
+      case 65: // load_store
+      case 66: // instruction_type
         value.copy< Instruction_type > (YY_MOVE (that.value));
+        break;
+
+      case 61: // jump_operand
+      case 62: // jump
+        value.copy< Jump* > (YY_MOVE (that.value));
         break;
 
       case 23: // LITERAL
@@ -1987,8 +2025,7 @@ switch (yytype)
         value.copy< string > (YY_MOVE (that.value));
         break;
 
-      case 61: // symbol_list
-      case 62: // label_list
+      case 63: // symbol_list
         value.copy< vector<string> > (YY_MOVE (that.value));
         break;
 
@@ -2015,6 +2052,7 @@ switch (yytype)
     switch (this->type_get ())
     {
       case 55: // directive
+      case 64: // label_list
         value.move< Directive* > (YY_MOVE (s.value));
         break;
 
@@ -2022,12 +2060,18 @@ switch (yytype)
       case 57: // load_store_instructions
       case 58: // two_argument_instructions
       case 59: // one_argument_instructions
+      case 60: // zero_argument_instructions
         value.move< Instruction* > (YY_MOVE (s.value));
         break;
 
-      case 63: // load_store
-      case 64: // instruction_type
+      case 65: // load_store
+      case 66: // instruction_type
         value.move< Instruction_type > (YY_MOVE (s.value));
+        break;
+
+      case 61: // jump_operand
+      case 62: // jump
+        value.move< Jump* > (YY_MOVE (s.value));
         break;
 
       case 23: // LITERAL
@@ -2036,8 +2080,7 @@ switch (yytype)
         value.move< string > (YY_MOVE (s.value));
         break;
 
-      case 61: // symbol_list
-      case 62: // label_list
+      case 63: // symbol_list
         value.move< vector<string> > (YY_MOVE (s.value));
         break;
 
@@ -2096,7 +2139,7 @@ switch (yytype)
   }
 
 } // yy
-#line 2100 "./misc/parser/parser.hpp"
+#line 2143 "./misc/parser/parser.hpp"
 
 
 

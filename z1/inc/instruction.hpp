@@ -10,6 +10,7 @@
 class Instruction : public Line
 {
 public:
+    Instruction(Instruction_type);
     Instruction(Instruction_type, std::string);
     Instruction(Instruction_type, std::string, std::string); //used when source is a register (in all instructions except ldr and str)
 
@@ -33,6 +34,8 @@ private:
     // When second arguemnt is a register and addresing type is memory with offset
     std::string offset;
     Label_type offset_type;
+
+    int number_of_arguments;
 
     // Used for 1-1 mapping of enums and strings
     static std::map<Instruction_type, std::string> instruction_map;
