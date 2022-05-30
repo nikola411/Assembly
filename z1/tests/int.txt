@@ -1,5 +1,5 @@
-.word sym1, 123, sym2, lit2, 9092
-.section asdfasdf
-jne r
-mul r1, r2
-jmp ss
+.section .text
+.global sym
+.global asf, ass
+.word 123, sym
+.end

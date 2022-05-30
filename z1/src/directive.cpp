@@ -24,6 +24,11 @@ void Directive::set_arguments(std::vector<std::string> arg)
     this->arguments = arg;
 }
 
+std::vector<Label_type> Directive::get_argument_types() const
+{
+    return this->argument_types;
+}
+
 std::vector<std::string> Directive::get_arguments() const
 {
     return this->arguments;

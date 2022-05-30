@@ -19,7 +19,9 @@ std::map<Instruction_type, std::string> Instruction::instruction_map = {
                     {Instruction_type::XCHG, "xchg"},
                     };
 
-Instruction::Instruction(Instruction_type type) : type(type), number_of_arguments(0)
+Instruction::Instruction(Instruction_type type) :
+            type(type),
+            number_of_arguments(0)
 {
 
 }

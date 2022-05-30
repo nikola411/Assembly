@@ -65,6 +65,7 @@
   PERCENT "%"
   LBRACKET "["
   RBRACKET "]"
+  COLON ":"
 ;
 %token GLOBAL EXTERN SECTION WORD SKIP ASCII EQU END;
 %token <string> LITERAL;
@@ -92,6 +93,7 @@
 %nterm <Directive*> label_list
 %nterm <Instruction_type> load_store
 %nterm <Instruction_type> instruction_type
+
  
 %%
 
@@ -146,6 +148,14 @@ directive:
     {
         $$ = new Directive();
         $$->set_type(Directive_type::END);
+        assembly.add_new_line($$);
+        YYACCEPT;
+    }
+    | SYMBOL COLON
+    {
+        $$ = new Directive();
+        $$ -> set_type(Directive_type::LABEL);
+        $$ -> add_argument($1);
         assembly.add_new_line($$);
     }
     ;

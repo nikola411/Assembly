@@ -20,6 +20,7 @@ public:
     Directive_type get_type() const;
     void set_arguments(std::vector<std::string>);
     std::vector<std::string> get_arguments() const;
+    std::vector<Label_type> get_argument_types() const;
     void add_argument(std::string);
     void add_argument(std::string arg, Label_type type);
 

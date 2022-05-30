@@ -37,7 +37,6 @@ void Jump::set_offset(std::string offset_value)
     this->offset_value = offset_value;
 }
 
-
 void Jump::print() const
 {
     std::cout << jump_table[type] << " " << operand << 
