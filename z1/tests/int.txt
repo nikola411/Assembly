@@ -1,5 +1,10 @@
 .section .text
-.global sym
-.global asf, ass
-.word 123, sym
+.word 123
+.skip 10
+.word sym
+labela:
+    .word 111, 11, 11, 11
+    .word 111
+lab2:
+    .word 1
 .end

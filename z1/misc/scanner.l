@@ -81,6 +81,7 @@ r[0-7]|sp|pc|psw        return yy::parser::make_REGISTER (yytext, loc);
 [a-zA-Z\.][a-zA-Z0-9]*  return yy::parser::make_SYMBOL   (yytext, loc);
 (0x){0,1}[0-9]+         return yy::parser::make_LITERAL  (yytext, loc);
 
+#.*        return yy::parser::make_COMMENT (yytext, loc);
 
 "-"        return yy::parser::make_MINUS  (loc);
 "+"        return yy::parser::make_PLUS   (loc);

@@ -28,6 +28,7 @@ private:
     void handle_instruction(Instruction*);
 
     bool does_section_exists(std::string) const;
+    std::string get_instruction_value(Instruction*) const;
 
     std::vector<Line*> lines;
 
@@ -43,6 +44,11 @@ private:
     std::vector<Forward_reference*> forward_refs;
 
     static std::string section_names[5];
+    static std::map<Instruction_type, std::string> instruction_codes;
+    static std::map<Jump_type, std::string> jump_codes;
+    static std::map<std::string, std::string> register_codes;
+    static std::map<std::string, std::string> addressing_codes;
+
 };
 
 #endif

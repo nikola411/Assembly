@@ -18,11 +18,11 @@ public:
 
     void set_type(Directive_type);
     Directive_type get_type() const;
-    void set_arguments(std::vector<std::string>);
-    std::vector<std::string> get_arguments() const;
-    std::vector<Label_type> get_argument_types() const;
-    void add_argument(std::string);
-    void add_argument(std::string arg, Label_type type);
+    void set_operands(std::vector<std::string>);
+    std::vector<std::string> get_operands() const;
+    std::vector<Label_type> get_operand_types() const;
+    void add_operand(std::string);
+    void add_operand(std::string arg, Label_type type);
 
     void print() const;
 
@@ -32,8 +32,8 @@ public:
     
 private:
     Directive_type type;
-    std::vector<std::string> arguments;
-    std::vector<Label_type> argument_types;
+    std::vector<std::string> operands;
+    std::vector<Label_type> operand_types;
 
     static std::map<Directive_type, std::string> directive_map;
 };

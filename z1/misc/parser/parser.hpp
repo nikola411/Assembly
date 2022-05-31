@@ -404,9 +404,10 @@ namespace yy {
 
       // instruction
       // load_store_instructions
-      // two_argument_instructions
-      // one_argument_instructions
-      // zero_argument_instructions
+      // two_operand_instructions
+      // one_operand_instructions
+      // zero_operand_instructions
+      // operand
       char dummy2[sizeof (Instruction*)];
 
       // load_store
@@ -420,6 +421,7 @@ namespace yy {
       // LITERAL
       // SYMBOL
       // REGISTER
+      // COMMENT
       char dummy5[sizeof (string)];
 
       // symbol_list
@@ -485,43 +487,45 @@ namespace yy {
         TOK_LBRACKET = 13,
         TOK_RBRACKET = 14,
         TOK_COLON = 15,
-        TOK_GLOBAL = 16,
-        TOK_EXTERN = 17,
-        TOK_SECTION = 18,
-        TOK_WORD = 19,
-        TOK_SKIP = 20,
-        TOK_ASCII = 21,
-        TOK_EQU = 22,
-        TOK_END = 23,
-        TOK_LITERAL = 24,
-        TOK_SYMBOL = 25,
-        TOK_REGISTER = 26,
-        TOK_HALT = 27,
-        TOK_INT = 28,
-        TOK_IRET = 29,
-        TOK_RET = 30,
-        TOK_CALL = 31,
-        TOK_JMP = 32,
-        TOK_JEQ = 33,
-        TOK_JNE = 34,
-        TOK_JGT = 35,
-        TOK_PUSH = 36,
-        TOK_POP = 37,
-        TOK_XCHG = 38,
-        TOK_ADD = 39,
-        TOK_SUB = 40,
-        TOK_DIV = 41,
-        TOK_MUL = 42,
-        TOK_CMP = 43,
-        TOK_NOT = 44,
-        TOK_AND = 45,
-        TOK_OR = 46,
-        TOK_XOR = 47,
-        TOK_TEST = 48,
-        TOK_SHL = 49,
-        TOK_SHR = 50,
-        TOK_LDR = 51,
-        TOK_STR = 52
+        TOK_HASHTAG = 16,
+        TOK_GLOBAL = 17,
+        TOK_EXTERN = 18,
+        TOK_SECTION = 19,
+        TOK_WORD = 20,
+        TOK_SKIP = 21,
+        TOK_ASCII = 22,
+        TOK_EQU = 23,
+        TOK_END = 24,
+        TOK_LITERAL = 25,
+        TOK_SYMBOL = 26,
+        TOK_REGISTER = 27,
+        TOK_HALT = 28,
+        TOK_INT = 29,
+        TOK_IRET = 30,
+        TOK_RET = 31,
+        TOK_CALL = 32,
+        TOK_JMP = 33,
+        TOK_JEQ = 34,
+        TOK_JNE = 35,
+        TOK_JGT = 36,
+        TOK_PUSH = 37,
+        TOK_POP = 38,
+        TOK_XCHG = 39,
+        TOK_ADD = 40,
+        TOK_SUB = 41,
+        TOK_DIV = 42,
+        TOK_MUL = 43,
+        TOK_CMP = 44,
+        TOK_NOT = 45,
+        TOK_AND = 46,
+        TOK_OR = 47,
+        TOK_XOR = 48,
+        TOK_TEST = 49,
+        TOK_SHL = 50,
+        TOK_SHR = 51,
+        TOK_LDR = 52,
+        TOK_STR = 53,
+        TOK_COMMENT = 54
       };
     };
 
@@ -676,36 +680,38 @@ namespace yy {
         // Type destructor.
 switch (yytype)
     {
-      case 56: // directive
-      case 65: // label_list
+      case 58: // directive
+      case 67: // label_list
         value.template destroy< Directive* > ();
         break;
 
-      case 57: // instruction
-      case 58: // load_store_instructions
-      case 59: // two_argument_instructions
-      case 60: // one_argument_instructions
-      case 61: // zero_argument_instructions
+      case 59: // instruction
+      case 60: // load_store_instructions
+      case 61: // two_operand_instructions
+      case 62: // one_operand_instructions
+      case 63: // zero_operand_instructions
+      case 70: // operand
         value.template destroy< Instruction* > ();
         break;
 
-      case 66: // load_store
-      case 67: // instruction_type
+      case 68: // load_store
+      case 69: // instruction_type
         value.template destroy< Instruction_type > ();
         break;
 
-      case 62: // jump_operand
-      case 63: // jump
+      case 64: // jump_operand
+      case 65: // jump
         value.template destroy< Jump* > ();
         break;
 
-      case 24: // LITERAL
-      case 25: // SYMBOL
-      case 26: // REGISTER
+      case 25: // LITERAL
+      case 26: // SYMBOL
+      case 27: // REGISTER
+      case 54: // COMMENT
         value.template destroy< string > ();
         break;
 
-      case 64: // symbol_list
+      case 66: // symbol_list
         value.template destroy< vector<string> > ();
         break;
 
@@ -785,26 +791,26 @@ switch (yytype)
       symbol_type (int tok, location_type l)
         : super_type(token_type (tok), std::move (l))
       {
-        YY_ASSERT (tok == token::TOK_EOF || tok == token::TOK_ASSIGN || tok == token::TOK_MINUS || tok == token::TOK_PLUS || tok == token::TOK_STAR || tok == token::TOK_SLASH || tok == token::TOK_LPAREN || tok == token::TOK_RPAREN || tok == token::TOK_COMMA || tok == token::TOK_DOLLAR || tok == token::TOK_PERCENT || tok == token::TOK_LBRACKET || tok == token::TOK_RBRACKET || tok == token::TOK_COLON || tok == token::TOK_GLOBAL || tok == token::TOK_EXTERN || tok == token::TOK_SECTION || tok == token::TOK_WORD || tok == token::TOK_SKIP || tok == token::TOK_ASCII || tok == token::TOK_EQU || tok == token::TOK_END || tok == token::TOK_HALT || tok == token::TOK_INT || tok == token::TOK_IRET || tok == token::TOK_RET || tok == token::TOK_CALL || tok == token::TOK_JMP || tok == token::TOK_JEQ || tok == token::TOK_JNE || tok == token::TOK_JGT || tok == token::TOK_PUSH || tok == token::TOK_POP || tok == token::TOK_XCHG || tok == token::TOK_ADD || tok == token::TOK_SUB || tok == token::TOK_DIV || tok == token::TOK_MUL || tok == token::TOK_CMP || tok == token::TOK_NOT || tok == token::TOK_AND || tok == token::TOK_OR || tok == token::TOK_XOR || tok == token::TOK_TEST || tok == token::TOK_SHL || tok == token::TOK_SHR || tok == token::TOK_LDR || tok == token::TOK_STR);
+        YY_ASSERT (tok == token::TOK_EOF || tok == token::TOK_ASSIGN || tok == token::TOK_MINUS || tok == token::TOK_PLUS || tok == token::TOK_STAR || tok == token::TOK_SLASH || tok == token::TOK_LPAREN || tok == token::TOK_RPAREN || tok == token::TOK_COMMA || tok == token::TOK_DOLLAR || tok == token::TOK_PERCENT || tok == token::TOK_LBRACKET || tok == token::TOK_RBRACKET || tok == token::TOK_COLON || tok == token::TOK_HASHTAG || tok == token::TOK_GLOBAL || tok == token::TOK_EXTERN || tok == token::TOK_SECTION || tok == token::TOK_WORD || tok == token::TOK_SKIP || tok == token::TOK_ASCII || tok == token::TOK_EQU || tok == token::TOK_END || tok == token::TOK_HALT || tok == token::TOK_INT || tok == token::TOK_IRET || tok == token::TOK_RET || tok == token::TOK_CALL || tok == token::TOK_JMP || tok == token::TOK_JEQ || tok == token::TOK_JNE || tok == token::TOK_JGT || tok == token::TOK_PUSH || tok == token::TOK_POP || tok == token::TOK_XCHG || tok == token::TOK_ADD || tok == token::TOK_SUB || tok == token::TOK_DIV || tok == token::TOK_MUL || tok == token::TOK_CMP || tok == token::TOK_NOT || tok == token::TOK_AND || tok == token::TOK_OR || tok == token::TOK_XOR || tok == token::TOK_TEST || tok == token::TOK_SHL || tok == token::TOK_SHR || tok == token::TOK_LDR || tok == token::TOK_STR);
       }
 #else
       symbol_type (int tok, const location_type& l)
         : super_type(token_type (tok), l)
       {
-        YY_ASSERT (tok == token::TOK_EOF || tok == token::TOK_ASSIGN || tok == token::TOK_MINUS || tok == token::TOK_PLUS || tok == token::TOK_STAR || tok == token::TOK_SLASH || tok == token::TOK_LPAREN || tok == token::TOK_RPAREN || tok == token::TOK_COMMA || tok == token::TOK_DOLLAR || tok == token::TOK_PERCENT || tok == token::TOK_LBRACKET || tok == token::TOK_RBRACKET || tok == token::TOK_COLON || tok == token::TOK_GLOBAL || tok == token::TOK_EXTERN || tok == token::TOK_SECTION || tok == token::TOK_WORD || tok == token::TOK_SKIP || tok == token::TOK_ASCII || tok == token::TOK_EQU || tok == token::TOK_END || tok == token::TOK_HALT || tok == token::TOK_INT || tok == token::TOK_IRET || tok == token::TOK_RET || tok == token::TOK_CALL || tok == token::TOK_JMP || tok == token::TOK_JEQ || tok == token::TOK_JNE || tok == token::TOK_JGT || tok == token::TOK_PUSH || tok == token::TOK_POP || tok == token::TOK_XCHG || tok == token::TOK_ADD || tok == token::TOK_SUB || tok == token::TOK_DIV || tok == token::TOK_MUL || tok == token::TOK_CMP || tok == token::TOK_NOT || tok == token::TOK_AND || tok == token::TOK_OR || tok == token::TOK_XOR || tok == token::TOK_TEST || tok == token::TOK_SHL || tok == token::TOK_SHR || tok == token::TOK_LDR || tok == token::TOK_STR);
+        YY_ASSERT (tok == token::TOK_EOF || tok == token::TOK_ASSIGN || tok == token::TOK_MINUS || tok == token::TOK_PLUS || tok == token::TOK_STAR || tok == token::TOK_SLASH || tok == token::TOK_LPAREN || tok == token::TOK_RPAREN || tok == token::TOK_COMMA || tok == token::TOK_DOLLAR || tok == token::TOK_PERCENT || tok == token::TOK_LBRACKET || tok == token::TOK_RBRACKET || tok == token::TOK_COLON || tok == token::TOK_HASHTAG || tok == token::TOK_GLOBAL || tok == token::TOK_EXTERN || tok == token::TOK_SECTION || tok == token::TOK_WORD || tok == token::TOK_SKIP || tok == token::TOK_ASCII || tok == token::TOK_EQU || tok == token::TOK_END || tok == token::TOK_HALT || tok == token::TOK_INT || tok == token::TOK_IRET || tok == token::TOK_RET || tok == token::TOK_CALL || tok == token::TOK_JMP || tok == token::TOK_JEQ || tok == token::TOK_JNE || tok == token::TOK_JGT || tok == token::TOK_PUSH || tok == token::TOK_POP || tok == token::TOK_XCHG || tok == token::TOK_ADD || tok == token::TOK_SUB || tok == token::TOK_DIV || tok == token::TOK_MUL || tok == token::TOK_CMP || tok == token::TOK_NOT || tok == token::TOK_AND || tok == token::TOK_OR || tok == token::TOK_XOR || tok == token::TOK_TEST || tok == token::TOK_SHL || tok == token::TOK_SHR || tok == token::TOK_LDR || tok == token::TOK_STR);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
       symbol_type (int tok, string v, location_type l)
         : super_type(token_type (tok), std::move (v), std::move (l))
       {
-        YY_ASSERT (tok == token::TOK_LITERAL || tok == token::TOK_SYMBOL || tok == token::TOK_REGISTER);
+        YY_ASSERT (tok == token::TOK_LITERAL || tok == token::TOK_SYMBOL || tok == token::TOK_REGISTER || tok == token::TOK_COMMENT);
       }
 #else
       symbol_type (int tok, const string& v, const location_type& l)
         : super_type(token_type (tok), v, l)
       {
-        YY_ASSERT (tok == token::TOK_LITERAL || tok == token::TOK_SYMBOL || tok == token::TOK_REGISTER);
+        YY_ASSERT (tok == token::TOK_LITERAL || tok == token::TOK_SYMBOL || tok == token::TOK_REGISTER || tok == token::TOK_COMMENT);
       }
 #endif
     };
@@ -1052,6 +1058,21 @@ switch (yytype)
       make_COLON (const location_type& l)
       {
         return symbol_type (token::TOK_COLON, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_HASHTAG (location_type l)
+      {
+        return symbol_type (token::TOK_HASHTAG, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_HASHTAG (const location_type& l)
+      {
+        return symbol_type (token::TOK_HASHTAG, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1609,6 +1630,21 @@ switch (yytype)
         return symbol_type (token::TOK_STR, l);
       }
 #endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_COMMENT (string v, location_type l)
+      {
+        return symbol_type (token::TOK_COMMENT, std::move (v), std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_COMMENT (const string& v, const location_type& l)
+      {
+        return symbol_type (token::TOK_COMMENT, v, l);
+      }
+#endif
 
 
   private:
@@ -1935,10 +1971,10 @@ switch (yytype)
     enum
     {
       yyeof_ = 0,
-      yylast_ = 125,     ///< Last index in yytable_.
-      yynnts_ = 15,  ///< Number of nonterminal symbols.
-      yyfinal_ = 68, ///< Termination state number.
-      yyntokens_ = 53  ///< Number of tokens.
+      yylast_ = 127,     ///< Last index in yytable_.
+      yynnts_ = 16,  ///< Number of nonterminal symbols.
+      yyfinal_ = 69, ///< Termination state number.
+      yyntokens_ = 55  ///< Number of tokens.
     };
 
 
@@ -1964,36 +2000,38 @@ switch (yytype)
   {
     switch (this->type_get ())
     {
-      case 56: // directive
-      case 65: // label_list
+      case 58: // directive
+      case 67: // label_list
         value.move< Directive* > (std::move (that.value));
         break;
 
-      case 57: // instruction
-      case 58: // load_store_instructions
-      case 59: // two_argument_instructions
-      case 60: // one_argument_instructions
-      case 61: // zero_argument_instructions
+      case 59: // instruction
+      case 60: // load_store_instructions
+      case 61: // two_operand_instructions
+      case 62: // one_operand_instructions
+      case 63: // zero_operand_instructions
+      case 70: // operand
         value.move< Instruction* > (std::move (that.value));
         break;
 
-      case 66: // load_store
-      case 67: // instruction_type
+      case 68: // load_store
+      case 69: // instruction_type
         value.move< Instruction_type > (std::move (that.value));
         break;
 
-      case 62: // jump_operand
-      case 63: // jump
+      case 64: // jump_operand
+      case 65: // jump
         value.move< Jump* > (std::move (that.value));
         break;
 
-      case 24: // LITERAL
-      case 25: // SYMBOL
-      case 26: // REGISTER
+      case 25: // LITERAL
+      case 26: // SYMBOL
+      case 27: // REGISTER
+      case 54: // COMMENT
         value.move< string > (std::move (that.value));
         break;
 
-      case 64: // symbol_list
+      case 66: // symbol_list
         value.move< vector<string> > (std::move (that.value));
         break;
 
@@ -2012,36 +2050,38 @@ switch (yytype)
   {
     switch (this->type_get ())
     {
-      case 56: // directive
-      case 65: // label_list
+      case 58: // directive
+      case 67: // label_list
         value.copy< Directive* > (YY_MOVE (that.value));
         break;
 
-      case 57: // instruction
-      case 58: // load_store_instructions
-      case 59: // two_argument_instructions
-      case 60: // one_argument_instructions
-      case 61: // zero_argument_instructions
+      case 59: // instruction
+      case 60: // load_store_instructions
+      case 61: // two_operand_instructions
+      case 62: // one_operand_instructions
+      case 63: // zero_operand_instructions
+      case 70: // operand
         value.copy< Instruction* > (YY_MOVE (that.value));
         break;
 
-      case 66: // load_store
-      case 67: // instruction_type
+      case 68: // load_store
+      case 69: // instruction_type
         value.copy< Instruction_type > (YY_MOVE (that.value));
         break;
 
-      case 62: // jump_operand
-      case 63: // jump
+      case 64: // jump_operand
+      case 65: // jump
         value.copy< Jump* > (YY_MOVE (that.value));
         break;
 
-      case 24: // LITERAL
-      case 25: // SYMBOL
-      case 26: // REGISTER
+      case 25: // LITERAL
+      case 26: // SYMBOL
+      case 27: // REGISTER
+      case 54: // COMMENT
         value.copy< string > (YY_MOVE (that.value));
         break;
 
-      case 64: // symbol_list
+      case 66: // symbol_list
         value.copy< vector<string> > (YY_MOVE (that.value));
         break;
 
@@ -2067,36 +2107,38 @@ switch (yytype)
     super_type::move (s);
     switch (this->type_get ())
     {
-      case 56: // directive
-      case 65: // label_list
+      case 58: // directive
+      case 67: // label_list
         value.move< Directive* > (YY_MOVE (s.value));
         break;
 
-      case 57: // instruction
-      case 58: // load_store_instructions
-      case 59: // two_argument_instructions
-      case 60: // one_argument_instructions
-      case 61: // zero_argument_instructions
+      case 59: // instruction
+      case 60: // load_store_instructions
+      case 61: // two_operand_instructions
+      case 62: // one_operand_instructions
+      case 63: // zero_operand_instructions
+      case 70: // operand
         value.move< Instruction* > (YY_MOVE (s.value));
         break;
 
-      case 66: // load_store
-      case 67: // instruction_type
+      case 68: // load_store
+      case 69: // instruction_type
         value.move< Instruction_type > (YY_MOVE (s.value));
         break;
 
-      case 62: // jump_operand
-      case 63: // jump
+      case 64: // jump_operand
+      case 65: // jump
         value.move< Jump* > (YY_MOVE (s.value));
         break;
 
-      case 24: // LITERAL
-      case 25: // SYMBOL
-      case 26: // REGISTER
+      case 25: // LITERAL
+      case 26: // SYMBOL
+      case 27: // REGISTER
+      case 54: // COMMENT
         value.move< string > (YY_MOVE (s.value));
         break;
 
-      case 64: // symbol_list
+      case 66: // symbol_list
         value.move< vector<string> > (YY_MOVE (s.value));
         break;
 
@@ -2155,7 +2197,7 @@ switch (yytype)
   }
 
 } // yy
-#line 2159 "./misc/parser/parser.hpp"
+#line 2201 "./misc/parser/parser.hpp"
 
 
 

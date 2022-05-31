@@ -50,7 +50,7 @@ struct Symbol_table_entry
 {
     std::string label;
     int size;
-    int value;
+    int offset;
     std::string type;
     std::string binding;
     

@@ -66,6 +66,7 @@
   LBRACKET "["
   RBRACKET "]"
   COLON ":"
+  HASHTAG "#"
 ;
 %token GLOBAL EXTERN SECTION WORD SKIP ASCII EQU END;
 %token <string> LITERAL;
@@ -79,13 +80,15 @@
 %token CMP NOT AND OR XOR TEST SHL SHR;
 %token LDR STR;
 
+%token <string> COMMENT ;
+
 %token EOF 0 "end of file"
 
 // NONTERMINALS
 %nterm program
 %nterm line
 %nterm <Directive*> directive
-%nterm <Instruction*> instruction load_store_instructions two_argument_instructions one_argument_instructions zero_argument_instructions
+%nterm <Instruction*> instruction load_store_instructions two_operand_instructions one_operand_instructions zero_operand_instructions
 // this here nterm jump_operand is "hacking" the pointer values so we can have smaller tree with less c code
 %nterm <Jump*> jump_operand
 %nterm <Jump*> jump
@@ -93,6 +96,7 @@
 %nterm <Directive*> label_list
 %nterm <Instruction_type> load_store
 %nterm <Instruction_type> instruction_type
+%nterm <Instruction*> operand
 
  
 %%
@@ -107,6 +111,7 @@ line:
     directive 
     | instruction
     | jump
+    | COMMENT
     ;
 
 directive:
@@ -114,21 +119,21 @@ directive:
     {
         $$ = new Directive();
         $$->set_type(Directive_type::GLOBAL);
-        $$->set_arguments($2);
+        $$->set_operands($2);
         assembly.add_new_line($$);
     }
     | EXTERN symbol_list
     {
         $$ = new Directive();
         $$->set_type(Directive_type::EXTERN);
-        $$->set_arguments($2);
+        $$->set_operands($2);
         assembly.add_new_line($$);
     }
     | SECTION SYMBOL 
     {
         $$ = new Directive();
         $$->set_type(Directive_type::SECTION);
-        $$->add_argument($2);
+        $$->add_operand($2);
         assembly.add_new_line($$);
     }
     | WORD label_list
@@ -141,7 +146,7 @@ directive:
     {
         $$ = new Directive();
         $$->set_type(Directive_type::SKIP);
-        $$->add_argument($2);
+        $$->add_operand($2);
         assembly.add_new_line($$);
     }
     | END
@@ -155,7 +160,7 @@ directive:
     {
         $$ = new Directive();
         $$ -> set_type(Directive_type::LABEL);
-        $$ -> add_argument($1);
+        $$ -> add_operand($1);
         assembly.add_new_line($$);
     }
     ;
@@ -169,22 +174,22 @@ label_list:
     label_list COMMA SYMBOL
     {
         $$ = $1;
-        $$ -> add_argument($3, Label_type::SYMBOL);
+        $$ -> add_operand($3, Label_type::SYMBOL);
     }
     | label_list COMMA LITERAL
     {
         $$ = $1;
-        $$ -> add_argument($3, Label_type::LITERAL);
+        $$ -> add_operand($3, Label_type::LITERAL);
     }
     | LITERAL 
     {
         $$ = new Directive();
-        $$ -> add_argument($1, Label_type::LITERAL);
+        $$ -> add_operand($1, Label_type::LITERAL);
     }
     | SYMBOL 
     {
         $$ = new Directive(); 
-        $$ -> add_argument($1, Label_type::SYMBOL);
+        $$ -> add_operand($1, Label_type::SYMBOL);
     }
     ;
 
@@ -262,12 +267,12 @@ jump_operand:
     ;   
 
 instruction:
-    two_argument_instructions { $$ = $1; }
-    | one_argument_instructions { $$ = $1; }
-    | zero_argument_instructions { $$ = $1; }
+    two_operand_instructions { $$ = $1; }
+    | one_operand_instructions { $$ = $1; }
+    | zero_operand_instructions { $$ = $1; }
     ;
 
-two_argument_instructions:
+two_operand_instructions:
     load_store_instructions { $$ = $1; }
     | instruction_type REGISTER COMMA REGISTER
     {
@@ -278,63 +283,72 @@ two_argument_instructions:
 
 
 load_store_instructions:
-    load_store REGISTER COMMA DOLLAR LITERAL
+    load_store REGISTER COMMA operand
     {
-        $$ = new Instruction($1, $2); 
-        $$ -> set_second_argument(Addressing_type::ABSOLUTE, $5, Label_type::LITERAL);
-        assembly.add_new_line($$);
-    }
-    | load_store REGISTER COMMA DOLLAR SYMBOL
-    { 
-        $$ = new Instruction($1, $2); 
-        $$ -> set_second_argument(Addressing_type::ABSOLUTE, $5, Label_type::SYMBOL);
-        assembly.add_new_line($$);
-    }
-    | load_store REGISTER COMMA LITERAL
-    {
-        $$ = new Instruction($1, $2);
-        $$ -> set_second_argument(Addressing_type::MEMORY, $4, Label_type::LITERAL);
-        assembly.add_new_line($$);
-    }
-    | load_store REGISTER COMMA SYMBOL 
-    {
-        $$ = new Instruction($1, $2);
-        $$ -> set_second_argument(Addressing_type::MEMORY, $4, Label_type::SYMBOL);
-        assembly.add_new_line($$);
-    }
-    | load_store REGISTER COMMA PERCENT SYMBOL
-    {
-        $$ = new Instruction($1, $2);
-        $$ -> set_second_argument(Addressing_type::PC_RELATIVE, $5, Label_type::SYMBOL);
-        assembly.add_new_line($$);
-    }
-    | load_store REGISTER COMMA REGISTER
-    {
-        $$ = new Instruction($1, $2); 
-        $$ -> set_second_argument(Addressing_type::ABSOLUTE, $4, Label_type::REGISTER);
-        assembly.add_new_line($$);
-    }
-    | load_store REGISTER COMMA LBRACKET REGISTER RBRACKET
-    {
-        $$ = new Instruction($1, $2);
-        $$ -> set_second_argument(Addressing_type::MEMORY, $5, Label_type::REGISTER);
-        assembly.add_new_line($$);
-    }
-    | load_store REGISTER COMMA LBRACKET REGISTER PLUS SYMBOL RBRACKET
-    {
-        $$ = new Instruction($1, $2); 
-        $$ -> set_second_argument(Addressing_type::SYMBOL_OFFSET, $5, Label_type::REGISTER);
-        $$ -> set_offset($7, Label_type::SYMBOL);
-        assembly.add_new_line($$);
-    }
-    | load_store REGISTER COMMA LBRACKET REGISTER PLUS LITERAL RBRACKET
-    {
-        $$ = new Instruction($1, $2);
-        $$ -> set_second_argument(Addressing_type::SYMBOL_OFFSET, $5, Label_type::REGISTER);
-        $$ -> set_offset($7, Label_type::LITERAL);
-        assembly.add_new_line($$);
+        $$ = $4;
+        $$ -> set_instruction_type($1);
+        $$ -> set_first_operand($2);
     }
     ;
+
+operand:
+    DOLLAR LITERAL 
+    {
+        $$ = new Instruction();
+        $$ -> set_second_operand($2, Label_type::LITERAL);
+        $$ -> set_addressing_type(Addressing_type::ABSOLUTE);
+    }
+    | DOLLAR SYMBOL
+    {
+        $$ = new Instruction();
+        $$ -> set_second_operand($2, Label_type::SYMBOL);
+        $$ -> set_addressing_type(Addressing_type::ABSOLUTE);
+    }
+    | PERCENT SYMBOL
+    {
+        $$ = new Instruction();
+        $$ -> set_second_operand($2, Label_type::SYMBOL);
+        $$ -> set_addressing_type(Addressing_type::PC_RELATIVE);
+    }
+    | LITERAL
+    {
+        $$ = new Instruction();
+        $$ -> set_second_operand($1, Label_type::LITERAL);
+        $$ -> set_addressing_type(Addressing_type::MEMORY);
+    }
+    | SYMBOL
+    {
+        $$ = new Instruction();
+        $$ -> set_second_operand($1, Label_type::SYMBOL);
+        $$ -> set_addressing_type(Addressing_type::MEMORY);
+    }
+    | REGISTER
+    {
+        $$ = new Instruction();
+        $$ -> set_second_operand($1, Label_type::REGISTER);
+        $$ -> set_addressing_type(Addressing_type::ABSOLUTE);
+    }       
+    | LBRACKET REGISTER RBRACKET
+    {
+        $$ = new Instruction();
+        $$ -> set_second_operand($2, Label_type::REGISTER);
+        $$ -> set_addressing_type(Addressing_type::MEMORY);
+    }   
+    | LBRACKET REGISTER PLUS LITERAL RBRACKET
+    {
+        $$ = new Instruction();
+        $$ -> set_second_operand($2, Label_type::REGISTER);
+        $$ -> set_addressing_type(Addressing_type::LITERAL_OFFSET);
+        $$ -> set_offset($4, Label_type::LITERAL);
+    }        
+    | LBRACKET REGISTER PLUS SYMBOL RBRACKET
+    {
+        $$ = new Instruction();
+        $$ -> set_second_operand($2, Label_type::REGISTER);
+        $$ -> set_addressing_type(Addressing_type::SYMBOL_OFFSET);
+        $$ -> set_offset($4, Label_type::SYMBOL);
+    }
+    ;   
 
 load_store:
     LDR { $$ = Instruction_type::LDR; }
@@ -356,7 +370,7 @@ instruction_type:
     | XCHG { $$ = Instruction_type::XCHG; }
     ;
 
-one_argument_instructions:
+one_operand_instructions:
     POP REGISTER 
     {
         $$ = new Instruction(Instruction_type::POP, $2); 
@@ -384,7 +398,7 @@ one_argument_instructions:
     }
     ;
 
-zero_argument_instructions:
+zero_operand_instructions:
     RET
     {
         $$ = new Instruction(Instruction_type::RET);

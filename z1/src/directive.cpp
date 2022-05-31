@@ -19,38 +19,38 @@ Directive_type Directive::get_type() const
     return this->type;
 }
 
-void Directive::set_arguments(std::vector<std::string> arg)
+void Directive::set_operands(std::vector<std::string> arg)
 {
-    this->arguments = arg;
+    this->operands = arg;
 }
 
-std::vector<Label_type> Directive::get_argument_types() const
+std::vector<Label_type> Directive::get_operand_types() const
 {
-    return this->argument_types;
+    return this->operand_types;
 }
 
-std::vector<std::string> Directive::get_arguments() const
+std::vector<std::string> Directive::get_operands() const
 {
-    return this->arguments;
+    return this->operands;
 }
 
-void Directive::add_argument(std::string arg)
+void Directive::add_operand(std::string arg)
 {
-    this->arguments.emplace_back(arg);
+    this->operands.emplace_back(arg);
 }
 
-void Directive::add_argument(std::string arg, Label_type type)
+void Directive::add_operand(std::string arg, Label_type type)
 {
-    this->arguments.emplace_back(arg);
-    this->argument_types.emplace_back(type);
+    this->operands.emplace_back(arg);
+    this->operand_types.emplace_back(type);
 }
 
 void Directive::print() const
 {
     std::cout << Directive::directive_map[type] << " ";
-    for (int i = 0; i < arguments.size(); i++)
+    for (int i = 0; i < operands.size(); i++)
     {
-        std::cout << arguments[i] << " ";
+        std::cout << operands[i] << " ";
     }
     std::cout << "\n";
 }

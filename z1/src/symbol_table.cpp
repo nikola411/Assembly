@@ -64,7 +64,7 @@ void Symbol_table::print() const
             << table[i] -> section
             << std::left
             << std::setw(w)
-            << table[i] -> size
+            << table[i] -> offset
             << std::left
             << std::setw(w)
             << table[i] -> binding
