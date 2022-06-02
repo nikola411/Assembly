@@ -31,6 +31,17 @@ Symbol_table_entry* Symbol_table::find_symbol(std::string label) const
     return nullptr;
 }
 
+int Symbol_table::get_symbol_ord_number(std::string symbol) const
+{
+    for (int i = 0; i < table.size(); i++)
+    {
+        if (table[i]->label == symbol)
+            return i;
+    }
+
+    return -1;
+}
+
 void Symbol_table::print() const
 {
     int w = 15;

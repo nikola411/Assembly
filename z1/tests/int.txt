@@ -1,10 +1,11 @@
 .section .text
-.word 123
 .skip 10
-.word sym
 labela:
-    .word 111, 11, 11, 11
-    .word 111
-lab2:
-    .word 1
+.word 1122
+asdela:
+.extern sum1, sum2
+.section .data
+.skip 12
+ldr r1, sym
+
 .end

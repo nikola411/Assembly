@@ -104,7 +104,7 @@
 program:
     program line  
     | line
-    | EOF  
+    | EOF  { assembly.finish_parsing(); }
     ;
 
 line:
@@ -162,6 +162,14 @@ directive:
         $$ -> set_type(Directive_type::LABEL);
         $$ -> add_operand($1);
         assembly.add_new_line($$);
+    }
+    | EQU SYMBOL COMMA LITERAL
+    {
+
+    }
+    | ASCII
+    {
+        
     }
     ;
 
@@ -288,6 +296,8 @@ load_store_instructions:
         $$ = $4;
         $$ -> set_instruction_type($1);
         $$ -> set_first_operand($2);
+        $$ -> set_number_of_operands(2);
+        assembly.add_new_line($$);
     }
     ;
 
@@ -391,9 +401,10 @@ one_operand_instructions:
         $$ = new Instruction(Instruction_type::INT, $2); 
         assembly.add_new_line($$);
     }
-    | CALL REGISTER 
+    | CALL operand 
     {
-        $$ = new Instruction(Instruction_type::CALL, $2); 
+        $$ = $2;
+        $$ -> set_instruction_type(Instruction_type::CALL);
         assembly.add_new_line($$);
     }
     ;

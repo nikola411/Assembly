@@ -12,9 +12,7 @@
 class Directive : public Line
 {
 public:
-    Directive()
-    {
-    }
+    Directive();
 
     void set_type(Directive_type);
     Directive_type get_type() const;
@@ -26,9 +24,7 @@ public:
 
     void print() const;
 
-    ~Directive()
-    {
-    }
+    ~Directive();
     
 private:
     Directive_type type;

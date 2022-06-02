@@ -24,10 +24,12 @@ public:
     void set_instruction_type(Instruction_type);
 
     std::string get_second_operand() const;
+    Label_type get_second_operand_type() const;
     std::string get_first_operand() const;
     std::string get_offset() const;
     int get_number_of_operands() const;
     Instruction_type get_type() const;
+    Addressing_type get_addressing_type() const;
 
     void print() const;
 

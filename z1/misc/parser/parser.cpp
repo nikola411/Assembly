@@ -758,6 +758,12 @@ namespace yy {
         {
           switch (yyn)
             {
+  case 4:
+#line 107 "./misc/parser.yy"
+           { assembly.finish_parsing(); }
+#line 765 "./misc/parser/parser.cpp"
+    break;
+
   case 9:
 #line 119 "./misc/parser.yy"
     {
@@ -766,7 +772,7 @@ namespace yy {
         yylhs.value.as < Directive* > ()->set_operands(yystack_[0].value.as < vector<string> > ());
         assembly.add_new_line(yylhs.value.as < Directive* > ());
     }
-#line 770 "./misc/parser/parser.cpp"
+#line 776 "./misc/parser/parser.cpp"
     break;
 
   case 10:
@@ -777,7 +783,7 @@ namespace yy {
         yylhs.value.as < Directive* > ()->set_operands(yystack_[0].value.as < vector<string> > ());
         assembly.add_new_line(yylhs.value.as < Directive* > ());
     }
-#line 781 "./misc/parser/parser.cpp"
+#line 787 "./misc/parser/parser.cpp"
     break;
 
   case 11:
@@ -788,7 +794,7 @@ namespace yy {
         yylhs.value.as < Directive* > ()->add_operand(yystack_[0].value.as < string > ());
         assembly.add_new_line(yylhs.value.as < Directive* > ());
     }
-#line 792 "./misc/parser/parser.cpp"
+#line 798 "./misc/parser/parser.cpp"
     break;
 
   case 12:
@@ -798,7 +804,7 @@ namespace yy {
         yylhs.value.as < Directive* > ()->set_type(Directive_type::WORD);
         assembly.add_new_line(yylhs.value.as < Directive* > ());
     }
-#line 802 "./misc/parser/parser.cpp"
+#line 808 "./misc/parser/parser.cpp"
     break;
 
   case 13:
@@ -809,7 +815,7 @@ namespace yy {
         yylhs.value.as < Directive* > ()->add_operand(yystack_[0].value.as < string > ());
         assembly.add_new_line(yylhs.value.as < Directive* > ());
     }
-#line 813 "./misc/parser/parser.cpp"
+#line 819 "./misc/parser/parser.cpp"
     break;
 
   case 14:
@@ -820,7 +826,7 @@ namespace yy {
         assembly.add_new_line(yylhs.value.as < Directive* > ());
         YYACCEPT;
     }
-#line 824 "./misc/parser/parser.cpp"
+#line 830 "./misc/parser/parser.cpp"
     break;
 
   case 15:
@@ -831,469 +837,488 @@ namespace yy {
         yylhs.value.as < Directive* > () -> add_operand(yystack_[1].value.as < string > ());
         assembly.add_new_line(yylhs.value.as < Directive* > ());
     }
-#line 835 "./misc/parser/parser.cpp"
-    break;
-
-  case 16:
-#line 169 "./misc/parser.yy"
-                             { yylhs.value.as < vector<string> > () = yystack_[2].value.as < vector<string> > (); yylhs.value.as < vector<string> > ().emplace_back(yystack_[0].value.as < string > ()); }
 #line 841 "./misc/parser/parser.cpp"
     break;
 
+  case 16:
+#line 167 "./misc/parser.yy"
+    {
+
+    }
+#line 849 "./misc/parser/parser.cpp"
+    break;
+
   case 17:
-#line 170 "./misc/parser.yy"
-             { yylhs.value.as < vector<string> > ().emplace_back(yystack_[0].value.as < string > ()); }
-#line 847 "./misc/parser/parser.cpp"
+#line 171 "./misc/parser.yy"
+    {
+        
+    }
+#line 857 "./misc/parser/parser.cpp"
     break;
 
   case 18:
-#line 175 "./misc/parser.yy"
+#line 177 "./misc/parser.yy"
+                             { yylhs.value.as < vector<string> > () = yystack_[2].value.as < vector<string> > (); yylhs.value.as < vector<string> > ().emplace_back(yystack_[0].value.as < string > ()); }
+#line 863 "./misc/parser/parser.cpp"
+    break;
+
+  case 19:
+#line 178 "./misc/parser.yy"
+             { yylhs.value.as < vector<string> > ().emplace_back(yystack_[0].value.as < string > ()); }
+#line 869 "./misc/parser/parser.cpp"
+    break;
+
+  case 20:
+#line 183 "./misc/parser.yy"
     {
         yylhs.value.as < Directive* > () = yystack_[2].value.as < Directive* > ();
         yylhs.value.as < Directive* > () -> add_operand(yystack_[0].value.as < string > (), Label_type::SYMBOL);
     }
-#line 856 "./misc/parser/parser.cpp"
+#line 878 "./misc/parser/parser.cpp"
     break;
 
-  case 19:
-#line 180 "./misc/parser.yy"
+  case 21:
+#line 188 "./misc/parser.yy"
     {
         yylhs.value.as < Directive* > () = yystack_[2].value.as < Directive* > ();
         yylhs.value.as < Directive* > () -> add_operand(yystack_[0].value.as < string > (), Label_type::LITERAL);
     }
-#line 865 "./misc/parser/parser.cpp"
+#line 887 "./misc/parser/parser.cpp"
     break;
 
-  case 20:
-#line 185 "./misc/parser.yy"
+  case 22:
+#line 193 "./misc/parser.yy"
     {
         yylhs.value.as < Directive* > () = new Directive();
         yylhs.value.as < Directive* > () -> add_operand(yystack_[0].value.as < string > (), Label_type::LITERAL);
     }
-#line 874 "./misc/parser/parser.cpp"
+#line 896 "./misc/parser/parser.cpp"
     break;
 
-  case 21:
-#line 190 "./misc/parser.yy"
+  case 23:
+#line 198 "./misc/parser.yy"
     {
         yylhs.value.as < Directive* > () = new Directive(); 
         yylhs.value.as < Directive* > () -> add_operand(yystack_[0].value.as < string > (), Label_type::SYMBOL);
     }
-#line 883 "./misc/parser/parser.cpp"
+#line 905 "./misc/parser/parser.cpp"
     break;
 
-  case 22:
-#line 198 "./misc/parser.yy"
+  case 24:
+#line 206 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = yystack_[0].value.as < Jump* > (); yylhs.value.as < Jump* > () -> set_jump_type(Jump_type::JMP);
         assembly.add_new_line(yylhs.value.as < Jump* > ());
     }
-#line 892 "./misc/parser/parser.cpp"
+#line 914 "./misc/parser/parser.cpp"
     break;
 
-  case 23:
-#line 203 "./misc/parser.yy"
+  case 25:
+#line 211 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = yystack_[0].value.as < Jump* > (); yylhs.value.as < Jump* > () -> set_jump_type(Jump_type::JEQ);
         assembly.add_new_line(yylhs.value.as < Jump* > ());
     }
-#line 901 "./misc/parser/parser.cpp"
+#line 923 "./misc/parser/parser.cpp"
     break;
 
-  case 24:
-#line 208 "./misc/parser.yy"
+  case 26:
+#line 216 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = yystack_[0].value.as < Jump* > (); yylhs.value.as < Jump* > () -> set_jump_type(Jump_type::JNE);
         assembly.add_new_line(yylhs.value.as < Jump* > ());
     }
-#line 910 "./misc/parser/parser.cpp"
+#line 932 "./misc/parser/parser.cpp"
     break;
 
-  case 25:
-#line 213 "./misc/parser.yy"
+  case 27:
+#line 221 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = yystack_[0].value.as < Jump* > (); yylhs.value.as < Jump* > () -> set_jump_type(Jump_type::JGT);
         assembly.add_new_line(yylhs.value.as < Jump* > ());
     }
-#line 919 "./misc/parser/parser.cpp"
+#line 941 "./misc/parser/parser.cpp"
     break;
 
-  case 26:
-#line 221 "./misc/parser.yy"
+  case 28:
+#line 229 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = new Jump();
         yylhs.value.as < Jump* > () -> set_operand (yystack_[0].value.as < string > (), Addressing_type::ABSOLUTE, Label_type::LITERAL);
     }
-#line 928 "./misc/parser/parser.cpp"
+#line 950 "./misc/parser/parser.cpp"
     break;
 
-  case 27:
-#line 226 "./misc/parser.yy"
+  case 29:
+#line 234 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = new Jump();
         yylhs.value.as < Jump* > () -> set_operand (yystack_[0].value.as < string > (), Addressing_type::ABSOLUTE, Label_type::SYMBOL);
     }
-#line 937 "./misc/parser/parser.cpp"
+#line 959 "./misc/parser/parser.cpp"
     break;
 
-  case 28:
-#line 231 "./misc/parser.yy"
+  case 30:
+#line 239 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = new Jump();
         yylhs.value.as < Jump* > () -> set_operand (yystack_[0].value.as < string > (), Addressing_type::PC_RELATIVE, Label_type::SYMBOL);
     }
-#line 946 "./misc/parser/parser.cpp"
+#line 968 "./misc/parser/parser.cpp"
     break;
 
-  case 29:
-#line 236 "./misc/parser.yy"
+  case 31:
+#line 244 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = new Jump();
         yylhs.value.as < Jump* > () -> set_operand (yystack_[0].value.as < string > (), Addressing_type::MEMORY, Label_type::LITERAL);
     }
-#line 955 "./misc/parser/parser.cpp"
+#line 977 "./misc/parser/parser.cpp"
     break;
 
-  case 30:
-#line 241 "./misc/parser.yy"
+  case 32:
+#line 249 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = new Jump();
         yylhs.value.as < Jump* > () -> set_operand (yystack_[0].value.as < string > (), Addressing_type::MEMORY, Label_type::SYMBOL);
     }
-#line 964 "./misc/parser/parser.cpp"
+#line 986 "./misc/parser/parser.cpp"
     break;
 
-  case 31:
-#line 246 "./misc/parser.yy"
+  case 33:
+#line 254 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = new Jump();
         yylhs.value.as < Jump* > () -> set_operand (yystack_[0].value.as < string > (), Addressing_type::ABSOLUTE, Label_type::REGISTER);
     }
-#line 973 "./misc/parser/parser.cpp"
+#line 995 "./misc/parser/parser.cpp"
     break;
 
-  case 32:
-#line 251 "./misc/parser.yy"
+  case 34:
+#line 259 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = new Jump();
         yylhs.value.as < Jump* > () -> set_operand (yystack_[1].value.as < string > (), Addressing_type::MEMORY, Label_type::REGISTER);
     }
-#line 982 "./misc/parser/parser.cpp"
+#line 1004 "./misc/parser/parser.cpp"
     break;
 
-  case 33:
-#line 256 "./misc/parser.yy"
+  case 35:
+#line 264 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = new Jump();
         yylhs.value.as < Jump* > () -> set_operand (yystack_[3].value.as < string > (), Addressing_type::LITERAL_OFFSET, Label_type::REGISTER);
         yylhs.value.as < Jump* > () -> set_offset (yystack_[1].value.as < string > ());
     }
-#line 992 "./misc/parser/parser.cpp"
+#line 1014 "./misc/parser/parser.cpp"
     break;
 
-  case 34:
-#line 262 "./misc/parser.yy"
+  case 36:
+#line 270 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = new Jump();
         yylhs.value.as < Jump* > () -> set_operand (yystack_[3].value.as < string > (), Addressing_type::SYMBOL_OFFSET, Label_type::REGISTER);
         yylhs.value.as < Jump* > () -> set_offset (yystack_[1].value.as < string > ());
     }
-#line 1002 "./misc/parser/parser.cpp"
-    break;
-
-  case 35:
-#line 270 "./misc/parser.yy"
-                             { yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > (); }
-#line 1008 "./misc/parser/parser.cpp"
-    break;
-
-  case 36:
-#line 271 "./misc/parser.yy"
-                               { yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > (); }
-#line 1014 "./misc/parser/parser.cpp"
+#line 1024 "./misc/parser/parser.cpp"
     break;
 
   case 37:
-#line 272 "./misc/parser.yy"
-                                { yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > (); }
-#line 1020 "./misc/parser/parser.cpp"
+#line 278 "./misc/parser.yy"
+                             { yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > (); }
+#line 1030 "./misc/parser/parser.cpp"
     break;
 
   case 38:
-#line 276 "./misc/parser.yy"
-                            { yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > (); }
-#line 1026 "./misc/parser/parser.cpp"
+#line 279 "./misc/parser.yy"
+                               { yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > (); }
+#line 1036 "./misc/parser/parser.cpp"
     break;
 
   case 39:
-#line 278 "./misc/parser.yy"
+#line 280 "./misc/parser.yy"
+                                { yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > (); }
+#line 1042 "./misc/parser/parser.cpp"
+    break;
+
+  case 40:
+#line 284 "./misc/parser.yy"
+                            { yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > (); }
+#line 1048 "./misc/parser/parser.cpp"
+    break;
+
+  case 41:
+#line 286 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction(yystack_[3].value.as < Instruction_type > (), yystack_[2].value.as < string > (), yystack_[0].value.as < string > ());
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1035 "./misc/parser/parser.cpp"
+#line 1057 "./misc/parser/parser.cpp"
     break;
 
-  case 40:
-#line 287 "./misc/parser.yy"
+  case 42:
+#line 295 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > ();
         yylhs.value.as < Instruction* > () -> set_instruction_type(yystack_[3].value.as < Instruction_type > ());
         yylhs.value.as < Instruction* > () -> set_first_operand(yystack_[2].value.as < string > ());
+        yylhs.value.as < Instruction* > () -> set_number_of_operands(2);
+        assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1045 "./misc/parser/parser.cpp"
+#line 1069 "./misc/parser/parser.cpp"
     break;
 
-  case 41:
-#line 296 "./misc/parser.yy"
+  case 43:
+#line 306 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[0].value.as < string > (), Label_type::LITERAL);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::ABSOLUTE);
     }
-#line 1055 "./misc/parser/parser.cpp"
+#line 1079 "./misc/parser/parser.cpp"
     break;
 
-  case 42:
-#line 302 "./misc/parser.yy"
+  case 44:
+#line 312 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[0].value.as < string > (), Label_type::SYMBOL);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::ABSOLUTE);
     }
-#line 1065 "./misc/parser/parser.cpp"
+#line 1089 "./misc/parser/parser.cpp"
     break;
 
-  case 43:
-#line 308 "./misc/parser.yy"
+  case 45:
+#line 318 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[0].value.as < string > (), Label_type::SYMBOL);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::PC_RELATIVE);
     }
-#line 1075 "./misc/parser/parser.cpp"
+#line 1099 "./misc/parser/parser.cpp"
     break;
 
-  case 44:
-#line 314 "./misc/parser.yy"
+  case 46:
+#line 324 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[0].value.as < string > (), Label_type::LITERAL);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::MEMORY);
     }
-#line 1085 "./misc/parser/parser.cpp"
+#line 1109 "./misc/parser/parser.cpp"
     break;
 
-  case 45:
-#line 320 "./misc/parser.yy"
+  case 47:
+#line 330 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[0].value.as < string > (), Label_type::SYMBOL);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::MEMORY);
     }
-#line 1095 "./misc/parser/parser.cpp"
+#line 1119 "./misc/parser/parser.cpp"
     break;
 
-  case 46:
-#line 326 "./misc/parser.yy"
+  case 48:
+#line 336 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[0].value.as < string > (), Label_type::REGISTER);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::ABSOLUTE);
     }
-#line 1105 "./misc/parser/parser.cpp"
+#line 1129 "./misc/parser/parser.cpp"
     break;
 
-  case 47:
-#line 332 "./misc/parser.yy"
+  case 49:
+#line 342 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[1].value.as < string > (), Label_type::REGISTER);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::MEMORY);
     }
-#line 1115 "./misc/parser/parser.cpp"
+#line 1139 "./misc/parser/parser.cpp"
     break;
 
-  case 48:
-#line 338 "./misc/parser.yy"
+  case 50:
+#line 348 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[3].value.as < string > (), Label_type::REGISTER);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::LITERAL_OFFSET);
         yylhs.value.as < Instruction* > () -> set_offset(yystack_[1].value.as < string > (), Label_type::LITERAL);
     }
-#line 1126 "./misc/parser/parser.cpp"
+#line 1150 "./misc/parser/parser.cpp"
     break;
 
-  case 49:
-#line 345 "./misc/parser.yy"
+  case 51:
+#line 355 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[3].value.as < string > (), Label_type::REGISTER);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::SYMBOL_OFFSET);
         yylhs.value.as < Instruction* > () -> set_offset(yystack_[1].value.as < string > (), Label_type::SYMBOL);
     }
-#line 1137 "./misc/parser/parser.cpp"
-    break;
-
-  case 50:
-#line 354 "./misc/parser.yy"
-        { yylhs.value.as < Instruction_type > () = Instruction_type::LDR; }
-#line 1143 "./misc/parser/parser.cpp"
-    break;
-
-  case 51:
-#line 355 "./misc/parser.yy"
-          { yylhs.value.as < Instruction_type > () = Instruction_type::STR; }
-#line 1149 "./misc/parser/parser.cpp"
-    break;
-
-  case 52:
-#line 359 "./misc/parser.yy"
-        { yylhs.value.as < Instruction_type > () = Instruction_type::SHL; }
-#line 1155 "./misc/parser/parser.cpp"
-    break;
-
-  case 53:
-#line 360 "./misc/parser.yy"
-          { yylhs.value.as < Instruction_type > () = Instruction_type::SHR; }
 #line 1161 "./misc/parser/parser.cpp"
     break;
 
-  case 54:
-#line 361 "./misc/parser.yy"
-           { yylhs.value.as < Instruction_type > () = Instruction_type::TEST; }
+  case 52:
+#line 364 "./misc/parser.yy"
+        { yylhs.value.as < Instruction_type > () = Instruction_type::LDR; }
 #line 1167 "./misc/parser/parser.cpp"
     break;
 
-  case 55:
-#line 362 "./misc/parser.yy"
-          { yylhs.value.as < Instruction_type > () = Instruction_type::XOR; }
+  case 53:
+#line 365 "./misc/parser.yy"
+          { yylhs.value.as < Instruction_type > () = Instruction_type::STR; }
 #line 1173 "./misc/parser/parser.cpp"
     break;
 
-  case 56:
-#line 363 "./misc/parser.yy"
-         { yylhs.value.as < Instruction_type > () = Instruction_type::OR; }
+  case 54:
+#line 369 "./misc/parser.yy"
+        { yylhs.value.as < Instruction_type > () = Instruction_type::SHL; }
 #line 1179 "./misc/parser/parser.cpp"
     break;
 
-  case 57:
-#line 364 "./misc/parser.yy"
-          { yylhs.value.as < Instruction_type > () = Instruction_type::AND; }
+  case 55:
+#line 370 "./misc/parser.yy"
+          { yylhs.value.as < Instruction_type > () = Instruction_type::SHR; }
 #line 1185 "./misc/parser/parser.cpp"
     break;
 
-  case 58:
-#line 365 "./misc/parser.yy"
-          { yylhs.value.as < Instruction_type > () = Instruction_type::CMP; }
+  case 56:
+#line 371 "./misc/parser.yy"
+           { yylhs.value.as < Instruction_type > () = Instruction_type::TEST; }
 #line 1191 "./misc/parser/parser.cpp"
     break;
 
-  case 59:
-#line 366 "./misc/parser.yy"
-          { yylhs.value.as < Instruction_type > () = Instruction_type::DIV; }
+  case 57:
+#line 372 "./misc/parser.yy"
+          { yylhs.value.as < Instruction_type > () = Instruction_type::XOR; }
 #line 1197 "./misc/parser/parser.cpp"
     break;
 
-  case 60:
-#line 367 "./misc/parser.yy"
-          { yylhs.value.as < Instruction_type > () = Instruction_type::MUL; }
+  case 58:
+#line 373 "./misc/parser.yy"
+         { yylhs.value.as < Instruction_type > () = Instruction_type::OR; }
 #line 1203 "./misc/parser/parser.cpp"
     break;
 
-  case 61:
-#line 368 "./misc/parser.yy"
-          { yylhs.value.as < Instruction_type > () = Instruction_type::SUB; }
+  case 59:
+#line 374 "./misc/parser.yy"
+          { yylhs.value.as < Instruction_type > () = Instruction_type::AND; }
 #line 1209 "./misc/parser/parser.cpp"
     break;
 
-  case 62:
-#line 369 "./misc/parser.yy"
-          { yylhs.value.as < Instruction_type > () = Instruction_type::ADD; }
+  case 60:
+#line 375 "./misc/parser.yy"
+          { yylhs.value.as < Instruction_type > () = Instruction_type::CMP; }
 #line 1215 "./misc/parser/parser.cpp"
     break;
 
-  case 63:
-#line 370 "./misc/parser.yy"
-           { yylhs.value.as < Instruction_type > () = Instruction_type::XCHG; }
+  case 61:
+#line 376 "./misc/parser.yy"
+          { yylhs.value.as < Instruction_type > () = Instruction_type::DIV; }
 #line 1221 "./misc/parser/parser.cpp"
     break;
 
+  case 62:
+#line 377 "./misc/parser.yy"
+          { yylhs.value.as < Instruction_type > () = Instruction_type::MUL; }
+#line 1227 "./misc/parser/parser.cpp"
+    break;
+
+  case 63:
+#line 378 "./misc/parser.yy"
+          { yylhs.value.as < Instruction_type > () = Instruction_type::SUB; }
+#line 1233 "./misc/parser/parser.cpp"
+    break;
+
   case 64:
-#line 375 "./misc/parser.yy"
-    {
-        yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::POP, yystack_[0].value.as < string > ()); 
-        assembly.add_new_line(yylhs.value.as < Instruction* > ());
-    }
-#line 1230 "./misc/parser/parser.cpp"
+#line 379 "./misc/parser.yy"
+          { yylhs.value.as < Instruction_type > () = Instruction_type::ADD; }
+#line 1239 "./misc/parser/parser.cpp"
     break;
 
   case 65:
 #line 380 "./misc/parser.yy"
-    {
-        yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::PUSH, yystack_[0].value.as < string > ()); 
-        assembly.add_new_line(yylhs.value.as < Instruction* > ());
-    }
-#line 1239 "./misc/parser/parser.cpp"
+           { yylhs.value.as < Instruction_type > () = Instruction_type::XCHG; }
+#line 1245 "./misc/parser/parser.cpp"
     break;
 
   case 66:
 #line 385 "./misc/parser.yy"
     {
-        yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::NOT, yystack_[0].value.as < string > ()); 
+        yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::POP, yystack_[0].value.as < string > ()); 
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1248 "./misc/parser/parser.cpp"
+#line 1254 "./misc/parser/parser.cpp"
     break;
 
   case 67:
 #line 390 "./misc/parser.yy"
     {
-        yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::INT, yystack_[0].value.as < string > ()); 
+        yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::PUSH, yystack_[0].value.as < string > ()); 
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1257 "./misc/parser/parser.cpp"
+#line 1263 "./misc/parser/parser.cpp"
     break;
 
   case 68:
 #line 395 "./misc/parser.yy"
     {
-        yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::CALL, yystack_[0].value.as < string > ()); 
+        yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::NOT, yystack_[0].value.as < string > ()); 
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1266 "./misc/parser/parser.cpp"
+#line 1272 "./misc/parser/parser.cpp"
     break;
 
   case 69:
-#line 403 "./misc/parser.yy"
+#line 400 "./misc/parser.yy"
+    {
+        yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::INT, yystack_[0].value.as < string > ()); 
+        assembly.add_new_line(yylhs.value.as < Instruction* > ());
+    }
+#line 1281 "./misc/parser/parser.cpp"
+    break;
+
+  case 70:
+#line 405 "./misc/parser.yy"
+    {
+        yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > ();
+        yylhs.value.as < Instruction* > () -> set_instruction_type(Instruction_type::CALL);
+        assembly.add_new_line(yylhs.value.as < Instruction* > ());
+    }
+#line 1291 "./misc/parser/parser.cpp"
+    break;
+
+  case 71:
+#line 414 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::RET);
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1275 "./misc/parser/parser.cpp"
+#line 1300 "./misc/parser/parser.cpp"
     break;
 
-  case 70:
-#line 408 "./misc/parser.yy"
+  case 72:
+#line 419 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::IRET);
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1284 "./misc/parser/parser.cpp"
+#line 1309 "./misc/parser/parser.cpp"
     break;
 
-  case 71:
-#line 413 "./misc/parser.yy"
+  case 73:
+#line 424 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::HALT);
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1293 "./misc/parser/parser.cpp"
+#line 1318 "./misc/parser/parser.cpp"
     break;
 
 
-#line 1297 "./misc/parser/parser.cpp"
+#line 1322 "./misc/parser/parser.cpp"
 
             default:
               break;
@@ -1702,132 +1727,137 @@ namespace yy {
   }
 
 
-  const signed char parser::yypact_ninf_ = -25;
+  const signed char parser::yypact_ninf_ = -19;
 
   const signed char parser::yytable_ninf_ = -1;
 
   const signed char
   parser::yypact_[] =
   {
-       0,   -25,   -24,   -24,   -18,   -15,   -13,   -25,    10,   -25,
-      39,   -25,   -25,    40,    -3,    -3,    -3,    -3,    41,    42,
-     -25,   -25,   -25,   -25,   -25,   -25,    43,   -25,   -25,   -25,
-     -25,   -25,   -25,   -25,   -25,   -25,    55,   -25,   -25,   -25,
-     -25,   -25,   -25,   -25,   -25,    44,    50,   -25,    17,    17,
-     -25,   -25,   -25,    68,   -25,   -25,   -25,   -25,   -12,    54,
-     -25,   -25,   -25,   -25,   -25,   -25,   -25,   -25,   -25,   -25,
-     -25,    72,   103,    88,    32,    89,   -25,   -25,   -25,   -25,
-      99,    90,   -25,   -25,   -25,     2,    34,    92,    93,   -25,
-     -25,   -25,   -25,   -25,    36,   -25,   -25,   -25,   -25,    51,
-     101,   105,    38,   -25,   -25,   -25,   107,   108,   -25,   -25
+       0,   -19,   -10,   -10,    -1,   -18,     2,   -19,    36,   -19,
+      48,   -19,    37,   -19,   -19,   100,   104,   104,   104,   104,
+      38,    39,   -19,   -19,   -19,   -19,   -19,   -19,    40,   -19,
+     -19,   -19,   -19,   -19,   -19,   -19,   -19,   -19,    55,   -19,
+     -19,   -19,   -19,   -19,   -19,   -19,   -19,    41,    42,   -19,
+      60,    60,   -19,   -19,   -19,    61,   -19,    70,   -19,   -19,
+     -16,    56,    87,   -19,   -19,   -19,   -19,   -12,    89,   -19,
+     -19,   -19,   -19,   -19,   -19,   -19,   -19,   -19,   -19,   -19,
+     107,   108,    93,    31,    95,   -19,   -19,   -19,    -3,    94,
+     -19,   -19,   -19,   -19,   100,    96,   -19,   -19,   -19,   -19,
+      33,   -19,    -2,   -19,   -19,   110,   114,    35,   -19,   -19,
+     -19,   117,   118,   -19,   -19
   };
 
   const signed char
   parser::yydefact_[] =
   {
-       0,     4,     0,     0,     0,     0,     0,    14,     0,    71,
-       0,    70,    69,     0,     0,     0,     0,     0,     0,     0,
-      63,    62,    61,    59,    60,    58,     0,    57,    56,    55,
-      54,    52,    53,    50,    51,     8,     0,     3,     5,     6,
-      38,    35,    36,    37,     7,     0,     0,    17,     9,    10,
-      11,    20,    21,    12,    13,    15,    67,    68,     0,     0,
-      26,    27,    22,    23,    24,    25,    65,    64,    66,     1,
-       2,     0,     0,     0,     0,     0,    29,    30,    31,    28,
-       0,     0,    16,    19,    18,     0,     0,     0,     0,    44,
-      45,    46,    40,    39,     0,    32,    41,    42,    43,     0,
-       0,     0,     0,    47,    33,    34,     0,     0,    48,    49
+       0,     4,     0,     0,     0,     0,     0,    17,     0,    14,
+       0,    73,     0,    72,    71,     0,     0,     0,     0,     0,
+       0,     0,    65,    64,    63,    61,    62,    60,     0,    59,
+      58,    57,    56,    54,    55,    52,    53,     8,     0,     3,
+       5,     6,    40,    37,    38,    39,     7,     0,     0,    19,
+       9,    10,    11,    22,    23,    12,    13,     0,    15,    69,
+       0,     0,     0,    46,    47,    48,    70,     0,     0,    28,
+      29,    24,    25,    26,    27,    67,    66,    68,     1,     2,
+       0,     0,     0,     0,     0,    43,    44,    45,     0,     0,
+      31,    32,    33,    30,     0,     0,    18,    21,    20,    16,
+       0,    49,     0,    42,    41,     0,     0,     0,    34,    50,
+      51,     0,     0,    35,    36
   };
 
-  const signed char
+  const short
   parser::yypgoto_[] =
   {
-     -25,   -25,    87,   -25,   -25,   -25,   -25,   -25,   -25,   -11,
-     -25,   124,   -25,   -25,   -25,   -25
+     -19,   -19,    84,   -19,   -19,   -19,   -19,   -19,   -19,   -13,
+     -19,   130,   -19,   -19,   -19,    43
   };
 
   const signed char
   parser::yydefgoto_[] =
   {
-      -1,    36,    37,    38,    39,    40,    41,    42,    43,    62,
-      44,    48,    53,    45,    46,    92
+      -1,    38,    39,    40,    41,    42,    43,    44,    45,    71,
+      46,    50,    55,    47,    48,    66
   };
 
   const signed char
   parser::yytable_[] =
   {
-       1,    75,    47,    58,    63,    64,    65,    94,    50,    59,
-      51,    52,    54,    76,    77,    78,    95,     2,     3,     4,
-       5,     6,    60,    61,     7,    55,     8,    73,     9,    10,
-      11,    12,    13,    14,    15,    16,    17,    18,    19,    20,
-      21,    22,    23,    24,    25,    26,    27,    28,    29,    30,
-      31,    32,    33,    34,    35,    69,   102,    83,    84,    96,
-      97,   100,   101,   106,   107,   103,    56,    57,    66,    67,
-      68,    71,     2,     3,     4,     5,     6,    72,    74,     7,
-      79,     8,    80,     9,    10,    11,    12,    13,    14,    15,
-      16,    17,    18,    19,    20,    21,    22,    23,    24,    25,
-      26,    27,    28,    29,    30,    31,    32,    33,    34,    35,
-      86,    87,    88,    81,    82,   104,    85,    93,    98,   105,
-      99,   108,   109,    70,    89,    90,    91,    49
+       1,    89,   100,   107,    72,    73,    74,    53,    54,    85,
+      86,   101,   108,    90,    91,    92,    49,     2,     3,     4,
+       5,     6,     7,     8,     9,    52,    10,    56,    11,    12,
+      13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
+      23,    24,    25,    26,    27,    28,    29,    30,    31,    32,
+      33,    34,    35,    36,    37,    78,    97,    98,   105,   106,
+     111,   112,    57,    58,    59,    75,    76,    77,    80,    81,
+      82,    83,     2,     3,     4,     5,     6,     7,     8,     9,
+      84,    10,    87,    11,    12,    13,    14,    15,    16,    17,
+      18,    19,    20,    21,    22,    23,    24,    25,    26,    27,
+      28,    29,    30,    31,    32,    33,    34,    35,    36,    37,
+      67,    60,    61,    62,    88,    93,    68,    94,    95,    96,
+      99,   102,    79,   104,   109,    63,    64,    65,   110,    69,
+      70,   113,   114,    51,     0,     0,     0,   103
   };
 
   const signed char
   parser::yycheck_[] =
   {
-       0,    13,    26,     6,    15,    16,    17,     5,    26,    12,
-      25,    26,    25,    25,    26,    27,    14,    17,    18,    19,
-      20,    21,    25,    26,    24,    15,    26,    10,    28,    29,
+       0,    13,     5,     5,    17,    18,    19,    25,    26,    25,
+      26,    14,    14,    25,    26,    27,    26,    17,    18,    19,
+      20,    21,    22,    23,    24,    26,    26,    25,    28,    29,
       30,    31,    32,    33,    34,    35,    36,    37,    38,    39,
       40,    41,    42,    43,    44,    45,    46,    47,    48,    49,
-      50,    51,    52,    53,    54,     0,     5,    25,    26,    25,
-      26,    25,    26,    25,    26,    14,    27,    27,    27,    27,
-      27,    27,    17,    18,    19,    20,    21,    27,    10,    24,
-      26,    26,    10,    28,    29,    30,    31,    32,    33,    34,
+      50,    51,    52,    53,    54,     0,    25,    26,    25,    26,
+      25,    26,    26,    15,    27,    27,    27,    27,    27,    27,
+      10,    10,    17,    18,    19,    20,    21,    22,    23,    24,
+      10,    26,    26,    28,    29,    30,    31,    32,    33,    34,
       35,    36,    37,    38,    39,    40,    41,    42,    43,    44,
       45,    46,    47,    48,    49,    50,    51,    52,    53,    54,
-      11,    12,    13,    10,    26,    14,    27,    27,    26,    14,
-      27,    14,    14,    36,    25,    26,    27,     3
+       6,    11,    12,    13,    27,    26,    12,    10,    10,    26,
+      25,    27,    38,    27,    14,    25,    26,    27,    14,    25,
+      26,    14,    14,     3,    -1,    -1,    -1,    94
   };
 
   const signed char
   parser::yystos_[] =
   {
-       0,     0,    17,    18,    19,    20,    21,    24,    26,    28,
-      29,    30,    31,    32,    33,    34,    35,    36,    37,    38,
-      39,    40,    41,    42,    43,    44,    45,    46,    47,    48,
-      49,    50,    51,    52,    53,    54,    56,    57,    58,    59,
-      60,    61,    62,    63,    65,    68,    69,    26,    66,    66,
-      26,    25,    26,    67,    25,    15,    27,    27,     6,    12,
-      25,    26,    64,    64,    64,    64,    27,    27,    27,     0,
-      57,    27,    27,    10,    10,    13,    25,    26,    27,    26,
-      10,    10,    26,    25,    26,    27,    11,    12,    13,    25,
-      26,    27,    70,    27,     5,    14,    25,    26,    26,    27,
-      25,    26,     5,    14,    14,    14,    25,    26,    14,    14
+       0,     0,    17,    18,    19,    20,    21,    22,    23,    24,
+      26,    28,    29,    30,    31,    32,    33,    34,    35,    36,
+      37,    38,    39,    40,    41,    42,    43,    44,    45,    46,
+      47,    48,    49,    50,    51,    52,    53,    54,    56,    57,
+      58,    59,    60,    61,    62,    63,    65,    68,    69,    26,
+      66,    66,    26,    25,    26,    67,    25,    26,    15,    27,
+      11,    12,    13,    25,    26,    27,    70,     6,    12,    25,
+      26,    64,    64,    64,    64,    27,    27,    27,     0,    57,
+      27,    27,    10,    10,    10,    25,    26,    26,    27,    13,
+      25,    26,    27,    26,    10,    10,    26,    25,    26,    25,
+       5,    14,    27,    70,    27,    25,    26,     5,    14,    14,
+      14,    25,    26,    14,    14
   };
 
   const signed char
   parser::yyr1_[] =
   {
        0,    55,    56,    56,    56,    57,    57,    57,    57,    58,
-      58,    58,    58,    58,    58,    58,    66,    66,    67,    67,
-      67,    67,    65,    65,    65,    65,    64,    64,    64,    64,
-      64,    64,    64,    64,    64,    59,    59,    59,    61,    61,
-      60,    70,    70,    70,    70,    70,    70,    70,    70,    70,
-      68,    68,    69,    69,    69,    69,    69,    69,    69,    69,
-      69,    69,    69,    69,    62,    62,    62,    62,    62,    63,
-      63,    63
+      58,    58,    58,    58,    58,    58,    58,    58,    66,    66,
+      67,    67,    67,    67,    65,    65,    65,    65,    64,    64,
+      64,    64,    64,    64,    64,    64,    64,    59,    59,    59,
+      61,    61,    60,    70,    70,    70,    70,    70,    70,    70,
+      70,    70,    68,    68,    69,    69,    69,    69,    69,    69,
+      69,    69,    69,    69,    69,    69,    62,    62,    62,    62,
+      62,    63,    63,    63
   };
 
   const signed char
   parser::yyr2_[] =
   {
        0,     2,     2,     1,     1,     1,     1,     1,     1,     2,
-       2,     2,     2,     2,     1,     2,     3,     1,     3,     3,
-       1,     1,     2,     2,     2,     2,     1,     1,     2,     2,
-       2,     2,     4,     6,     6,     1,     1,     1,     1,     4,
-       4,     2,     2,     2,     1,     1,     1,     3,     5,     5,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     2,     2,     2,     2,     2,     1,
-       1,     1
+       2,     2,     2,     2,     1,     2,     4,     1,     3,     1,
+       3,     3,     1,     1,     2,     2,     2,     2,     1,     1,
+       2,     2,     2,     2,     4,     6,     6,     1,     1,     1,
+       1,     4,     4,     2,     2,     2,     1,     1,     1,     3,
+       5,     5,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     2,     2,     2,     2,
+       2,     1,     1,     1
   };
 
 
@@ -1855,13 +1885,13 @@ namespace yy {
   parser::yyrline_[] =
   {
        0,   105,   105,   106,   107,   111,   112,   113,   114,   118,
-     125,   132,   139,   145,   152,   159,   169,   170,   174,   179,
-     184,   189,   197,   202,   207,   212,   220,   225,   230,   235,
-     240,   245,   250,   255,   261,   270,   271,   272,   276,   277,
-     286,   295,   301,   307,   313,   319,   325,   331,   337,   344,
-     354,   355,   359,   360,   361,   362,   363,   364,   365,   366,
-     367,   368,   369,   370,   374,   379,   384,   389,   394,   402,
-     407,   412
+     125,   132,   139,   145,   152,   159,   166,   170,   177,   178,
+     182,   187,   192,   197,   205,   210,   215,   220,   228,   233,
+     238,   243,   248,   253,   258,   263,   269,   278,   279,   280,
+     284,   285,   294,   305,   311,   317,   323,   329,   335,   341,
+     347,   354,   364,   365,   369,   370,   371,   372,   373,   374,
+     375,   376,   377,   378,   379,   380,   384,   389,   394,   399,
+     404,   413,   418,   423
   };
 
   // Print the state stack on the debug stream.
@@ -1895,9 +1925,9 @@ namespace yy {
 
 
 } // yy
-#line 1899 "./misc/parser/parser.cpp"
+#line 1929 "./misc/parser/parser.cpp"
 
-#line 419 "./misc/parser.yy"
+#line 430 "./misc/parser.yy"
 
 
 void yy::parser::error (const location_type& l, const std::string& m)

@@ -4,6 +4,8 @@
 #include "driver.hpp"
 #include "assembly.hpp"
 
+#include <bitset>
+
 using std::string;
 
 
@@ -43,6 +45,7 @@ int main(int argc, char* argv[])
     assembly->print();
 
     delete assembly;
+
     // MAKE INTERPRETER CLASS
 
 

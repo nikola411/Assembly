@@ -88,6 +88,11 @@ std::string Instruction::get_second_operand() const
     return this->second_operand;
 }
 
+Label_type Instruction::get_second_operand_type() const
+{
+    return this->second_operand_type;
+}
+
 std::string Instruction::get_first_operand() const
 {
     return this->destination_register;
@@ -108,6 +113,10 @@ Instruction_type Instruction::get_type() const
     return this->type;
 }
 
+Addressing_type Instruction::get_addressing_type() const
+{
+    return this->addressing_type;
+}
 
 void Instruction::print() const
 {

@@ -14,6 +14,7 @@ public:
     void add_symbol_table_entry(Symbol_table_entry*);
     std::vector<Symbol_table_entry*> get_symbol_table_entry() const;
     Symbol_table_entry* find_symbol(std::string) const;
+    int get_symbol_ord_number(std::string) const;
 
     void print() const;
 

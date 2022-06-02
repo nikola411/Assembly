@@ -6,10 +6,12 @@
 #include "jump.hpp"
 #include "symbol_table.hpp"
 #include "section.hpp"
+#include "relocation_table.hpp"
 
 #include <vector>
 #include <typeinfo>
 
+class Relocation_table;
 class Line;
 
 class Assembly
@@ -18,6 +20,7 @@ public:
     Assembly();
     Line* get_current_line();
     void add_new_line(Line*);
+    void finish_parsing();
     void print();
 
     ~Assembly();
@@ -28,7 +31,10 @@ private:
     void handle_instruction(Instruction*);
 
     bool does_section_exists(std::string) const;
-    std::string get_instruction_value(Instruction*) const;
+    std::string get_instruction_value(Instruction*);
+    std::string get_addressing_byte_value(Instruction* instruction) const;
+    std::string get_symbol_value_or_relocate(std::string symbol, Addressing_type addr_type, Label_type label_type);
+    std::string get_payload_byte_value(Instruction* instruction);
 
     std::vector<Line*> lines;
 
@@ -41,7 +47,9 @@ private:
     Symbol_table symbol_table;
     Section* current_section;
     std::vector<Section*> sections;
-    std::vector<Forward_reference*> forward_refs;
+    Relocation_table relocation_table;
+
+    bool end_occured;
 
     static std::string section_names[5];
     static std::map<Instruction_type, std::string> instruction_codes;

@@ -61,7 +61,7 @@ std::map<std::string, std::string> Assembly::addressing_codes
     {"MEMORY", "0100"}
 };
 
-Assembly::Assembly()
+Assembly::Assembly() : end_occured(false)
 {
   
 }
@@ -81,12 +81,21 @@ void Assembly::add_new_line(Line* line)
     }
     else if (typeid(*lines.back()) == instruction_type)
     {
-        //handle_instruction((Instruction*)line);
+        handle_instruction((Instruction*)line);
     }
     else if (typeid(*lines.back()) == directive_type)
     {
         handle_directive((Directive*)line);
     }
+}
+
+void Assembly::finish_parsing()
+{
+    // Backpatching here
+
+    
+
+    // write to output.o
 }
 
 void Assembly::print()
@@ -96,6 +105,8 @@ void Assembly::print()
     {
         sections[i]->print();
     }
+
+    relocation_table.print();
 }
 
 Assembly::~Assembly()
@@ -110,10 +121,6 @@ Assembly::~Assembly()
         delete sections[i];
     }
 
-    for (int i = 0; i < forward_refs.size(); i++)
-    {
-        delete forward_refs[i];
-    }
 }
 
 void Assembly::handle_jump(Jump* jump)
@@ -173,11 +180,7 @@ void Assembly::handle_directive(Directive* directive)
                     // value and address
                     sym = new Symbol_table_entry();
                     sym->label = operands[i];
-                    sym->section = current_section->get_section_name();
-                    sym->size = 0;
                     sym->defined = false;
-                    sym->offset = 0;
-                    sym->fref . emplace_back(current_section->get_section_location_counter());
                     sym->binding = "GLOBAL";
 
                     symbol_table.add_symbol_table_entry(sym);
@@ -196,6 +199,33 @@ void Assembly::handle_directive(Directive* directive)
         {
             // We can generate a relocation entry whenever we get .extern since we know they will not be in 
             // this file
+            std::vector<std::string> operands = directive->get_operands();
+
+            for (int i = 0; i < operands.size(); i++)
+            {
+                Symbol_table_entry* sym = symbol_table.find_symbol(operands[i]);
+                if (sym != nullptr)
+                {
+                    //ERROR
+                    std::cout << "ERROR! Symbol that is in this file cannot be extern! \n";
+                }
+
+                sym = new Symbol_table_entry();
+                sym->binding = "GLOBAL";
+                sym->defined = false;
+                sym->label = operands[i];
+
+                symbol_table.add_symbol_table_entry(sym);
+
+                Relocation_entry* relocation = new Relocation_entry();
+                relocation->offset = current_section->get_section_location_counter();
+                relocation->section = current_section->get_section_name();
+                relocation->ord_number = symbol_table.get_symbol_ord_number(operands[i]);
+                relocation->type = Relocation_type::R_PC_RELATIVE;
+
+                relocation_table.add_new_relocation(relocation);
+            }
+
             break;
         }
         case Directive_type::SKIP:
@@ -219,34 +249,14 @@ void Assembly::handle_directive(Directive* directive)
 
                 if (types[i] == Label_type::LITERAL)
                 {
+                    current_section->add_section_data(std::bitset<16>(stoi(args[i])).to_string());
                     current_section->inc_section_location_counter(2);
-                    current_section->add_section_data(args[i]);
                 }
                 else if (types[i] == Label_type::SYMBOL)
                 {
                     // If we know the value of the symbol, we write it to the section data
-                    Symbol_table_entry* entry = symbol_table.find_symbol(args[i]);
-                    if (entry != nullptr && entry->defined)
-                    { // We know the value of the symbol so we write it to the section
-                        current_section->add_section_data(std::to_string(entry->offset));
-                    }
-                    else if (entry != nullptr && !entry->defined)
-                    { // We know the symbol but it is not defined so we make a fref and inc loc counter
-                        entry->fref . emplace_back (current_section->get_section_location_counter());   
-                    }
-                    else
-                    { // We have not encountered this symbol at this time so we make a new entry in symbol table
-                        entry = new Symbol_table_entry();
-                        entry->label = args[i];
-                        entry->fref . emplace_back (current_section->get_section_location_counter());
-                        entry->section = current_section->get_section_name();
-                        entry->size = 2;
-                        entry->offset = current_section->get_section_location_counter();
-                        entry->binding = "LOCAL";
-
-                        symbol_table.add_symbol_table_entry(entry);
-                    }
-
+                    std::string value = get_symbol_value_or_relocate(args[i], ABSOLUTE, SYMBOL);
+                    current_section->add_section_data(value);
                     current_section->inc_section_location_counter(2);
                 }
                 else
@@ -265,6 +275,8 @@ void Assembly::handle_directive(Directive* directive)
             entry->label = directive->get_operands()[0];
             entry->section = current_section->get_section_name();
             entry->offset = current_section->get_section_location_counter();
+            entry->defined = true;
+            entry->size = 2;
             
             symbol_table.add_symbol_table_entry(entry);
             break;
@@ -273,7 +285,9 @@ void Assembly::handle_directive(Directive* directive)
         {
             // Finish parsing asm code
             sections.emplace_back(current_section);
-
+            end_occured = true;
+            finish_parsing();
+            // Start backpatching
             break;
         }
         default: break;
@@ -282,8 +296,9 @@ void Assembly::handle_directive(Directive* directive)
 
 void Assembly::handle_instruction(Instruction* instruction)
 {
-    std::string instruction_value = get_instruction_value(instruction);
-    current_section->add_section_data(instruction_value);
+    std::string value = get_instruction_value(instruction);
+
+    current_section->add_section_data(value);
 }
 
 bool Assembly::does_section_exists(std::string section) const
@@ -298,34 +313,205 @@ bool Assembly::does_section_exists(std::string section) const
 
     return false;
 }
-
-std::string Assembly::get_instruction_value(Instruction* instruction) const
+// this method will not return only addressing byte but also if needed the payload bytes
+std::string Assembly::get_addressing_byte_value(Instruction* instruction) const
 {
-    std::string value = "";
-    value += Assembly::instruction_codes[instruction->get_type()];
-
-    int arg_no = instruction->get_number_of_operands();
-    if (arg_no == 0) return value;
-
-    if (arg_no == 1)
+    Addressing_type addr_type = instruction->get_addressing_type();
+    std::string addr_byte = "0000";
+    switch (addr_type)
     {
-        if (instruction->get_type() == CALL)
+        case SYMBOL_OFFSET :
         {
-            value += "11110000";
+            addr_byte += "0011";
+            break;
+        }
+        case LITERAL_OFFSET :
+        {
+            addr_byte += "0011";
+            break;
+        }
+        case MEMORY :
+        {
+            addr_byte += "0100";
+            break;
+        }
+        case ABSOLUTE :
+        {
+            addr_byte += "0000";
+            break;
+        }
+        case PC_RELATIVE :
+        {
+            addr_byte += "0100";
+            break;
+        }
+        default: break;
+    }
 
-            //value += Assembly::get_addressing_code(instruction->get_second_operand())
+    return addr_byte;
+}
+
+std::string Assembly::get_instruction_value(Instruction* instruction)
+{
+    Instruction_type type = instruction->get_type();
+    std::string value = "";
+
+    int operands_cnt = instruction->get_number_of_operands();
+
+    if (operands_cnt == 0)
+    {
+        value += instruction_codes[type];
+        return value;
+    }
+
+    if (operands_cnt == 1)
+    {
+        std::string operand_value = "";
+        std::string operand;
+
+        value += instruction_codes[type];
+
+        if (type == Instruction_type::CALL)
+        {
+            // Here we call get second operand because when parsing, since Instruction class is
+            // made to recognize only registers as first operands
+            // we pack call operand as second operand to be able to know its type
+            operand = instruction->get_second_operand(); 
+            Label_type type = instruction->get_second_operand_type();
+
+            if (type == REGISTER)
+            {
+                value += register_codes[operand] + "1111";
+            }
+            else
+            {
+                value += "111111111";
+            }
+
+            value += get_addressing_byte_value(instruction);
+            value += get_payload_byte_value(instruction);
+
+            return value;
         }
         else
         {
-            value += Assembly::register_codes[instruction->get_first_operand()];
-            value += "0000";
+            operand = instruction->get_first_operand();
+            value += register_codes[operand] + "0000";
+            value += get_addressing_byte_value(instruction);
+        }
+
+        return value;
+    }
+    
+    // 2 operand instruction
+    if (instruction->get_type() == Instruction_type::LDR ||
+        instruction->get_type() == Instruction_type::STR)
+    {
+        value += instruction_codes[type];
+        std::string op1 = instruction->get_first_operand();
+        std::string op2 = instruction->get_second_operand();
+        value += register_codes[op1];
+    
+        Label_type sec_op_type = instruction->get_second_operand_type();
+
+        if (sec_op_type == Label_type::REGISTER)
+        {
+            value += register_codes[op2];
+        }
+        else
+        {
+            value += "1111";
+        }
+
+        value += get_addressing_byte_value(instruction);
+        value += get_payload_byte_value(instruction);
+        // second operand type is symbol so we need to see about that
+    }
+    else
+    {
+        std::string r1 = instruction->get_first_operand();
+        std::string r2 = instruction->get_second_operand();
+
+        value += instruction_codes[type] +
+                register_codes[r1] + register_codes[r2] + // registers byte
+                get_addressing_byte_value(instruction); // addressing byte
+    }
+    
+    return value;
+}
+
+std::string Assembly::get_symbol_value_or_relocate(std::string symbol, Addressing_type addr_type, Label_type label_type)
+{
+    Symbol_table_entry* entry = symbol_table.find_symbol(symbol);
+    std::string operand_value = std::bitset<16>(0).to_string();
+    if (entry == nullptr)
+    {
+        entry = new Symbol_table_entry();
+        entry->label = symbol;
+        entry->fref.emplace_back(current_section->get_section_location_counter());
+        entry->defined = false;
+
+        symbol_table.add_symbol_table_entry(entry);
+    }
+
+    if (current_section->get_section_name() == entry->section && entry->defined)
+    {
+        if (entry->defined)
+        {
+            int offset = entry->offset;
+            int size = entry->size;
+            operand_value = current_section->read_section_data(offset, size);
+        }
+        else
+        {
+            entry->fref.emplace_back(current_section->get_section_location_counter());
+        }
+    }
+    else
+    {
+        Relocation_entry* relocation = new Relocation_entry();
+        relocation->offset = current_section->get_section_location_counter();
+        relocation->section = current_section->get_section_name();
+        relocation->ord_number = symbol_table.get_symbol_ord_number(symbol);
+        relocation->type = Relocation_type::R_PC_RELATIVE;
+
+        relocation_table.add_new_relocation(relocation);
+    }            
+   
+    return operand_value;
+}
+
+std::string Assembly::get_payload_byte_value(Instruction* instruction)
+{
+    Addressing_type addr_type = instruction->get_addressing_type();
+    Label_type labl_type = instruction->get_second_operand_type();
+    std::string op2 = instruction->get_second_operand();
+    std::string value = "";
+
+    if (addr_type == Addressing_type::ABSOLUTE || addr_type == Addressing_type::MEMORY || addr_type == Addressing_type::PC_RELATIVE)
+    {
+        if (labl_type == LITERAL)
+        {
+            value += std::bitset<16>(std::stoi(op2)).to_string();
+        }
+        else if (labl_type == SYMBOL)
+        {
+            value += get_symbol_value_or_relocate(op2, addr_type, labl_type);
         }
 
         return value;
     }
 
-    //value += 
+    if (addr_type == Addressing_type::LITERAL_OFFSET)
+    {
+        value += std::bitset<16>(std::stoi(op2)).to_string();
+        return value;
+    }
 
-    return "";
+    // Addressing_type::SYMBOL_OFFSET
+
+    value = get_symbol_value_or_relocate(op2, addr_type, instruction->get_second_operand_type());
+
+    return value;
 }
 

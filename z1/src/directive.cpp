@@ -9,6 +9,11 @@ std::map<Directive_type, std::string> Directive::directive_map = {
                     {Directive_type::END , ".end"}
                 };
 
+Directive::Directive()
+{
+
+}
+
 void Directive::set_type(Directive_type type)
 {
     this->type = type;
@@ -53,4 +58,9 @@ void Directive::print() const
         std::cout << operands[i] << " ";
     }
     std::cout << "\n";
+}
+
+Directive::~Directive()
+{
+    
 }

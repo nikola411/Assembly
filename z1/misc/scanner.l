@@ -42,6 +42,7 @@ blank [ \t\r]
 .section return yy::parser::make_SECTION(loc);
 .word    return yy::parser::make_WORD   (loc);
 .skip    return yy::parser::make_SKIP   (loc);
+.ascii   return yy::parser::make_ASCII  (loc);
 .equ     return yy::parser::make_EQU    (loc);
 .end     return yy::parser::make_END    (loc);
 

@@ -74,4 +74,23 @@ enum Section_type
 //     {Directive_type::END , ".end"}
 // };
 
+enum Relocation_type
+{
+    R_ABSOLUTE, R_PC_RELATIVE
+};
+
+struct Relocation_entry
+{
+    int offset;
+    std::string section;
+    int ord_number;
+    Relocation_type type;
+};
+
+struct Section_entry
+{
+    int offset;
+    std::vector<char> data;
+};
+
 #endif
