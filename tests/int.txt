@@ -1,0 +1,10 @@
+.section .text
+
+jmp sm 
+.word 12
+.word 1
+
+sm:
+.word 1
+.word 12
+.end
