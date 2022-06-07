@@ -264,12 +264,16 @@ jump_operand:
     {
         $$ = new Jump();
         $$ -> set_operand ($3, Addressing_type::LITERAL_OFFSET, Label_type::REGISTER);
+        $$ -> set_offset($5);
+        $$ -> set_offset_type(Label_type::LITERAL);
         $$ -> set_offset ($5);
     }        
     | STAR LBRACKET REGISTER PLUS SYMBOL RBRACKET
     {
         $$ = new Jump();
         $$ -> set_operand ($3, Addressing_type::SYMBOL_OFFSET, Label_type::REGISTER);
+        $$ -> set_offset($5);
+        $$ -> set_offset_type(Label_type::SYMBOL);
         $$ -> set_offset ($5);
     }
     ;   

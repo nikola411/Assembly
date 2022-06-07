@@ -29,12 +29,42 @@ void Jump::set_operand(std::string value, Addressing_type addr_type, Label_type 
 {
     this->operand = value;
     this->addressing_type = addr_type;
-    this->label_type = label_type;
+    this->operand_type = label_type;
 }
 
 void Jump::set_offset(std::string offset_value)
 {
     this->offset_value = offset_value;
+}
+
+void Jump::set_offset_type(Label_type offset_type)
+{
+    this->offset_type = offset_type;
+}
+
+Jump_type Jump::get_type() const
+{
+    return this->type;
+}
+
+std::string Jump::get_operand_value() const
+{
+    return this->operand;
+}
+
+Addressing_type Jump::get_addressing_type() const
+{
+    return this->addressing_type;
+}
+
+Label_type Jump::get_operand_type() const
+{
+    return this->operand_type;
+}
+
+std::string Jump::get_offset_value() const
+{
+    return this->offset_value;
 }
 
 void Jump::print() const

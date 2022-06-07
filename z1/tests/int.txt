@@ -1,11 +1,10 @@
 .section .text
-.skip 10
-labela:
-.word 1122
-asdela:
-.extern sum1, sum2
-.section .data
-.skip 12
-ldr r1, sym
 
+jmp sm 
+.word 12
+.word 1
+
+sm:
+.word 1
+.word 12
 .end

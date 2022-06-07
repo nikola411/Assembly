@@ -1008,56 +1008,60 @@ namespace yy {
     {
         yylhs.value.as < Jump* > () = new Jump();
         yylhs.value.as < Jump* > () -> set_operand (yystack_[3].value.as < string > (), Addressing_type::LITERAL_OFFSET, Label_type::REGISTER);
+        yylhs.value.as < Jump* > () -> set_offset(yystack_[1].value.as < string > ());
+        yylhs.value.as < Jump* > () -> set_offset_type(Label_type::LITERAL);
         yylhs.value.as < Jump* > () -> set_offset (yystack_[1].value.as < string > ());
     }
-#line 1014 "./misc/parser/parser.cpp"
+#line 1016 "./misc/parser/parser.cpp"
     break;
 
   case 36:
-#line 270 "./misc/parser.yy"
+#line 272 "./misc/parser.yy"
     {
         yylhs.value.as < Jump* > () = new Jump();
         yylhs.value.as < Jump* > () -> set_operand (yystack_[3].value.as < string > (), Addressing_type::SYMBOL_OFFSET, Label_type::REGISTER);
+        yylhs.value.as < Jump* > () -> set_offset(yystack_[1].value.as < string > ());
+        yylhs.value.as < Jump* > () -> set_offset_type(Label_type::SYMBOL);
         yylhs.value.as < Jump* > () -> set_offset (yystack_[1].value.as < string > ());
     }
-#line 1024 "./misc/parser/parser.cpp"
+#line 1028 "./misc/parser/parser.cpp"
     break;
 
   case 37:
-#line 278 "./misc/parser.yy"
+#line 282 "./misc/parser.yy"
                              { yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > (); }
-#line 1030 "./misc/parser/parser.cpp"
+#line 1034 "./misc/parser/parser.cpp"
     break;
 
   case 38:
-#line 279 "./misc/parser.yy"
+#line 283 "./misc/parser.yy"
                                { yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > (); }
-#line 1036 "./misc/parser/parser.cpp"
+#line 1040 "./misc/parser/parser.cpp"
     break;
 
   case 39:
-#line 280 "./misc/parser.yy"
+#line 284 "./misc/parser.yy"
                                 { yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > (); }
-#line 1042 "./misc/parser/parser.cpp"
+#line 1046 "./misc/parser/parser.cpp"
     break;
 
   case 40:
-#line 284 "./misc/parser.yy"
+#line 288 "./misc/parser.yy"
                             { yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > (); }
-#line 1048 "./misc/parser/parser.cpp"
+#line 1052 "./misc/parser/parser.cpp"
     break;
 
   case 41:
-#line 286 "./misc/parser.yy"
+#line 290 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction(yystack_[3].value.as < Instruction_type > (), yystack_[2].value.as < string > (), yystack_[0].value.as < string > ());
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1057 "./misc/parser/parser.cpp"
+#line 1061 "./misc/parser/parser.cpp"
     break;
 
   case 42:
-#line 295 "./misc/parser.yy"
+#line 299 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > ();
         yylhs.value.as < Instruction* > () -> set_instruction_type(yystack_[3].value.as < Instruction_type > ());
@@ -1065,260 +1069,260 @@ namespace yy {
         yylhs.value.as < Instruction* > () -> set_number_of_operands(2);
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1069 "./misc/parser/parser.cpp"
+#line 1073 "./misc/parser/parser.cpp"
     break;
 
   case 43:
-#line 306 "./misc/parser.yy"
+#line 310 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[0].value.as < string > (), Label_type::LITERAL);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::ABSOLUTE);
     }
-#line 1079 "./misc/parser/parser.cpp"
+#line 1083 "./misc/parser/parser.cpp"
     break;
 
   case 44:
-#line 312 "./misc/parser.yy"
+#line 316 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[0].value.as < string > (), Label_type::SYMBOL);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::ABSOLUTE);
     }
-#line 1089 "./misc/parser/parser.cpp"
+#line 1093 "./misc/parser/parser.cpp"
     break;
 
   case 45:
-#line 318 "./misc/parser.yy"
+#line 322 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[0].value.as < string > (), Label_type::SYMBOL);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::PC_RELATIVE);
     }
-#line 1099 "./misc/parser/parser.cpp"
+#line 1103 "./misc/parser/parser.cpp"
     break;
 
   case 46:
-#line 324 "./misc/parser.yy"
+#line 328 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[0].value.as < string > (), Label_type::LITERAL);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::MEMORY);
     }
-#line 1109 "./misc/parser/parser.cpp"
+#line 1113 "./misc/parser/parser.cpp"
     break;
 
   case 47:
-#line 330 "./misc/parser.yy"
+#line 334 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[0].value.as < string > (), Label_type::SYMBOL);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::MEMORY);
     }
-#line 1119 "./misc/parser/parser.cpp"
+#line 1123 "./misc/parser/parser.cpp"
     break;
 
   case 48:
-#line 336 "./misc/parser.yy"
+#line 340 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[0].value.as < string > (), Label_type::REGISTER);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::ABSOLUTE);
     }
-#line 1129 "./misc/parser/parser.cpp"
+#line 1133 "./misc/parser/parser.cpp"
     break;
 
   case 49:
-#line 342 "./misc/parser.yy"
+#line 346 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[1].value.as < string > (), Label_type::REGISTER);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::MEMORY);
     }
-#line 1139 "./misc/parser/parser.cpp"
+#line 1143 "./misc/parser/parser.cpp"
     break;
 
   case 50:
-#line 348 "./misc/parser.yy"
+#line 352 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[3].value.as < string > (), Label_type::REGISTER);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::LITERAL_OFFSET);
         yylhs.value.as < Instruction* > () -> set_offset(yystack_[1].value.as < string > (), Label_type::LITERAL);
     }
-#line 1150 "./misc/parser/parser.cpp"
+#line 1154 "./misc/parser/parser.cpp"
     break;
 
   case 51:
-#line 355 "./misc/parser.yy"
+#line 359 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction();
         yylhs.value.as < Instruction* > () -> set_second_operand(yystack_[3].value.as < string > (), Label_type::REGISTER);
         yylhs.value.as < Instruction* > () -> set_addressing_type(Addressing_type::SYMBOL_OFFSET);
         yylhs.value.as < Instruction* > () -> set_offset(yystack_[1].value.as < string > (), Label_type::SYMBOL);
     }
-#line 1161 "./misc/parser/parser.cpp"
+#line 1165 "./misc/parser/parser.cpp"
     break;
 
   case 52:
-#line 364 "./misc/parser.yy"
+#line 368 "./misc/parser.yy"
         { yylhs.value.as < Instruction_type > () = Instruction_type::LDR; }
-#line 1167 "./misc/parser/parser.cpp"
+#line 1171 "./misc/parser/parser.cpp"
     break;
 
   case 53:
-#line 365 "./misc/parser.yy"
+#line 369 "./misc/parser.yy"
           { yylhs.value.as < Instruction_type > () = Instruction_type::STR; }
-#line 1173 "./misc/parser/parser.cpp"
+#line 1177 "./misc/parser/parser.cpp"
     break;
 
   case 54:
-#line 369 "./misc/parser.yy"
+#line 373 "./misc/parser.yy"
         { yylhs.value.as < Instruction_type > () = Instruction_type::SHL; }
-#line 1179 "./misc/parser/parser.cpp"
+#line 1183 "./misc/parser/parser.cpp"
     break;
 
   case 55:
-#line 370 "./misc/parser.yy"
+#line 374 "./misc/parser.yy"
           { yylhs.value.as < Instruction_type > () = Instruction_type::SHR; }
-#line 1185 "./misc/parser/parser.cpp"
+#line 1189 "./misc/parser/parser.cpp"
     break;
 
   case 56:
-#line 371 "./misc/parser.yy"
+#line 375 "./misc/parser.yy"
            { yylhs.value.as < Instruction_type > () = Instruction_type::TEST; }
-#line 1191 "./misc/parser/parser.cpp"
+#line 1195 "./misc/parser/parser.cpp"
     break;
 
   case 57:
-#line 372 "./misc/parser.yy"
+#line 376 "./misc/parser.yy"
           { yylhs.value.as < Instruction_type > () = Instruction_type::XOR; }
-#line 1197 "./misc/parser/parser.cpp"
+#line 1201 "./misc/parser/parser.cpp"
     break;
 
   case 58:
-#line 373 "./misc/parser.yy"
+#line 377 "./misc/parser.yy"
          { yylhs.value.as < Instruction_type > () = Instruction_type::OR; }
-#line 1203 "./misc/parser/parser.cpp"
+#line 1207 "./misc/parser/parser.cpp"
     break;
 
   case 59:
-#line 374 "./misc/parser.yy"
+#line 378 "./misc/parser.yy"
           { yylhs.value.as < Instruction_type > () = Instruction_type::AND; }
-#line 1209 "./misc/parser/parser.cpp"
+#line 1213 "./misc/parser/parser.cpp"
     break;
 
   case 60:
-#line 375 "./misc/parser.yy"
+#line 379 "./misc/parser.yy"
           { yylhs.value.as < Instruction_type > () = Instruction_type::CMP; }
-#line 1215 "./misc/parser/parser.cpp"
+#line 1219 "./misc/parser/parser.cpp"
     break;
 
   case 61:
-#line 376 "./misc/parser.yy"
+#line 380 "./misc/parser.yy"
           { yylhs.value.as < Instruction_type > () = Instruction_type::DIV; }
-#line 1221 "./misc/parser/parser.cpp"
+#line 1225 "./misc/parser/parser.cpp"
     break;
 
   case 62:
-#line 377 "./misc/parser.yy"
+#line 381 "./misc/parser.yy"
           { yylhs.value.as < Instruction_type > () = Instruction_type::MUL; }
-#line 1227 "./misc/parser/parser.cpp"
+#line 1231 "./misc/parser/parser.cpp"
     break;
 
   case 63:
-#line 378 "./misc/parser.yy"
+#line 382 "./misc/parser.yy"
           { yylhs.value.as < Instruction_type > () = Instruction_type::SUB; }
-#line 1233 "./misc/parser/parser.cpp"
+#line 1237 "./misc/parser/parser.cpp"
     break;
 
   case 64:
-#line 379 "./misc/parser.yy"
+#line 383 "./misc/parser.yy"
           { yylhs.value.as < Instruction_type > () = Instruction_type::ADD; }
-#line 1239 "./misc/parser/parser.cpp"
+#line 1243 "./misc/parser/parser.cpp"
     break;
 
   case 65:
-#line 380 "./misc/parser.yy"
+#line 384 "./misc/parser.yy"
            { yylhs.value.as < Instruction_type > () = Instruction_type::XCHG; }
-#line 1245 "./misc/parser/parser.cpp"
+#line 1249 "./misc/parser/parser.cpp"
     break;
 
   case 66:
-#line 385 "./misc/parser.yy"
+#line 389 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::POP, yystack_[0].value.as < string > ()); 
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1254 "./misc/parser/parser.cpp"
+#line 1258 "./misc/parser/parser.cpp"
     break;
 
   case 67:
-#line 390 "./misc/parser.yy"
+#line 394 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::PUSH, yystack_[0].value.as < string > ()); 
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1263 "./misc/parser/parser.cpp"
+#line 1267 "./misc/parser/parser.cpp"
     break;
 
   case 68:
-#line 395 "./misc/parser.yy"
+#line 399 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::NOT, yystack_[0].value.as < string > ()); 
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1272 "./misc/parser/parser.cpp"
+#line 1276 "./misc/parser/parser.cpp"
     break;
 
   case 69:
-#line 400 "./misc/parser.yy"
+#line 404 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::INT, yystack_[0].value.as < string > ()); 
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1281 "./misc/parser/parser.cpp"
+#line 1285 "./misc/parser/parser.cpp"
     break;
 
   case 70:
-#line 405 "./misc/parser.yy"
+#line 409 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = yystack_[0].value.as < Instruction* > ();
         yylhs.value.as < Instruction* > () -> set_instruction_type(Instruction_type::CALL);
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1291 "./misc/parser/parser.cpp"
+#line 1295 "./misc/parser/parser.cpp"
     break;
 
   case 71:
-#line 414 "./misc/parser.yy"
+#line 418 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::RET);
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1300 "./misc/parser/parser.cpp"
+#line 1304 "./misc/parser/parser.cpp"
     break;
 
   case 72:
-#line 419 "./misc/parser.yy"
+#line 423 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::IRET);
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1309 "./misc/parser/parser.cpp"
+#line 1313 "./misc/parser/parser.cpp"
     break;
 
   case 73:
-#line 424 "./misc/parser.yy"
+#line 428 "./misc/parser.yy"
     {
         yylhs.value.as < Instruction* > () = new Instruction(Instruction_type::HALT);
         assembly.add_new_line(yylhs.value.as < Instruction* > ());
     }
-#line 1318 "./misc/parser/parser.cpp"
+#line 1322 "./misc/parser/parser.cpp"
     break;
 
 
-#line 1322 "./misc/parser/parser.cpp"
+#line 1326 "./misc/parser/parser.cpp"
 
             default:
               break;
@@ -1887,11 +1891,11 @@ namespace yy {
        0,   105,   105,   106,   107,   111,   112,   113,   114,   118,
      125,   132,   139,   145,   152,   159,   166,   170,   177,   178,
      182,   187,   192,   197,   205,   210,   215,   220,   228,   233,
-     238,   243,   248,   253,   258,   263,   269,   278,   279,   280,
-     284,   285,   294,   305,   311,   317,   323,   329,   335,   341,
-     347,   354,   364,   365,   369,   370,   371,   372,   373,   374,
-     375,   376,   377,   378,   379,   380,   384,   389,   394,   399,
-     404,   413,   418,   423
+     238,   243,   248,   253,   258,   263,   271,   282,   283,   284,
+     288,   289,   298,   309,   315,   321,   327,   333,   339,   345,
+     351,   358,   368,   369,   373,   374,   375,   376,   377,   378,
+     379,   380,   381,   382,   383,   384,   388,   393,   398,   403,
+     408,   417,   422,   427
   };
 
   // Print the state stack on the debug stream.
@@ -1925,9 +1929,9 @@ namespace yy {
 
 
 } // yy
-#line 1929 "./misc/parser/parser.cpp"
+#line 1933 "./misc/parser/parser.cpp"
 
-#line 430 "./misc/parser.yy"
+#line 434 "./misc/parser.yy"
 
 
 void yy::parser::error (const location_type& l, const std::string& m)

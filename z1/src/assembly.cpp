@@ -15,7 +15,7 @@ std::map<Instruction_type, std::string> Assembly::instruction_codes
     { ADD, "01110000" },
     { SUB, "01110001" },
     { MUL, "01110010" },
-    { DIV, "01110011" }, 
+    { DIV, "01110011" },
     { CMP, "01110100" },
     { NOT, "10000000" },
     { AND, "10000001" },
@@ -77,7 +77,7 @@ void Assembly::add_new_line(Line* line)
 
     if (typeid(*lines.back()) == jump_type)
     {
-        //handle_jump((Jump*)line);
+        handle_jump((Jump*)line);
     }
     else if (typeid(*lines.back()) == instruction_type)
     {
@@ -93,7 +93,7 @@ void Assembly::finish_parsing()
 {
     // Backpatching here
 
-    
+
 
     // write to output.o
 }
@@ -101,10 +101,13 @@ void Assembly::finish_parsing()
 void Assembly::print()
 {
     symbol_table.print();
+    std::cout << "\n";
     for (int i = 0; i < sections.size(); i++)
     {
         sections[i]->print();
     }
+
+    std::cout << "\n";
 
     relocation_table.print();
 }
@@ -125,7 +128,94 @@ Assembly::~Assembly()
 
 void Assembly::handle_jump(Jump* jump)
 {
+    std::string value = jump_codes[jump->get_type()];
+    std::string operand = jump->get_operand_value();
+    Label_type operand_type = jump->get_operand_type();
+    bool is_register = false;
 
+    // Filling register bytes
+    value += "1111";
+    if (operand_type == Label_type::REGISTER)
+    {
+        value += register_codes[jump->get_operand_value()];
+        is_register = true;
+    }
+    else
+    {
+        value += "1111";
+    }
+
+    // Filling addressing bytes
+    Addressing_type addr_type = jump->get_addressing_type();
+    value += "0000"; // dummy padding, should have a meaningful value
+    if (is_register)
+    {
+        if (addr_type == Addressing_type::LITERAL_OFFSET)
+        {
+            value += addressing_codes["REGISTER_OFFSET"];
+        }
+        else if (addr_type == Addressing_type::SYMBOL_OFFSET)
+        {
+            value += addressing_codes["REGISTER_OFFSET"];
+        }
+        else if (addr_type == Addressing_type::MEMORY)
+        {
+            value += addressing_codes["REGISTER_INDIRECT"];
+        }
+        else if (addr_type == Addressing_type::PC_RELATIVE)
+        {
+            value += addressing_codes["REGISTER_OFFSET"];
+        }
+        else // REGISTER DIRECT
+        {
+            value += addressing_codes["REGISTER_DIRECT"];
+        }
+    }
+    else
+    {
+        if (addr_type == ABSOLUTE)
+        {
+            value += addressing_codes["IMMEDIATE"];
+        }
+        else
+        {
+            value += "0100";
+        }
+    }
+
+    // Filling payload bytes
+    std::string offset = jump->get_offset_value();
+    std::string to_convert = "";
+    if (addr_type == Addressing_type::LITERAL_OFFSET || operand_type == Label_type::LITERAL)
+    {
+        if (addr_type == Addressing_type::LITERAL_OFFSET)
+        {
+            to_convert = offset;
+        }
+        else
+        {
+            to_convert = operand;
+        }
+        
+        value += std::bitset<16>(std::stoi(to_convert)).to_string();
+    }
+    else if (addr_type == Addressing_type::SYMBOL_OFFSET || operand_type == Label_type::SYMBOL)
+    {
+        if (operand_type == Label_type::SYMBOL)
+        {
+            to_convert = operand;
+        }
+        else // addr_type == Addressing_type::SYMBOL_OFFSET
+        {
+            to_convert = offset;
+        }
+
+        value += get_symbol_value_or_relocate(to_convert, addr_type, Label_type::SYMBOL);
+    }
+    
+
+    //Adding value to section
+    current_section->add_section_data(value);
 }
 
 void Assembly::handle_directive(Directive* directive)
@@ -250,14 +340,14 @@ void Assembly::handle_directive(Directive* directive)
                 if (types[i] == Label_type::LITERAL)
                 {
                     current_section->add_section_data(std::bitset<16>(stoi(args[i])).to_string());
-                    current_section->inc_section_location_counter(2);
+                    //current_section->inc_section_location_counter(2);
                 }
                 else if (types[i] == Label_type::SYMBOL)
                 {
                     // If we know the value of the symbol, we write it to the section data
                     std::string value = get_symbol_value_or_relocate(args[i], ABSOLUTE, SYMBOL);
                     current_section->add_section_data(value);
-                    current_section->inc_section_location_counter(2);
+                    //current_section->inc_section_location_counter(2);
                 }
                 else
                 {
@@ -270,15 +360,28 @@ void Assembly::handle_directive(Directive* directive)
         } 
         case Directive_type::LABEL:
         {
-            Symbol_table_entry* entry = new Symbol_table_entry();
-            entry->binding = "LOCAL";
-            entry->label = directive->get_operands()[0];
-            entry->section = current_section->get_section_name();
-            entry->offset = current_section->get_section_location_counter();
-            entry->defined = true;
-            entry->size = 2;
-            
-            symbol_table.add_symbol_table_entry(entry);
+            std::string label = directive->get_operands()[0];
+            Symbol_table_entry* entry = this->symbol_table.find_symbol(label);
+
+            if (entry == nullptr)
+            {
+                entry->binding = "LOCAL";
+                entry->label = label;
+                entry->section = current_section->get_section_name();
+                entry->offset = current_section->get_section_location_counter();
+                entry->defined = true;
+                entry->size = 2;
+                symbol_table.add_symbol_table_entry(entry);
+            }
+            else
+            {    
+                entry->binding = "LOCAL";
+                entry->offset = current_section->get_section_location_counter();
+                entry->section = current_section->get_section_name();
+                entry->size = 2;
+                entry->defined = true;
+            }
+           
             break;
         }
         case Directive_type::END:
