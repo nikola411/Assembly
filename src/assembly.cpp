@@ -95,8 +95,6 @@ void Assembly::finish_parsing()
 
     backpatch();
 
-
-
     // write to output.o
 }
 
@@ -134,88 +132,27 @@ void Assembly::handle_jump(Jump* jump)
     std::string operand = jump->get_operand_value();
     Label_type operand_type = jump->get_operand_type();
     bool is_register = false;
-
+    
     // Filling register bytes
     value += "1111";
     if (operand_type == Label_type::REGISTER)
     {
+        
         value += register_codes[jump->get_operand_value()];
         is_register = true;
     }
     else
     {
+        
         value += "1111";
     }
-
+    
     // Filling addressing bytes
     Addressing_type addr_type = jump->get_addressing_type();
-    value += "0000"; // dummy padding, should have a meaningful value
-    if (is_register)
-    {
-        if (addr_type == Addressing_type::LITERAL_OFFSET)
-        {
-            value += addressing_codes["REGISTER_OFFSET"];
-        }
-        else if (addr_type == Addressing_type::SYMBOL_OFFSET)
-        {
-            value += addressing_codes["REGISTER_OFFSET"];
-        }
-        else if (addr_type == Addressing_type::MEMORY)
-        {
-            value += addressing_codes["REGISTER_INDIRECT"];
-        }
-        else if (addr_type == Addressing_type::PC_RELATIVE)
-        {
-            value += addressing_codes["REGISTER_OFFSET"];
-        }
-        else // REGISTER DIRECT
-        {
-            value += addressing_codes["REGISTER_DIRECT"];
-        }
-    }
-    else
-    {
-        if (addr_type == ABSOLUTE)
-        {
-            value += addressing_codes["IMMEDIATE"];
-        }
-        else
-        {
-            value += "0100";
-        }
-    }
+    value += get_addressing_byte_value(addr_type, jump->get_operand_type());
 
     // Filling payload bytes
-    std::string offset = jump->get_offset_value();
-    std::string to_convert = "";
-    if (addr_type == Addressing_type::LITERAL_OFFSET || operand_type == Label_type::LITERAL)
-    {
-        if (addr_type == Addressing_type::LITERAL_OFFSET)
-        {
-            to_convert = offset;
-        }
-        else
-        {
-            to_convert = operand;
-        }
-        
-        value += std::bitset<16>(std::stoi(to_convert)).to_string();
-    }
-    else if (addr_type == Addressing_type::SYMBOL_OFFSET || operand_type == Label_type::SYMBOL)
-    {
-        if (operand_type == Label_type::SYMBOL)
-        {
-            to_convert = operand;
-        }
-        else // addr_type == Addressing_type::SYMBOL_OFFSET
-        {
-            to_convert = offset;
-        }
-        std::cout << "Getting value of symbol " << to_convert << " \n";
-        value += get_symbol_value_or_relocate(to_convert);
-    }
-    
-
+    value += get_payload_byte_value(jump->get_operand_value(), jump->get_operand_type(), addr_type, jump->get_offset_value(), jump->get_offset_type());
     //Adding value to section
     current_section->add_section_data(value);
 }
@@ -373,9 +310,10 @@ void Assembly::handle_directive(Directive* directive)
         {
             std::string label = directive->get_operands()[0];
             Symbol_table_entry* entry = this->symbol_table.find_symbol(label);
-
+            
             if (entry == nullptr)
             {
+                entry = new Symbol_table_entry();
                 entry->binding = "LOCAL";
                 entry->label = label;
                 entry->section = current_section->get_section_name();
@@ -386,30 +324,33 @@ void Assembly::handle_directive(Directive* directive)
             }
             else
             {
+                
                 if (entry->section != current_section->get_section_name())
                 {
                     while (entry->fref.size() > 0)
                     {
+                        
                         Relocation_entry* relocation = new Relocation_entry();
                         std::string relocation_section = entry->section;
                         int reloc_offset = entry->fref.back();
                         entry->fref.pop_back();
-
+                        
                         relocation->type = Relocation_type::R_PC_RELATIVE;
                         relocation->offset = reloc_offset;
                         relocation->section = relocation_section;
                         relocation->ord_number = symbol_table.get_symbol_ord_number(entry->label);
-
+                        
                         relocation_table.add_new_relocation(relocation);
                     }
                 }
-
+                
                 entry->binding = "LOCAL";
                 entry->offset = current_section->get_section_location_counter();
                 entry->section = current_section->get_section_name();
                 entry->size = 2;
                 entry->defined = true;              
             }
+            
            
             break;
         }
@@ -445,41 +386,45 @@ bool Assembly::does_section_exists(std::string section) const
     return false;
 }
 // this method will not return only addressing byte but also if needed the payload bytes
-std::string Assembly::get_addressing_byte_value(Instruction* instruction) const
+std::string Assembly::get_addressing_byte_value(Addressing_type addr_type, Label_type label_type) const
 {
-    Addressing_type addr_type = instruction->get_addressing_type();
-    std::string addr_byte = "0000";
-    switch (addr_type)
+    std::string value = "0000"; // dummy padding, should have a meaningful value
+    if (label_type == Label_type::REGISTER)
     {
-        case SYMBOL_OFFSET :
+        if (addr_type == Addressing_type::LITERAL_OFFSET)
         {
-            addr_byte += "0011";
-            break;
+            value += addressing_codes["REGISTER_OFFSET"];
         }
-        case LITERAL_OFFSET :
+        else if (addr_type == Addressing_type::SYMBOL_OFFSET)
         {
-            addr_byte += "0011";
-            break;
+            value += addressing_codes["REGISTER_OFFSET"];
         }
-        case MEMORY :
+        else if (addr_type == Addressing_type::MEMORY)
         {
-            addr_byte += "0100";
-            break;
+            value += addressing_codes["REGISTER_INDIRECT"];
         }
-        case ABSOLUTE :
+        else if (addr_type == Addressing_type::PC_RELATIVE)
         {
-            addr_byte += "0000";
-            break;
+            value += addressing_codes["REGISTER_OFFSET"];
         }
-        case PC_RELATIVE :
+        else // REGISTER DIRECT
         {
-            addr_byte += "0100";
-            break;
+            value += addressing_codes["REGISTER_DIRECT"];
         }
-        default: break;
+    }
+    else
+    {
+        if (addr_type == ABSOLUTE)
+        {
+            value += addressing_codes["IMMEDIATE"];
+        }
+        else
+        {
+            value += "0100";
+        }
     }
 
-    return addr_byte;
+    return value;
 }
 
 std::string Assembly::get_instruction_value(Instruction* instruction)
@@ -519,8 +464,8 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
                 value += "111111111";
             }
 
-            value += get_addressing_byte_value(instruction);
-            value += get_payload_byte_value(instruction);
+            value += get_addressing_byte_value(instruction->get_addressing_type(), type);
+            value += get_payload_byte_value(operand, type, instruction->get_addressing_type(), instruction->get_offset(), instruction->get_offset_type());
 
             return value;
         }
@@ -528,7 +473,7 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
         {
             operand = instruction->get_first_operand();
             value += register_codes[operand] + "0000";
-            value += get_addressing_byte_value(instruction);
+            value += get_addressing_byte_value(instruction->get_addressing_type(), Label_type::REGISTER);
         }
 
         return value;
@@ -554,8 +499,8 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
             value += "1111";
         }
 
-        value += get_addressing_byte_value(instruction);
-        value += get_payload_byte_value(instruction);
+        value += get_addressing_byte_value(instruction->get_addressing_type(), sec_op_type);
+        value += get_payload_byte_value(op2, sec_op_type, instruction->get_addressing_type(), instruction->get_offset(), instruction->get_offset_type());
         // second operand type is symbol so we need to see about that
     }
     else
@@ -565,7 +510,7 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
 
         value += instruction_codes[type] +
                 register_codes[r1] + register_codes[r2] + // registers byte
-                get_addressing_byte_value(instruction); // addressing byte
+                get_addressing_byte_value(instruction->get_addressing_type(), Label_type::REGISTER); // addressing byte
     }
     
     return value;
@@ -575,6 +520,7 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol)
 {
     Symbol_table_entry* entry = symbol_table.find_symbol(symbol);
     std::string operand_value = std::bitset<16>(0).to_string();
+    
     if (entry == nullptr)
     {
         entry = new Symbol_table_entry();
@@ -614,36 +560,38 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol)
     return operand_value;
 }
 
-std::string Assembly::get_payload_byte_value(Instruction* instruction)
+std::string Assembly::get_payload_byte_value(std::string operand, Label_type operand_type, Addressing_type addr_type,
+                                            std::string offset, Label_type offset_type)
 {
-    Addressing_type addr_type = instruction->get_addressing_type();
-    Label_type labl_type = instruction->get_second_operand_type();
-    std::string op2 = instruction->get_second_operand();
     std::string value = "";
+    std::string to_convert;
 
-    if (addr_type == Addressing_type::ABSOLUTE || addr_type == Addressing_type::MEMORY || addr_type == Addressing_type::PC_RELATIVE)
+    if (addr_type == Addressing_type::LITERAL_OFFSET || operand_type == Label_type::LITERAL)
     {
-        if (labl_type == LITERAL)
+        if (addr_type == Addressing_type::LITERAL_OFFSET)
         {
-            value += std::bitset<16>(std::stoi(op2)).to_string();
+            to_convert = offset;
         }
-        else if (labl_type == SYMBOL)
+        else
         {
-            value += get_symbol_value_or_relocate(op2);
+            to_convert = operand;
         }
-
-        return value;
+        
+        value += std::bitset<16>(std::stoi(to_convert)).to_string();
     }
-
-    if (addr_type == Addressing_type::LITERAL_OFFSET)
+    else if (addr_type == Addressing_type::SYMBOL_OFFSET || operand_type == Label_type::SYMBOL)
     {
-        value += std::bitset<16>(std::stoi(op2)).to_string();
-        return value;
+        if (operand_type == Label_type::SYMBOL)
+        {
+            to_convert = operand;
+        }
+        else // addr_type == Addressing_type::SYMBOL_OFFSET
+        {
+            to_convert = offset;
+        }
+        std::cout << "Getting value of symbol " << to_convert << " \n";
+        value += get_symbol_value_or_relocate(to_convert);
     }
-
-    // Addressing_type::SYMBOL_OFFSET
-    op2 = instruction->get_offset();
-    value = get_symbol_value_or_relocate(op2);
 
     return value;
 }

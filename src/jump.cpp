@@ -67,6 +67,11 @@ std::string Jump::get_offset_value() const
     return this->offset_value;
 }
 
+Label_type Jump::get_offset_type() const
+{
+    return this->offset_type;
+}
+
 void Jump::print() const
 {
     std::cout << jump_table[type] << " " << operand << 

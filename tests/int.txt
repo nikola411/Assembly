@@ -1,18 +1,8 @@
 .section .text
-.extern asdf, ass
 
-jmp *[r1 + label4]
-str r3, lb22
-str r2, label2
-str r3, [r2 + label3]
-jgt label1
+lab:
+.word 1111
 
-label1:
-.word 65535
-.word 65535
-.skip 4
-.word 65535
-
-
+jmp lab
 
 .end

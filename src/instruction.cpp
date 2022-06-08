@@ -103,6 +103,11 @@ std::string Instruction::get_offset() const
     return this->offset;
 }
 
+Label_type Instruction::get_offset_type() const
+{
+    return this->offset_type;
+}
+
 int Instruction::get_number_of_operands() const
 {
     return this->number_of_operands;

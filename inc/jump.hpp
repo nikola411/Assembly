@@ -23,6 +23,7 @@ public:
     Addressing_type get_addressing_type() const;
     Label_type get_operand_type() const;
     std::string get_offset_value() const;
+    Label_type get_offset_type() const;
 
     void print() const;
     ~Jump();
