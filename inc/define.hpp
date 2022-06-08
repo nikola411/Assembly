@@ -90,7 +90,7 @@ struct Relocation_entry
 struct Section_entry
 {
     int offset;
-    std::vector<char> data;
+    int size;
 };
 
 #endif

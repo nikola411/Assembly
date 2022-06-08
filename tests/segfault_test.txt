@@ -1,0 +1,8 @@
+.section .text
+.extern asdf, ass
+
+jmp *[r1 + label4]
+label1:
+.word 1
+
+.end

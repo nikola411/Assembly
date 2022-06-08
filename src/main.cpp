@@ -11,8 +11,8 @@ using std::string;
 
 int main(int argc, char* argv[])
 {
-    // PARSE ARGUMENTS
-    //std::cout << "Parsing arguments.\n";
+    //PARSE ARGUMENTS
+    std::cout << "Parsing arguments.\n";
     if (argc > 5 || argc < 4)
     {
         std::cout << "FATAL! Wrong number of arguments! \n";
@@ -30,14 +30,13 @@ int main(int argc, char* argv[])
     }
 
     std::cout << "Debug enabled: " << debug << "\n";
-    
     if (flag != "-o")
     {
         std::cout << "FATAL! No output flag specified! \n";
     }
-
     std::cout << "Starting to read the input file.\n";
-
+    // FINISH PARSING THE ARGUMENTS
+    // START ASSEMBLY
     Assembly* assembly = new Assembly();
     Driver driver(debug, assembly);
     driver.parse(input_file);
@@ -46,18 +45,5 @@ int main(int argc, char* argv[])
 
     delete assembly;
 
-    // MAKE INTERPRETER CLASS
-
-
-    // START PARSING
-
-
-    // CREATE SYMBOL TABLE
-
-    
-    // ASSEMBLER FIRST PASS
-    
-
-    // PRINT SYMBOL TALBE AND SECTIONS
     return 0;
 }

@@ -27,6 +27,7 @@ private:
     int location_counter;
 
     std::vector<Section_entry*> section_data;
+    std::vector<std::string> data;
 };
 
 #endif

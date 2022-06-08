@@ -20,7 +20,6 @@ public:
     void set_offset(std::string, Label_type);
     void set_addressing_type(Addressing_type);
     void set_number_of_operands(int);
-
     void set_instruction_type(Instruction_type);
 
     std::string get_second_operand() const;

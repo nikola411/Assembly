@@ -93,6 +93,8 @@ void Assembly::finish_parsing()
 {
     // Backpatching here
 
+    backpatch();
+
 
 
     // write to output.o
@@ -209,8 +211,8 @@ void Assembly::handle_jump(Jump* jump)
         {
             to_convert = offset;
         }
-
-        value += get_symbol_value_or_relocate(to_convert, addr_type, Label_type::SYMBOL);
+        std::cout << "Getting value of symbol " << to_convert << " \n";
+        value += get_symbol_value_or_relocate(to_convert);
     }
     
 
@@ -303,6 +305,7 @@ void Assembly::handle_directive(Directive* directive)
                 sym = new Symbol_table_entry();
                 sym->binding = "GLOBAL";
                 sym->defined = false;
+                sym->section = current_section->get_section_name();
                 sym->label = operands[i];
 
                 symbol_table.add_symbol_table_entry(sym);
@@ -321,7 +324,17 @@ void Assembly::handle_directive(Directive* directive)
         case Directive_type::SKIP:
         {
             std::string arg = directive->get_operands() [0];
-            current_section->inc_section_location_counter(atoi(arg.c_str()));
+            int bytes_cnt = atoi(arg.c_str());
+            std::string zero = std::bitset<8>(0).to_string();
+
+            std::string to_write = "";
+            for (int i = 0; i < bytes_cnt; i++)
+            {
+                to_write += zero;
+            }
+
+            current_section->add_section_data(to_write);
+           
             break;
         }
         case Directive_type::WORD:
@@ -340,14 +353,12 @@ void Assembly::handle_directive(Directive* directive)
                 if (types[i] == Label_type::LITERAL)
                 {
                     current_section->add_section_data(std::bitset<16>(stoi(args[i])).to_string());
-                    //current_section->inc_section_location_counter(2);
                 }
                 else if (types[i] == Label_type::SYMBOL)
                 {
                     // If we know the value of the symbol, we write it to the section data
-                    std::string value = get_symbol_value_or_relocate(args[i], ABSOLUTE, SYMBOL);
+                    std::string value = get_symbol_value_or_relocate(args[i]);
                     current_section->add_section_data(value);
-                    //current_section->inc_section_location_counter(2);
                 }
                 else
                 {
@@ -374,12 +385,30 @@ void Assembly::handle_directive(Directive* directive)
                 symbol_table.add_symbol_table_entry(entry);
             }
             else
-            {    
+            {
+                if (entry->section != current_section->get_section_name())
+                {
+                    while (entry->fref.size() > 0)
+                    {
+                        Relocation_entry* relocation = new Relocation_entry();
+                        std::string relocation_section = entry->section;
+                        int reloc_offset = entry->fref.back();
+                        entry->fref.pop_back();
+
+                        relocation->type = Relocation_type::R_PC_RELATIVE;
+                        relocation->offset = reloc_offset;
+                        relocation->section = relocation_section;
+                        relocation->ord_number = symbol_table.get_symbol_ord_number(entry->label);
+
+                        relocation_table.add_new_relocation(relocation);
+                    }
+                }
+
                 entry->binding = "LOCAL";
                 entry->offset = current_section->get_section_location_counter();
                 entry->section = current_section->get_section_name();
                 entry->size = 2;
-                entry->defined = true;
+                entry->defined = true;              
             }
            
             break;
@@ -390,7 +419,7 @@ void Assembly::handle_directive(Directive* directive)
             sections.emplace_back(current_section);
             end_occured = true;
             finish_parsing();
-            // Start backpatching
+
             break;
         }
         default: break;
@@ -400,7 +429,6 @@ void Assembly::handle_directive(Directive* directive)
 void Assembly::handle_instruction(Instruction* instruction)
 {
     std::string value = get_instruction_value(instruction);
-
     current_section->add_section_data(value);
 }
 
@@ -543,7 +571,7 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
     return value;
 }
 
-std::string Assembly::get_symbol_value_or_relocate(std::string symbol, Addressing_type addr_type, Label_type label_type)
+std::string Assembly::get_symbol_value_or_relocate(std::string symbol)
 {
     Symbol_table_entry* entry = symbol_table.find_symbol(symbol);
     std::string operand_value = std::bitset<16>(0).to_string();
@@ -551,13 +579,15 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol, Addressin
     {
         entry = new Symbol_table_entry();
         entry->label = symbol;
-        entry->fref.emplace_back(current_section->get_section_location_counter());
+        entry->fref.emplace_back(current_section->get_section_location_counter() + 3);
         entry->defined = false;
+        entry->section = current_section->get_section_name();
 
         symbol_table.add_symbol_table_entry(entry);
+        return operand_value;
     }
 
-    if (current_section->get_section_name() == entry->section && entry->defined)
+    if (current_section->get_section_name() == entry->section)
     {
         if (entry->defined)
         {
@@ -567,7 +597,7 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol, Addressin
         }
         else
         {
-            entry->fref.emplace_back(current_section->get_section_location_counter());
+            entry->fref.emplace_back(current_section->get_section_location_counter() + 3);
         }
     }
     else
@@ -599,7 +629,7 @@ std::string Assembly::get_payload_byte_value(Instruction* instruction)
         }
         else if (labl_type == SYMBOL)
         {
-            value += get_symbol_value_or_relocate(op2, addr_type, labl_type);
+            value += get_symbol_value_or_relocate(op2);
         }
 
         return value;
@@ -612,9 +642,62 @@ std::string Assembly::get_payload_byte_value(Instruction* instruction)
     }
 
     // Addressing_type::SYMBOL_OFFSET
-
-    value = get_symbol_value_or_relocate(op2, addr_type, instruction->get_second_operand_type());
+    op2 = instruction->get_offset();
+    value = get_symbol_value_or_relocate(op2);
 
     return value;
+}
+
+void Assembly::backpatch()
+{
+    std::vector<Symbol_table_entry*> table = symbol_table.get_symbol_table_entry();
+
+    for (int i = 0; i < table.size(); i++)
+    {
+        if (table[i]->defined && table[i]->fref.size() != 0)
+        { // we have some backpatching to do
+            Section* my_section = nullptr;
+            // find the section in which the symbol is
+            for (int j = 0; j < sections.size(); j++)
+            {
+                if (sections[j]->get_section_name() == table[i]->section)
+                {
+                    my_section = sections[j];
+                    break;
+                }   
+            }
+
+            // get symbol value from the section (this can be better, we can keep symbol value in symbol table)
+            std::string value = my_section->read_section_data(table[i]->offset, table[i]->size);
+            // now write symbol value to the seciton where it is needed
+            for (int j = 0; j < table[i]->fref.size(); j++)
+            {
+                int to_write = table[i]->fref[j];
+                my_section->write_section_data(to_write, value);
+            }
+        }
+        else
+        {   // Now look at forward refs, if there are some, create a relocation
+            if (table[i]->fref.size() == 0)
+            {
+                //ERROR
+            }
+
+            while (table[i]->fref.size() > 0)
+            {
+                Relocation_entry* relocation = new Relocation_entry();
+                std::string relocation_section = table[i]->section;
+                int reloc_offset = table[i]->fref.back();
+                table[i]->fref.pop_back();
+
+                relocation->type = Relocation_type::R_PC_RELATIVE;
+                relocation->offset = reloc_offset;
+                relocation->section = relocation_section;
+                relocation->ord_number = symbol_table.get_symbol_ord_number(table[i]->label);
+
+                relocation_table.add_new_relocation(relocation);
+            }
+        }
+    }
 }
 

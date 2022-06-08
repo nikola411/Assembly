@@ -21,18 +21,24 @@ int Section::get_section_location_counter() const
 
 void Section::add_section_data(std::string data)
 {
-    Section_entry* entry = new Section_entry();
-    entry->offset = location_counter;
-    if (data.size() > 0)
+    if (data.size() == 0)
     {
-        for (int i = 0; i < data.size(); i++)
-        {
-            entry->data.emplace_back((char)data[i]);
-        }
+        //ERROR
+        std::cout << "ERROR! Cannot write 0 bytes to the section!\n";
     }
 
-    location_counter += data.size() / 8;
+    Section_entry* entry = new Section_entry();
+    entry->offset = location_counter;
+    entry->size = data.size() / 8;
     section_data.emplace_back(entry);
+
+    for (int i = 0; i < data.size(); i+=8)
+    {
+        std::string to_write = data.substr(i, 8);
+        this->data.emplace_back(to_write);
+    }
+    
+    location_counter += data.size() / 8;
 }
 
 void Section::add_section_data(int data)
@@ -52,38 +58,32 @@ void Section::inc_section_location_counter(int inc)
 
 std::string Section::read_section_data(int offset, int size)
 {
-    int i;
-    Section_entry* to_find = nullptr;
-    for (i = 0; i < section_data.size(); i++)
+    if (offset + size > this->data.size())
     {
-        if (section_data[i]->offset == offset)
-        {
-            to_find = section_data[i];
-            break;
-        }
+        std::cout << "ERROR! Trying to read out of section bounds! \n";
     }
 
-    if (to_find == nullptr)
+    std::string to_read = "";
+    for (int i = 0; i < size; i++)
     {
-        std::cout << "Wrong offset given for reading! \n";
+        to_read += this->data[i + offset];
     }
 
-    std::string data = "";
-
-    for (i = 0; i < to_find->data.size(); i++)
-    {
-        data += to_find->data[i];
-    }
-
-    return data;
+    return to_read;
 }
 
 void Section::write_section_data(int start, std::string data)
 {
-    int end = start + data.size();
-    if (end > section_data.size())
+    if (start + data.size()/8 >= this->data.size() || start < 0)
     {
-        std::cout << "ERROR! Writing out of sections bounds!\n";
+        std::cout << "ERROR! Trying to write out of section bounds! \n";
+    }
+
+    int j = start;
+
+    for (int i = 0; i < data.size(); i+=8)
+    {
+        this->data[j++] = data.substr(i, 8);
     }
 }
 
@@ -93,17 +93,16 @@ void Section::print() const
     int cnt = 0;
     for (int i = 0; i < section_data.size(); i++)
     {
-        std::cout << section_data[i]->offset << " ";
-        for (int j = 0; j < section_data[i]->data.size(); j++)
+        int start = section_data[i]->offset;
+        int end = start + section_data[i]->size;
+
+        std::cout << start << " ";
+
+        for (int j = start; j < end; j++)
         {
-            std::cout << section_data[i]->data[j];
-            cnt ++;
-            if (cnt == 8)
-            {
-                cnt = 0;
-                std::cout <<" ";
-            }
+            std::cout << data[j] << " ";
         }
+
         std::cout << "\n";
     }
 }

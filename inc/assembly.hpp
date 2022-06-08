@@ -33,8 +33,10 @@ private:
     bool does_section_exists(std::string) const;
     std::string get_instruction_value(Instruction*);
     std::string get_addressing_byte_value(Instruction* instruction) const;
-    std::string get_symbol_value_or_relocate(std::string symbol, Addressing_type addr_type, Label_type label_type);
+    std::string get_symbol_value_or_relocate(std::string symbol);
     std::string get_payload_byte_value(Instruction* instruction);
+
+    void backpatch();
 
     std::vector<Line*> lines;
 
