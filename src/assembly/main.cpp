@@ -12,6 +12,7 @@ using std::string;
 int main(int argc, char* argv[])
 {
     //PARSE ARGUMENTS
+#ifdef ASSEMBLY_HPP
     std::cout << "Parsing arguments.\n";
     if (argc > 5 || argc < 4)
     {
@@ -44,6 +45,7 @@ int main(int argc, char* argv[])
     assembly->print();   
 
     delete assembly;
+#endif
 
     return 0;
 }
