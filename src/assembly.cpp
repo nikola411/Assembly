@@ -123,7 +123,6 @@ Assembly::~Assembly()
     {
         delete sections[i];
     }
-
 }
 
 void Assembly::handle_jump(Jump* jump)
@@ -324,12 +323,10 @@ void Assembly::handle_directive(Directive* directive)
             }
             else
             {
-                
                 if (entry->section != current_section->get_section_name())
                 {
                     while (entry->fref.size() > 0)
                     {
-                        
                         Relocation_entry* relocation = new Relocation_entry();
                         std::string relocation_section = entry->section;
                         int reloc_offset = entry->fref.back();
@@ -350,7 +347,6 @@ void Assembly::handle_directive(Directive* directive)
                 entry->size = 2;
                 entry->defined = true;              
             }
-            
            
             break;
         }
@@ -420,7 +416,7 @@ std::string Assembly::get_addressing_byte_value(Addressing_type addr_type, Label
         }
         else
         {
-            value += "0100";
+            value += addressing_codes["MEMORY"];
         }
     }
 
@@ -538,8 +534,19 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol)
         if (entry->defined)
         {
             int offset = entry->offset;
-            int size = entry->size;
-            operand_value = current_section->read_section_data(offset, size);
+            operand_value = std::bitset<16>(offset).to_string();
+            
+            // Here we need to generate a relocation since we can't know
+            // if our symbol will have the same offset when we link all sections together
+            // or will its offset change (section a gets before our symbols section, so 
+            // base offset of our symbols section gets changed)
+            Relocation_entry* relocation = new Relocation_entry();
+            relocation->offset = current_section->get_section_location_counter() + 3;
+            relocation->section = current_section->get_section_name();
+            relocation->ord_number = symbol_table.get_symbol_ord_number(symbol);
+            relocation->type = Relocation_type::R_ABSOLUTE;
+
+            relocation_table.add_new_relocation(relocation);
         }
         else
         {

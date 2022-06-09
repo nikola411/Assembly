@@ -4,7 +4,7 @@
 #include <iostream>
 #include <bitset>
 
-Section::Section(std::string name) : section_name(name), location_counter(0)
+Section::Section(std::string name) : section_name(name), location_counter(0), offset(0)
 {
 
 }
@@ -17,6 +17,16 @@ std::string Section::get_section_name() const
 int Section::get_section_location_counter() const
 {
     return this->location_counter;
+}
+
+void  Section::set_section_offset(int offset)
+{
+    this->offset = offset;
+}
+
+int  Section::get_section_offset() const
+{
+    return this->offset;
 }
 
 void Section::add_section_data(std::string data)

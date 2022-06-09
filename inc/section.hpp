@@ -9,12 +9,17 @@ class Section
 public:
     Section(std::string);
 
-    std::string get_section_name() const;
-    int get_section_location_counter() const;
     void add_section_data(std::string);
     void add_section_data(int data);
-    void set_section_location_counter(int);
     void inc_section_location_counter(int);
+
+    void set_section_location_counter(int);
+    void set_section_offset(int);
+
+    std::string get_section_name() const;
+    int get_section_location_counter() const;
+    int get_section_offset() const;
+    
     std::string read_section_data(int, int);
     void write_section_data(int, std::string);
 
@@ -25,6 +30,7 @@ public:
 private:
     std::string section_name;
     int location_counter;
+    int offset;
 
     std::vector<Section_entry*> section_data;
     std::vector<std::string> data;

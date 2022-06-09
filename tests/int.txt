@@ -1,8 +1,9 @@
 .section .text
 
 lab:
-.word 1111
+label1:
 
 jmp lab
+
 
 .end
