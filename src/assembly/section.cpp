@@ -117,6 +117,31 @@ void Section::print() const
     }
 }
 
+std::string Section::to_string() const
+{
+    std::string section_as_string = "";
+    section_as_string += section_name;
+    section_as_string += "\n";
+    for (int i = 0; i < section_data.size(); i++)
+    {
+        int start = section_data[i]->offset;
+        int end = start + section_data[i]->size;
+
+        section_as_string += std::to_string(start);
+        section_as_string += " ";
+
+        for (int j = start; j < end; j++)
+        {
+            section_as_string += data[j];
+            section_as_string +=  " ";
+        }
+
+        section_as_string += "\n";
+    }
+
+    return section_as_string;
+}
+
 Section::~Section()
 {
     for (int i = 0; i < section_data.size(); i++)

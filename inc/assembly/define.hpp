@@ -57,6 +57,8 @@ struct Symbol_table_entry
     std::string section;
     bool defined;
     std::vector<int> fref;
+
+    int ord_num;
 };
 
 enum Section_type

@@ -24,6 +24,7 @@ public:
     void write_section_data(int, std::string);
 
     void print() const;
+    std::string to_string() const;
 
     ~Section();
 

@@ -44,6 +44,25 @@ void Relocation_table::print() const
     std::cout << "\n";
 }
 
+
+std::string Relocation_table::to_string() const
+{
+    std::string relocations_as_string = "";
+    for (int i = 0; i < relocations.size(); i++)
+    {
+        relocations_as_string += std::to_string(relocations[i]->offset);
+        relocations_as_string += " ";
+        relocations_as_string += relocations[i]->section;
+        relocations_as_string += " ";
+        relocations_as_string += std::to_string(relocations[i]->type);
+        relocations_as_string += " ";
+        relocations_as_string += std::to_string(relocations[i]->ord_number);
+        relocations_as_string += "\n";
+    }
+
+    return relocations_as_string;
+}
+
 Relocation_table::~Relocation_table()
 {
     for (int i = 0; i < relocations.size(); i++)

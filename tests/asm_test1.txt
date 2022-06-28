@@ -1,9 +1,0 @@
-.section .text
-
-lab:
-label1:
-
-jmp lab
-
-
-.end

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <bitset>
+#include <fstream>
 
 std::string Assembly::section_names[5] = {".text", ".data", ".bss", ".rel", ".rodata"};
 std::map<Instruction_type, std::string> Assembly::instruction_codes
@@ -61,7 +62,7 @@ std::map<std::string, std::string> Assembly::addressing_codes
     {"MEMORY", "0100"}
 };
 
-Assembly::Assembly() : end_occured(false)
+Assembly::Assembly(std::string output_file) : end_occured(false), output_file(output_file)
 {
   
 }
@@ -94,7 +95,7 @@ void Assembly::finish_parsing()
     // Backpatching here
 
     backpatch();
-
+    write_to_output();
     // write to output.o
 }
 
@@ -517,6 +518,11 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol)
     Symbol_table_entry* entry = symbol_table.find_symbol(symbol);
     std::string operand_value = std::bitset<16>(0).to_string();
     
+    /*
+    If symbol does not exists in our symbol table, we need to generate entry for it
+    and since we dont have that symbol value(this method is called only for symbols that are not being defined)
+    we need to add current address as a forward reference to the symbol
+    */
     if (entry == nullptr)
     {
         entry = new Symbol_table_entry();
@@ -524,10 +530,21 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol)
         entry->fref.emplace_back(current_section->get_section_location_counter() + 3);
         entry->defined = false;
         entry->section = current_section->get_section_name();
+        entry->binding = "LOCAL";
 
         symbol_table.add_symbol_table_entry(entry);
         return operand_value;
     }
+
+    /*
+        1. If current section is not the same as entries section, we need to generate a relocation
+        since we don't know the offset of the symbol and we won't know that offset until after linking
+        2. If symbol is in current section and is defined, we still need to generate a relocation,
+        this time we generate it because after moving sections, linker will need to update the value we
+        write as current offset of the symbol
+        3. If symbol is not defined and the entry section is the same as current section, we just generate
+        a forward reference to the symbol
+    */
 
     if (current_section->get_section_name() == entry->section)
     {
@@ -601,6 +618,25 @@ std::string Assembly::get_payload_byte_value(std::string operand, Label_type ope
     }
 
     return value;
+}
+
+void Assembly::write_to_output()
+{
+    std::ofstream out_file(this->output_file);
+
+    //write symbol table
+    out_file << symbol_table.to_string();
+    out_file << "\n";
+    // write sections
+    for (auto sec: sections)
+    {
+        out_file << sec->to_string();
+    }
+    //write relocations
+    out_file << "\n";
+    out_file << relocation_table.to_string();
+
+    out_file.close();
 }
 
 void Assembly::backpatch()

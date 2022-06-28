@@ -85,6 +85,26 @@ void Symbol_table::print() const
     }
 }
 
+std::string Symbol_table::to_string() const
+{
+    std::string table_as_string = "";
+    for (int i = 0; i < table.size(); i++)
+    {
+        table_as_string += table[i]->label;
+        table_as_string += "  ";
+        table_as_string += table[i]->section;
+        table_as_string += "  ";
+        table_as_string += std::to_string(table[i]->offset);
+        table_as_string += "  ";
+        table_as_string += table[i]->binding;
+        table_as_string += "  ";
+        table_as_string += std::to_string(i);
+        table_as_string += "\n";
+    }
+
+    return table_as_string;
+}
+
 Symbol_table::~Symbol_table()
 {
 

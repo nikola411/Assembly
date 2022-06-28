@@ -16,6 +16,7 @@ public:
     Relocation_entry* get_first_relocation();
 
     void print() const;
+    std::string to_string() const;
 
     ~Relocation_table();
 

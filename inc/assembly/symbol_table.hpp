@@ -17,6 +17,7 @@ public:
     int get_symbol_ord_number(std::string) const;
 
     void print() const;
+    std::string to_string() const;
 
     ~Symbol_table();
 

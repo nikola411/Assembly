@@ -12,7 +12,6 @@ using std::string;
 int main(int argc, char* argv[])
 {
     //PARSE ARGUMENTS
-#ifdef ASSEMBLY_HPP
     std::cout << "Parsing arguments.\n";
     if (argc > 5 || argc < 4)
     {
@@ -38,14 +37,13 @@ int main(int argc, char* argv[])
     std::cout << "Starting to read the input file.\n";
     // FINISH PARSING THE ARGUMENTS
     // START ASSEMBLY
-    Assembly* assembly = new Assembly();
+    Assembly* assembly = new Assembly(output_file);
     Driver driver(debug, assembly);
     driver.parse(input_file);
 
     assembly->print();   
 
     delete assembly;
-#endif
 
     return 0;
 }

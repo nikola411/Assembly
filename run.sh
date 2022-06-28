@@ -5,7 +5,7 @@ then
     echo "Wrong argument!"
 elif [ $1 = "asm" ]
 then
-    ./asembler -o out.txt ./tests/asm_test1.txt
+    ./asembler -o out.o ./tests/asm_test.asm
 else [ $1 = "lnk" ]
-    ./linker
+    ./linker -o output.o -hex linker_test.o out.o
 fi

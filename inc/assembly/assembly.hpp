@@ -17,7 +17,7 @@ class Line;
 class Assembly
 {
 public:
-    Assembly();
+    Assembly(std::string);
     Line* get_current_line();
     void add_new_line(Line*);
     void finish_parsing();
@@ -35,10 +35,12 @@ private:
     std::string get_addressing_byte_value(Addressing_type addr_type, Label_type label_type) const;
     std::string get_symbol_value_or_relocate(std::string symbol);
     std::string get_payload_byte_value(std::string operand, Label_type operand_type, Addressing_type addr_type, std::string offset = "", Label_type offset_type = Label_type::REGISTER);
+    void write_to_output();
 
     void backpatch();
 
     std::vector<Line*> lines;
+    std::string output_file;
 
     const std::type_info& instruction_type = typeid(Instruction);
     const std::type_info& jump_type = typeid(Jump);
