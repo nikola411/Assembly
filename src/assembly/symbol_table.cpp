@@ -42,6 +42,17 @@ int Symbol_table::get_symbol_ord_number(std::string symbol) const
     return -1;
 }
 
+void Symbol_table::update_sections_offsets(int base_section_offset, std::string section_name)
+{
+    for (auto& symbol: table)
+    {
+        if (symbol->section == section_name)
+        {
+            symbol->offset += base_section_offset;
+        }
+    }
+}
+
 void Symbol_table::print() const
 {
     int w = 15;

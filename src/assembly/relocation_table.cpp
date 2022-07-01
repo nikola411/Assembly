@@ -63,6 +63,17 @@ std::string Relocation_table::to_string() const
     return relocations_as_string;
 }
 
+void Relocation_table::update_sections_offsets(int base_section_offset, std::string base_section_name)
+{
+    for (auto relocation: relocations)
+    {
+        if (relocation->section == base_section_name)
+        {
+            relocation->offset += base_section_offset;
+        }
+    }
+}
+
 Relocation_table::~Relocation_table()
 {
     for (int i = 0; i < relocations.size(); i++)

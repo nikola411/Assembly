@@ -11,6 +11,7 @@ class Symbol_table
 public:
     Symbol_table();
 
+    // General purpose methods
     void add_symbol_table_entry(Symbol_table_entry*);
     std::vector<Symbol_table_entry*> get_symbol_table_entry() const;
     Symbol_table_entry* find_symbol(std::string) const;
@@ -18,6 +19,9 @@ public:
 
     void print() const;
     std::string to_string() const;
+
+    // Methods linker needs
+    void update_sections_offsets(int base_section_offset, std::string base_section_name);
 
     ~Symbol_table();
 

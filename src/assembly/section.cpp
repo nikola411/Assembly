@@ -19,9 +19,17 @@ int Section::get_section_location_counter() const
     return this->location_counter;
 }
 
+/*
+    We need to update section offset and offset of every memory location in this section.
+*/
 void  Section::set_section_offset(int offset)
 {
     this->offset = offset;
+
+    for (auto chunk: section_data)
+    {
+        chunk->offset += offset;
+    }
 }
 
 int  Section::get_section_offset() const

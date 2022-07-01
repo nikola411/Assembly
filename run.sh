@@ -7,5 +7,5 @@ elif [ $1 = "asm" ]
 then
     ./asembler -o out.o ./tests/asm_test.asm
 else [ $1 = "lnk" ]
-    ./linker -o output.o -hex linker_test.o out.o
+    ./linker -o output.o -hex linker_test0.o linker_test1.o
 fi
