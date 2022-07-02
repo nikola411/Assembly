@@ -53,6 +53,23 @@ void Symbol_table::update_sections_offsets(int base_section_offset, std::string 
     }
 }
 
+void Symbol_table::remove_symbol_table_entry(Symbol_table_entry* to_delete)
+{
+    auto iter = table.begin();
+    for (iter; iter != table.end(); iter++)
+    {
+        if (*iter == to_delete)
+        {
+            break;
+        }
+    }
+
+    if (iter != table.end())
+    {
+        table.erase(iter);
+    }
+}
+
 void Symbol_table::print() const
 {
     int w = 15;

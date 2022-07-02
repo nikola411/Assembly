@@ -103,6 +103,7 @@ struct Relocation_entry
 {
     int offset;
     std::string section;
+    std::string label;
     int ord_number;
     Relocation_type type;
 };

@@ -252,6 +252,7 @@ void Assembly::handle_directive(Directive* directive)
                 relocation->section = current_section->get_section_name();
                 relocation->ord_number = symbol_table.get_symbol_ord_number(operands[i]);
                 relocation->type = Relocation_type::R_PC_RELATIVE;
+                relocation->label = sym->label;
 
                 relocation_table.add_new_relocation(relocation);
             }
@@ -337,6 +338,7 @@ void Assembly::handle_directive(Directive* directive)
                         relocation->offset = reloc_offset;
                         relocation->section = relocation_section;
                         relocation->ord_number = symbol_table.get_symbol_ord_number(entry->label);
+                        relocation->label = entry->label;
                         
                         relocation_table.add_new_relocation(relocation);
                     }
@@ -562,6 +564,7 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol)
             relocation->section = current_section->get_section_name();
             relocation->ord_number = symbol_table.get_symbol_ord_number(symbol);
             relocation->type = Relocation_type::R_ABSOLUTE;
+            relocation->label = entry->label;
 
             relocation_table.add_new_relocation(relocation);
         }
@@ -577,6 +580,7 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol)
         relocation->section = current_section->get_section_name();
         relocation->ord_number = symbol_table.get_symbol_ord_number(symbol);
         relocation->type = Relocation_type::R_PC_RELATIVE;
+        relocation->label = entry->label;
 
         relocation_table.add_new_relocation(relocation);
     }            
@@ -685,6 +689,7 @@ void Assembly::backpatch()
                 relocation->offset = reloc_offset;
                 relocation->section = relocation_section;
                 relocation->ord_number = symbol_table.get_symbol_ord_number(table[i]->label);
+                relocation->label = table[i]->label;
 
                 relocation_table.add_new_relocation(relocation);
             }

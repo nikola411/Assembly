@@ -60,14 +60,25 @@ void Linker::link()
 
     aggregate_symbol_table = new Symbol_table();
     // Make aggregate symbol table
-    for (auto symt: symbol_tables)
+    for (auto symbol_table: symbol_tables)
     {
-        std::vector<Symbol_table_entry*> sym_vect = symt->get_symbol_table_entry();
-        for (auto symbol: sym_vect)
+        std::vector<Symbol_table_entry*> symbol_vector = symbol_table->get_symbol_table_entry();
+        for (auto symbol: symbol_vector)
         {
-            if (!aggregate_symbol_table->find_symbol(symbol->label))
+            Symbol_table_entry* in_table_entry = nullptr;
+            if (!(in_table_entry = aggregate_symbol_table->find_symbol(symbol->label)))
             {
                 aggregate_symbol_table->add_symbol_table_entry(new Symbol_table_entry(*symbol));
+            }
+            else // if we find the symbol, we need to look whether is it defined or not. If it is defined
+            {
+                if (symbol->defined)
+                {
+                    in_table_entry->defined = true;
+                    in_table_entry->offset = symbol->offset;
+                    in_table_entry->section = symbol->section;
+                    in_table_entry->binding = symbol->binding;
+                }
             }
         }
     }
