@@ -80,6 +80,18 @@ void Relocation_table::update_sections_offsets(int base_section_offset, std::str
     }
 }
 
+std::vector<Relocation_entry*> Relocation_table::get_relocation_table() const
+{
+    if (this->relocations.size() > 0)
+    {
+        return this->relocations;
+    }
+    else
+    {
+        return std::vector<Relocation_entry*>();
+    }
+}
+
 Relocation_table::~Relocation_table()
 {
     for (int i = 0; i < relocations.size(); i++)

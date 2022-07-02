@@ -21,6 +21,7 @@ public:
 
     // Methods linker needs
     void update_sections_offsets(int base_section_offset, std::string base_section_name);
+    std::vector<Relocation_entry*> get_relocation_table() const;
 
     ~Relocation_table();
 

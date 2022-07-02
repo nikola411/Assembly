@@ -21,7 +21,7 @@ public:
     std::string to_string() const;
 
     // Methods linker needs
-    void update_sections_offsets(int base_section_offset, std::string base_section_name);
+    void update_sections_offsets(int base_section_offset, int relative_section_offset, std::string base_section_name);
     void remove_symbol_table_entry(Symbol_table_entry*);
 
     ~Symbol_table();
