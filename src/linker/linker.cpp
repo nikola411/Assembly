@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
+#include <algorithm>
 
 const int SECTION_MAX_OFFSET = 65535;
 
@@ -20,122 +21,63 @@ Linker::Linker(std::vector<std::string> input_files, std::string output_file, bo
 void Linker::link()
 {
     read_files();
-    // Prepare structures for section linking
-    /*  Mapping files with their sections; mapping section names with their offset, location_counter pairs
-        std::vector<
-            std::map<
-                std::string section_name,
-                std::pair<
-                    int section_offset,
-                    int section_lc
-        >>>
-    */
-    std::vector<std::unordered_map<std::string, std::pair<int, int>>> sections_by_file;
-    /* Mapping sections with their base offsets that are later used for symbol table and relocation table update
-        std::map<
-            std::string section_name,
-            int section_base_offset
-        >
-    */
-    std::unordered_map<std::string, int> sections_map;
 
-    // std::vector<std::pair<std::string, int>> sections_mp;
-
-    std::cout << sections.size() <<"\n";
+    std::vector<std::vector<std::string>> sections_by_file_names;
+    std::vector<std::vector<std::pair<int, int>>> sections_by_file_values; // offset, location_counter
+    std::unordered_map<std::string, bool> visited_sections_map; // section_name, visited
+    std::vector<std::pair<std::string, int>> sections_global; // section_name, global_offset
     
     for (int i = 0; i < sections.size(); i++)
     {
-        std::unordered_map<std::string, std::pair<int, int>> file_sections_map;
+        std::vector<std::string> _nfile_sections_vector;
+        std::vector<std::pair<int, int>> _vfile_sections_vector;
 
         for (int j = 0; j < sections[i].size(); j++)
         {
             Section* current_section = sections[i][j];
-            std::cout << current_section->get_section_name() << " \n";
 
             auto section_pair = std::make_pair(current_section->get_section_offset(), current_section->get_section_location_counter());
             auto section_name = current_section->get_section_name();
 
-            file_sections_map.emplace(section_name, section_pair);
+            _nfile_sections_vector.emplace_back(section_name);
+            _vfile_sections_vector.emplace_back(section_pair);
 
-            if (sections_map.find(section_name) == sections_map.end())
+            if (visited_sections_map.find(section_name) == visited_sections_map.end())
             {
-                sections_map[section_name] = 0;
-            }
-
-        }
-
-        sections_by_file.emplace_back(file_sections_map);
-    }
-
-    int current_offset = 0;
-    // Update sections offsets by linking them in order
-    for (auto section: sections_map)
-    {
-        for (auto& file: sections_by_file)
-        {
-            std::string section_name = section.first;
-            if (file.find(section_name) != file.end())
-            {
-                file[section_name].first = current_offset;
-                current_offset += file[section_name].second;
+                visited_sections_map[section_name] = 1;
+                sections_global.emplace_back(std::make_pair(section_name, 0));
             }
         }
+
+        sections_by_file_names.emplace_back(_nfile_sections_vector);
+        sections_by_file_values.emplace_back(_vfile_sections_vector);
     }
 
-    // Update base section offsets
-    for (auto& section: sections_map)
-    {
-        section.second = SECTION_MAX_OFFSET;
-        std::string section_name = section.first;
+    update_sections_offsets(sections_by_file_names, sections_by_file_values, sections_global);
+    update_global_sections_offsets(sections_by_file_names, sections_by_file_values, sections_global);
+    update_symbol_tables(sections_by_file_names, sections_by_file_values, sections_global);
+    update_relocation_tables(sections_by_file_names, sections_by_file_values, sections_global);
 
-        for (int i = 0; i < sections_by_file.size(); i++)
+    aggregate_symbol_table = new Symbol_table();
+    // Make aggregate symbol table
+    for (auto symt: symbol_tables)
+    {
+        std::vector<Symbol_table_entry*> sym_vect = symt->get_symbol_table_entry();
+        for (auto symbol: sym_vect)
         {
-            if (sections_by_file[i].find(section_name) != sections_by_file[i].end() &&
-                sections_by_file[i][section_name].first < section.second)
+            if (!aggregate_symbol_table->find_symbol(symbol->label))
             {
-                section.second = sections_by_file[i][section_name].first;
+                aggregate_symbol_table->add_symbol_table_entry(new Symbol_table_entry(*symbol));
             }
         }
     }
-
-    // Update symbol offsets in symbol tables
-    for (int i = 0; i < sections_by_file.size(); i++)
+    // free up space (this needs to be done for every structure (relocations, sections) so we can do this altogether in one method)
+    for (auto symt: symbol_tables)
     {
-        for (auto section: sections_by_file[i])
-        {
-            std::string section_name = section.first;
-            int section_base_offset = sections_map[section_name];
-
-            symbol_tables[i]->update_sections_offsets(section_base_offset, section_name);
-        }        
+        delete symt;
     }
 
-    for (auto section:sections_map)
-    {
-        std:: cout << section.first << " \n";
-    }
-
-    for (auto table: symbol_tables)
-    {
-        table->print();
-    }
- 
-    // // Update relocations offsets
-    for (int i = 0; i < sections_by_file.size(); i++)
-    {
-        for (auto section: sections_by_file[i])
-        {
-            std::string section_name = section.first;
-            int section_base_offset = section.second.first;
-
-            relocations[i]->update_sections_offsets(section_base_offset, section_name);
-        }
-    }
-
-    for (auto relocation : relocations)
-    {
-        relocation->print();
-    }
+    aggregate_symbol_table->print();
 
     link_sections();    
 }
@@ -261,11 +203,94 @@ void Linker::read_relocation_table_entry(Relocation_table* current_relocation_ta
     current_relocation_table->add_new_relocation(current_relocation_entry);
 }
 
+void Linker::update_sections_offsets(std::vector<std::vector<std::string>>& sections_by_file_names,
+                                    std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
+                                    std::vector<std::pair<std::string, int>>& sections_global)
+{
+    int current_offset = 0;
+    for (auto section: sections_global)
+    {
+        std::string section_name = section.first;
+        for (int file = 0; file < sections_by_file_names.size(); file++)
+        {
+            auto iter = std::find(sections_by_file_names[file].begin(), sections_by_file_names[file].end(), section_name);
+            if (iter != sections_by_file_names[file].end())
+            {
+                int i = iter - sections_by_file_names[file].begin();
+                sections_by_file_values[file][i].first = current_offset;
+                current_offset += sections_by_file_values[file][i].second;
+            }
+        }
+    }
+}
+
+void Linker::update_global_sections_offsets(std::vector<std::vector<std::string>>& sections_by_file_names,
+                                    std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
+                                    std::vector<std::pair<std::string, int>>& sections_global)
+{
+    for (auto& section: sections_global)
+    {
+        section.second = SECTION_MAX_OFFSET;
+        std::string section_name = section.first;
+
+        for (int i = 0; i < sections_by_file_values.size(); i++)
+        {
+            auto iter = std::find(sections_by_file_names[i].begin(), sections_by_file_names[i].end(), section_name);
+            if (iter != sections_by_file_names[i].end())
+            {
+                int index = iter - sections_by_file_names[i].begin();
+                if (sections_by_file_values[i][index].first < section.second)
+                {
+                    section.second = sections_by_file_values[i][index].first;
+                }
+            }
+        }
+    }
+}
+
+void Linker::update_symbol_tables(std::vector<std::vector<std::string>>& sections_by_file_names,
+                                    std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
+                                    std::vector<std::pair<std::string, int>>& sections_global)
+{
+    for (int i = 0; i < sections_by_file_values.size(); i++)
+    {
+        // std::cout << sections_by_file_names[i].size() << " " << sections_by_file_values[i].size() << "\n";
+        for (int j = 0; j < sections_by_file_values[i].size(); j++)
+        {
+            std::string section_name = sections_by_file_names[i][j];
+            int index = 0;
+            for (index; index < sections_global.size(); index++)
+            {
+                if (sections_global[index].first == section_name) break;
+            }
+
+            int section_base_offset = sections_global[index].second;
+
+            symbol_tables[i]->update_sections_offsets(section_base_offset, section_name);
+        }        
+    }
+}
+
+void Linker::update_relocation_tables(std::vector<std::vector<std::string>>& sections_by_file_names,
+                                        std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
+                                        std::vector<std::pair<std::string, int>>& sections_global)
+{
+    for (int i = 0; i < sections_by_file_values.size(); i++)
+    {
+        for (int j = 0; j < sections_by_file_values[i].size(); j++)
+        {
+            std::string section_name = sections_by_file_names[i][j];
+            int section_base_offset = sections_by_file_values[i][j].first;
+
+            relocations[i]->update_sections_offsets(section_base_offset, section_name);
+        }
+    }
+}
+
 void Linker::link_sections()
 {
 
 }
-
 
 std::vector<std::string> Linker::split(char del, std::string agg) const
 {

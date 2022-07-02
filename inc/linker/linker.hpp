@@ -18,13 +18,26 @@ public:
     std::vector<std::string> split(char s, std::string delimeter) const;
 
     ~Linker();
-    
+
 private:
     void read_files();
     void read_symbol_table_entry(Symbol_table*, std::vector<std::string>);
     void read_section_data(Section*, std::vector<std::string>);
     void read_relocation_table_entry(Relocation_table*, std::vector<std::string>);
 
+    void update_sections_offsets(std::vector<std::vector<std::string>>& sections_by_file_names,
+                                    std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
+                                    std::vector<std::pair<std::string, int>>& sections_global);
+    void update_global_sections_offsets(std::vector<std::vector<std::string>>& sections_by_file_names,
+                                    std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
+                                    std::vector<std::pair<std::string, int>>& sections_global);
+    void update_symbol_tables(std::vector<std::vector<std::string>>& sections_by_file_names,
+                                    std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
+                                    std::vector<std::pair<std::string, int>>& sections_global);
+    void update_relocation_tables(std::vector<std::vector<std::string>>& sections_by_file_names,
+                                        std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
+                                        std::vector<std::pair<std::string, int>>& sections_global);
+   
     void link_sections();
 
     std::vector<std::string> input_files;

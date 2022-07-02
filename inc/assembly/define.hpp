@@ -59,6 +59,24 @@ struct Symbol_table_entry
     std::vector<int> fref;
 
     int ord_num;
+
+    Symbol_table_entry()
+    {
+        
+    }
+
+    Symbol_table_entry(Symbol_table_entry& orig)
+    {
+        this->label = orig.label;
+        this->size = orig.size;
+        this->offset = orig.offset;
+        this->type = orig.type;
+        this->binding = orig.binding;
+        this->section = orig.section;
+        this->defined = orig.defined;
+        this->fref = std::vector<int>(orig.fref);
+        this->ord_num = orig.ord_num;
+    }
 };
 
 enum Section_type

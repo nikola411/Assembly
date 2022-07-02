@@ -5,6 +5,7 @@ x  .rodata  2  LOCAL  2
 mem  .data  0  LOCAL  4
 .text  .text  0  LOCAL  5
 jumpLabel  .text  0  LOCAL  6
+asdf123 .text 120 GLOBAL 7
 
 .rodata
 0 00000000 00010100 
