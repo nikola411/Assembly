@@ -175,6 +175,7 @@ void Linker::read_files()
         symbol_tables.emplace_back(current_symbol_table);
         relocations.emplace_back(current_relocation_table);
         current_file.close();
+
         state = 0;
     }
 }
@@ -210,6 +211,7 @@ void Linker::read_relocation_table_entry(Relocation_table* current_relocation_ta
     current_relocation_entry->section = splt[1];
     current_relocation_entry->type = (Relocation_type)std::atoi(splt[2].c_str());
     current_relocation_entry->ord_number = std::atoi(splt[3].c_str());
+    current_relocation_entry->label = splt[4];
 
     current_relocation_table->add_new_relocation(current_relocation_entry);
 }
