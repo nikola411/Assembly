@@ -26,6 +26,8 @@ public:
     void print() const;
     std::string to_string() const;
 
+    static Section* create_aggregate_section(std::vector<Section*> sections, std::string section_name);
+
     ~Section();
 
 private:

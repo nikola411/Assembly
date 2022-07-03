@@ -58,98 +58,42 @@ void Linker::link()
     update_symbol_tables(sections_by_file_names, sections_by_file_values, sections_global);
     update_relocation_tables(sections_by_file_names, sections_by_file_values, sections_global);
 
-    for (auto symt: symbol_tables)
+    make_aggregate_symbol_table();
+    // free up space (this needs to be done for every structure (relocations, sections) so we can do this altogether in one method)
+    for (int file = 0; file < sections.size(); file++)
     {
-        symt->print();
-    }
-
-    // for (auto section: sections)
-    // {
-    //     for (auto s: section)
-    //     {
-    //         s->print();
-    //     }
-    // }
-
-    aggregate_symbol_table = new Symbol_table();
-    // Make aggregate symbol table
-    for (auto symbol_table = symbol_tables.begin(); symbol_table != symbol_tables.end(); symbol_table++)
-    {
-        std::vector<Symbol_table_entry*> symbol_vector = (*symbol_table)->get_symbol_table_entry();
-        int file_index = symbol_table - symbol_tables.begin();
-
-        for (auto symbol = symbol_vector.begin(); symbol != symbol_vector.end(); symbol++)
+        for (int section = 0; section < sections[file].size(); section++)
         {
-            Symbol_table_entry* in_table_entry = nullptr;
-            if (!(in_table_entry = aggregate_symbol_table->find_symbol((*symbol)->label)))
+            if (sections[file][section])
             {
-                // fetch relocations for this file, go through relocations and look if this symbol is there
-           
-                std::vector<Relocation_entry*> file_relocations;
-                if (relocations[file_index])
-                {
-                    file_relocations = relocations[file_index]->get_relocation_table();
-                }
-        
-                bool is_relocated = false;
-
-                if (file_relocations.size() > 0)
-                {
-                    for (auto relocation: file_relocations)
-                    {
-                        if (is_relocated = 
-                            (relocation->label == (*symbol)->label && relocation->type == Relocation_type::R_PC_RELATIVE))
-                        {
-                            break;
-                        }
-                    }
-                }
-                
-                Symbol_table_entry* to_insert = nullptr;
-
-                if (is_relocated)
-                {
-                    // Go through all other symbol tables and search for symbol definition
-                    std::cout << "GOING TH relocas\n";
-                    Symbol_table_entry* extern_entry = nullptr;
-                    Symbol_table_entry* double_entry = nullptr;
-                    auto extern_table = symbol_table + 1;
-                    bool symbol_found = false;
-                    for (extern_table; extern_table != symbol_tables.end(); extern_table++)
-                    {
-                        extern_entry = (*extern_table)->find_symbol((*symbol)->label);
-                        if (extern_entry) break;
-                        // if (double_entry != nullptr && !symbol_found)
-                        // {
-                        //     symbol_found = true;
-                        //     extern_entry = double_entry;
-                        //     double_entry = nullptr;
-                        // }
-                        // else if (double_entry != nullptr && symbol_found)
-                        // {
-                        //     // ERROR!! 
-                        // }
-                    }
-                    
-                    to_insert = new Symbol_table_entry(*extern_entry);
-                    (*extern_table)->remove_symbol_table_entry(extern_entry);
-                }
-                else
-                {
-                    to_insert = new Symbol_table_entry(**symbol);
-                }
-
-                aggregate_symbol_table->add_symbol_table_entry(to_insert);
+                sections[file][section]->set_section_offset(sections_by_file_values[file][section].first);
             }
         }
     }
-    // free up space (this needs to be done for every structure (relocations, sections) so we can do this altogether in one method)
+
+    std::vector<Section*> sec_vec;
+    for (auto secv: sections)
+    {
+        for (auto sec: secv)
+        {
+            if (sec && sec->get_section_name() == ".text")
+            {
+                sec_vec.emplace_back(sec);
+            }
+        }
+    }
+
+    Section* agg_sec = Section::create_aggregate_section(sec_vec, ".text");
+    // agg_sec->print();
+    std::cout << agg_sec->get_section_offset() << " " << agg_sec->get_section_name() << "\n";
+    std::cout << agg_sec->to_string();
+
     for (auto symt: symbol_tables)
     {
         delete symt;
     }
 
-    aggregate_symbol_table->print();
+    // aggregate_symbol_table->print();
 
     link_sections();    
 }
@@ -245,13 +189,6 @@ void Linker::read_files()
             file_sections.emplace_back(current_section);
             sections.emplace_back(std::vector<Section*>());
             sections.back().emplace_back(current_section);
-            for (auto sec: sections)
-            {
-                for (auto s : sec)
-                {
-                    s->print();
-                }
-            }
         }
         current_file.close();
 
@@ -379,6 +316,115 @@ void Linker::update_relocation_tables(std::vector<std::vector<std::string>>& sec
             if (relocations[i])
             {
                 relocations[i]->update_sections_offsets(section_base_offset, section_name);
+            }
+        }
+    }
+}
+
+Symbol_table_entry* Linker::check_for_symbol_definition(std::vector<Symbol_table*>::iterator current_symbol_table,
+                                                        std::string symbol)
+{
+    Symbol_table_entry* extern_entry = nullptr;
+    Symbol_table_entry* double_entry = nullptr;
+    auto extern_table = current_symbol_table + 1;
+    auto double_extern_table = extern_table;
+    auto symbol_found = false;
+
+    for (double_extern_table; double_extern_table != symbol_tables.end(); double_extern_table++)
+    {
+        double_entry = (*double_extern_table)->find_symbol(symbol);
+       
+        if (double_entry != nullptr && !symbol_found)
+        {
+            // check in that tables relocation table if symbol exists
+            int index = double_extern_table - symbol_tables.begin();
+            if (index < 0 || index >= relocations.size()) break; // ERROR CASE BUT SHOULD NOT HAPPEN
+
+            Relocation_table* extern_relocation_table = relocations[index];
+            Relocation_entry* extern_relocation = nullptr;
+
+            if (extern_relocation_table)
+            {
+               extern_relocation = extern_relocation_table->find_symbol_relocation(symbol);
+            }
+            
+            if (!extern_relocation)
+            {
+                extern_entry = double_entry;
+                extern_table = double_extern_table;
+                double_entry = nullptr;
+                symbol_found = true;
+            }
+        }
+        else if (double_entry != nullptr && symbol_found)
+        {
+            std::cout << "ERROR! Symbol definition found in two tables! \n";
+            exit(-1);
+        }
+    }
+
+    if (extern_entry && extern_table != symbol_tables.end())
+    {
+        (*extern_table)->remove_symbol_table_entry(extern_entry);
+    }
+
+    return extern_entry;
+}
+
+void Linker::make_aggregate_symbol_table()
+{
+    aggregate_symbol_table = new Symbol_table();
+    // Make aggregate symbol table
+    for (auto symbol_table = symbol_tables.begin(); symbol_table != symbol_tables.end(); symbol_table++)
+    {
+        std::vector<Symbol_table_entry*> symbol_vector = (*symbol_table)->get_symbol_table_entry();
+        int file_index = symbol_table - symbol_tables.begin();
+
+        for (auto symbol = symbol_vector.begin(); symbol != symbol_vector.end(); symbol++)
+        {
+            Symbol_table_entry* in_table_entry = nullptr;
+            if (!(in_table_entry = aggregate_symbol_table->find_symbol((*symbol)->label)))
+            {
+                // fetch relocations for this file, go through relocations and look if this symbol is there
+                std::vector<Relocation_entry*> file_relocations;
+                if (relocations[file_index])
+                {
+                    file_relocations = relocations[file_index]->get_relocation_table();
+                }
+        
+                bool is_relocated = false;
+
+                for (auto relocation: file_relocations)
+                {
+                    if (is_relocated = 
+                        (relocation->label == (*symbol)->label && relocation->type == Relocation_type::R_PC_RELATIVE))
+                    {
+                        break;
+                    }
+                }
+                
+                Symbol_table_entry* to_insert = nullptr;
+               
+                if (is_relocated)
+                {
+                    // Go through all other symbol tables and search for symbol definition
+                    Symbol_table_entry* extern_entry = nullptr;
+                    extern_entry = check_for_symbol_definition(symbol_table, (*symbol)->label);
+
+                    if (extern_entry == nullptr)
+                    {
+                        std::cout << "ERROR! Symbol definition not found! \n";
+                        exit(-1);
+                    }
+
+                    to_insert = new Symbol_table_entry(*extern_entry);                  
+                }
+                else
+                {
+                    to_insert = new Symbol_table_entry(**symbol);
+                }
+
+                aggregate_symbol_table->add_symbol_table_entry(to_insert);
             }
         }
     }

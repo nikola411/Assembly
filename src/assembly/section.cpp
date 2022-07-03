@@ -25,11 +25,6 @@ int Section::get_section_location_counter() const
 void  Section::set_section_offset(int offset)
 {
     this->offset = offset;
-
-    for (auto chunk: section_data)
-    {
-        chunk->offset += offset;
-    }
 }
 
 int  Section::get_section_offset() const
@@ -111,10 +106,10 @@ void Section::print() const
     int cnt = 0;
     for (int i = 0; i < section_data.size(); i++)
     {
-        int start = section_data[i]->offset;
+        int start = section_data[i]->offset - offset;
         int end = start + section_data[i]->size;
 
-        std::cout << start << " ";
+        std::cout << start<< " ";
 
         for (int j = start; j < end; j++)
         {
@@ -135,7 +130,7 @@ std::string Section::to_string() const
         int start = section_data[i]->offset;
         int end = start + section_data[i]->size;
 
-        section_as_string += std::to_string(start);
+        section_as_string += std::to_string(start + offset);
         section_as_string += " ";
 
         for (int j = start; j < end; j++)
@@ -148,6 +143,34 @@ std::string Section::to_string() const
     }
 
     return section_as_string;
+}
+
+// Create one section out of multiple section parts (sections from different files with the same name)
+// in order they are found in the vector sections
+Section* Section::create_aggregate_section(std::vector<Section*> sections, std::string section_name)
+{
+    Section* aggregate = new Section(section_name);
+    aggregate->offset = sections.front()->offset;
+    auto last_chunk_offset = 0;
+
+    for (auto section: sections)
+    {
+        for (auto byte: section->data)
+        {
+            aggregate->data.emplace_back(byte);
+        }
+
+        for (auto data: section->section_data)
+        {
+            aggregate->section_data.emplace_back(data);
+            aggregate->section_data.back()->offset = last_chunk_offset;
+            last_chunk_offset += aggregate->section_data.back()->size;
+        }
+    }
+
+    aggregate->location_counter = aggregate->data.size();
+
+    return aggregate;
 }
 
 Section::~Section()

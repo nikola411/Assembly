@@ -8,6 +8,7 @@ class Section;
 class Symbol_table;
 class Relocation_table;
 struct Relocation_entry;
+struct Symbol_table_entry;
 
 class Linker
 {
@@ -37,6 +38,9 @@ private:
     void update_relocation_tables(std::vector<std::vector<std::string>>& sections_by_file_names,
                                         std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
                                         std::vector<std::pair<std::string, int>>& sections_global);
+    Symbol_table_entry* check_for_symbol_definition(std::vector<Symbol_table*>::iterator current_symbol_table,
+                                    std::string symbol);
+    void make_aggregate_symbol_table();
    
     void link_sections();
 

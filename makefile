@@ -20,11 +20,13 @@ LINKER_INCLUDES = -I${LINKER_INC_DIR} -I${ASSEMBLY_INC_DIR}
 LINKER_SOURCE = $(wildcard ./src/linker/*.cpp) ./src/assembly/symbol_table.cpp ./src/assembly/section.cpp ./src/assembly/relocation_table.cpp
 LINKER_OUTPUT = -o ./linker
 
+DEBUG_ENABLED = 1
+
 lnk:
-	g++ ${LINKER_INCLUDES} -g ${LINKER_SOURCE} ${LINKER_OUTPUT}
+	g++ ${LINKER_INCLUDES} -g  ${LINKER_SOURCE} ${LINKER_OUTPUT}
 
 asm: flex bison
-	g++ ${ASSEMBLY_INCLUDES} -g ${ASSEMBLY_SOURCE} ${ASSEMBLY_OUTPUT}
+	g++ ${ASSEMBLY_INCLUDES} -g -Wall ${ASSEMBLY_SOURCE} ${ASSEMBLY_OUTPUT}
 
 flex:
 	flex ${FLEX_SOURCE}

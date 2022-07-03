@@ -59,18 +59,18 @@ void Symbol_table::update_sections_offsets(int base_section_offset, int relative
 
 void Symbol_table::remove_symbol_table_entry(Symbol_table_entry* to_delete)
 {
-    auto iter = table.begin();
-    for (iter; iter != table.end(); iter++)
+    auto i = 0;
+    for (i; i < table.size(); i++)
     {
-        if (*iter == to_delete)
+        if (table[i]->label == to_delete->label)
         {
             break;
         }
     }
 
-    if (iter != table.end())
+    if (i < table.size())
     {
-        table.erase(iter);
+        table.erase(table.begin() + i);
     }
 }
 

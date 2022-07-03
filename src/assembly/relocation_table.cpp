@@ -92,6 +92,19 @@ std::vector<Relocation_entry*> Relocation_table::get_relocation_table() const
     }
 }
 
+Relocation_entry* Relocation_table::find_symbol_relocation(std::string symbol) const
+{
+    for (auto iter = relocations.begin(); iter != relocations.end(); iter++)
+    {
+        if ((*iter)->label == symbol)
+        {
+            return *iter;
+        }
+    }
+
+    return nullptr;
+}
+
 Relocation_table::~Relocation_table()
 {
     for (int i = 0; i < relocations.size(); i++)
