@@ -57,6 +57,7 @@ struct Symbol_table_entry
     std::string section;
     bool defined;
     std::vector<int> fref;
+    int value;
 
     int ord_num;
 
@@ -76,6 +77,7 @@ struct Symbol_table_entry
         this->defined = orig.defined;
         this->fref = std::vector<int>(orig.fref);
         this->ord_num = orig.ord_num;
+        this->value = orig.value;
     }
 };
 

@@ -96,7 +96,7 @@ Relocation_entry* Relocation_table::find_symbol_relocation(std::string symbol) c
 {
     for (auto iter = relocations.begin(); iter != relocations.end(); iter++)
     {
-        if ((*iter)->label == symbol)
+        if ((*iter)->label == symbol && (*iter)->type == Relocation_type::R_PC_RELATIVE)
         {
             return *iter;
         }

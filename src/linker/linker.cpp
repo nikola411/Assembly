@@ -2,11 +2,13 @@
 #include "symbol_table.hpp"
 #include "section.hpp"
 #include "relocation_table.hpp"
+#include "error_handler.hpp"
 
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
 #include <algorithm>
+#include <bitset>
 
 const int SECTION_MAX_OFFSET = 65535;
 
@@ -61,14 +63,34 @@ void Linker::link()
 
     make_aggregate_symbol_table();
     make_aggregate_sections(sections_by_file_values, sections_global);
-    // agg_sec->print();
+
     for (auto agg_sec: aggregate_section)
     {
         std::cout << agg_sec->get_section_offset() << " " << agg_sec->get_section_name() << "\n";
         std::cout << agg_sec->to_string();
+        std::cout << "\n";
     }
+
+    std::cout << aggregate_symbol_table->to_string() << "\n";
     
+    for (auto relocation_table: relocations)
+    {
+        std::cout << relocation_table->to_string();
+    }
+
+    handle_relocations();
+    // agg_sec->print();
+
     // free up space (this needs to be done for every structure (relocations, sections) so we can do this altogether in one method)
+
+    for (auto agg_sec: aggregate_section)
+    {
+        std::cout << agg_sec->get_section_offset() << " " << agg_sec->get_section_name() << "\n";
+        std::cout << agg_sec->to_string();
+        std::cout << "\n";
+    }
+
+    
     for (auto symt: symbol_tables)
     {
         delete symt;
@@ -89,7 +111,6 @@ void Linker::read_files()
     
     for (auto file : input_files)
     {
-        std::cout << file << "\n";
         std::ifstream current_file("tests/" + file, std::ios_base::in);
         std::string line;
 
@@ -99,9 +120,11 @@ void Linker::read_files()
 
         std::vector<Section*> file_sections;
         bool section_inserted = false;
+        auto line_count = 0;
 
         while (std::getline(current_file, line))
         {
+            line_count++;
             std::vector<std::string> splt = split(' ', line);
             
             if (splt.size() == 0)
@@ -112,9 +135,10 @@ void Linker::read_files()
            
             if (state == 0) // Reading symbol table
             {
-                if (splt.size() < 5)
+                if (splt.size() < 6 || splt.size() > 6)
                 {
-                    std::cout << "ERROR! Line word count is : " << splt.size() << "\n";
+                    throw ErrorHandler("Error! Wrong number of arguments(" \
+                                        + std::to_string(splt.size()) + ") on line: " + std::to_string(line_count));
                 }
 
                 if (!current_symbol_table)
@@ -182,7 +206,8 @@ void Linker::read_symbol_table_entry(Symbol_table* current_symbol_table, std::ve
     new_entry->section = splt[1];
     new_entry->offset = std::atoi(splt[2].c_str());
     new_entry->binding = splt[3];
-    new_entry->ord_num = std::atoi(splt[4].c_str());
+    new_entry->value = std::atoi(splt[4].c_str());
+    new_entry->ord_num = std::atoi(splt[5].c_str());
 
     current_symbol_table->add_symbol_table_entry(new_entry);
 }
@@ -313,8 +338,10 @@ Symbol_table_entry* Linker::check_for_symbol_definition(std::vector<Symbol_table
     auto double_extern_table = extern_table;
     auto symbol_found = false;
 
-    for (double_extern_table; double_extern_table != symbol_tables.end(); double_extern_table++)
+    for (double_extern_table = symbol_tables.begin(); double_extern_table != symbol_tables.end(); double_extern_table++)
     {
+        if (double_extern_table == current_symbol_table) continue;
+
         double_entry = (*double_extern_table)->find_symbol(symbol);
        
         if (double_entry != nullptr && !symbol_found)
@@ -339,10 +366,9 @@ Symbol_table_entry* Linker::check_for_symbol_definition(std::vector<Symbol_table
                 symbol_found = true;
             }
         }
-        else if (double_entry != nullptr && symbol_found)
+        else if (double_entry && symbol_found)
         {
-            std::cout << "ERROR! Symbol definition found in two tables! \n";
-            exit(-1);
+            throw ErrorHandler("ERROR! Symbol " + double_entry->label + " definition found in two tables!");
         }
     }
 
@@ -402,8 +428,7 @@ void Linker::make_aggregate_symbol_table()
 
                     if (extern_entry == nullptr)
                     {
-                        std::cout << "ERROR! Symbol definition not found! \n";
-                        exit(-1);
+                        throw ErrorHandler("Symbol " + (*symbol)->label + " definition not found!");
                     }
 
                     to_insert = new Symbol_table_entry(*extern_entry);                  
@@ -419,16 +444,14 @@ void Linker::make_aggregate_symbol_table()
             }
             else
             {
-                if (!in_table_entry->defined && in_table_entry->label != in_table_entry->section)
+                if (in_table_entry->label != in_table_entry->section)
                 {
                     Symbol_table_entry* extern_entry = nullptr;
                     extern_entry = check_for_symbol_definition(symbol_table, (*symbol)->label);
-                    std::cout << (*symbol)->label << "\n";
 
                     if (extern_entry == nullptr)
                     {
-                        std::cout << "ERROR! Symbol definition not found! \n";
-                        exit(-1);
+                        throw ErrorHandler("Symbol " + (*symbol)->label + " definition not found!");
                     }
 
                     Symbol_table_entry* fresh = new Symbol_table_entry(*extern_entry);
@@ -479,7 +502,57 @@ void Linker::make_aggregate_sections(std::vector<std::vector<std::pair<int, int>
         Section* unified_section = Section::create_aggregate_section(_arg_section_vector, section_name.first);
         aggregate_section.emplace_back(unified_section);
     }
+}
 
+void Linker::handle_relocations()
+{
+    for (auto relocation_table: relocations)
+    {
+        std::vector<Relocation_entry*> relocation_vector = relocation_table->get_relocation_table();
+
+        for (auto relocation: relocation_vector)
+        {
+
+            int _roffset = relocation->offset;
+            std::string _rsymbol = relocation->label;
+            std::string _rsection = relocation->section;
+
+            int _rvalue = aggregate_symbol_table->find_symbol(_rsymbol)->value;
+            for (auto section: aggregate_section)
+            {
+                if (section->get_section_name() == _rsection)
+                {
+                    std::cout << "PISEMO :" << std::bitset<16>(_rvalue).to_string() << '\n';
+                    section->write_section_data(_roffset - section->get_section_offset(), std::bitset<16>(_rvalue).to_string());
+                    break;
+                }
+            }
+            // if (relocation->type == Relocation_type::R_ABSOLUTE)
+            // {
+            //     int _roffset = relocation->offset;
+            //     std::string _rsymbol = relocation->label;
+            //     std::string _rsection = relocation->section;
+
+            //     int _rvalue = aggregate_symbol_table->find_symbol(_rsymbol)->value;
+            //     for (auto section: aggregate_section)
+            //     {
+            //         if (section->get_section_name() == _rsection)
+            //         {
+            //             section->write_section_data(_roffset, std::bitset<16>(_rvalue).to_string());
+            //             break;
+            //         }
+            //     }
+            // }
+            // else if (relocation->type == Relocation_type::R_PC_RELATIVE)
+            // {
+
+            // }
+            // else
+            // {
+            //     throw ErrorHandler("ERROR! Wrong relocation type given.");
+            // }
+        }
+    }
 }
 
 void Linker::link_sections()

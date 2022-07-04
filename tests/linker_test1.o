@@ -1,12 +1,8 @@
-.data  .data  0  LOCAL  0
-jumpLabel  .data  0  LOCAL  1
-jumpLabel2 .data 2 LOCAL 2
+.nake  .nake  0  LOCAL  0  0
+je  .nake  0  LOCAL  0  1
+jt  .nake  0  LOCAL  0  2
 
-.text
-0 11110000 10101010
-2 00110011 11001100
-.rodata
-0 00000000 11111111
-.data
-0 00000000 00001010
-2 00001111 00001011
+.nake
+0 01010011 11111111 00000000 00000000 00000000 
+
+3 .nake 1 2 jt

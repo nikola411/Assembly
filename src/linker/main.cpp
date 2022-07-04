@@ -1,4 +1,5 @@
 #include "linker.hpp"
+#include "error_handler.hpp"
 
 #include <iostream>
 #include <string>
@@ -42,20 +43,14 @@ int main(int argc, char* argv[])
 
     Linker lnk(input_files, output_file, is_hex);
 
-    lnk.link();
-
-
-    // current_file.close();
-    // try
-    // {
-    //     lnk.link();
-    // }
-    // catch(const char* e)
-    // {
-    //     std::cout << e << "\n";
-    //     exit(1);
-    // }
+    try
+    {
+        lnk.link();
+    }
+    catch(ErrorHandler e)
+    {
+        e.handle();
+    }
     
-
     return 0;
 }

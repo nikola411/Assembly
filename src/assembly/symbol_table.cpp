@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <bitset>
 
 Symbol_table::Symbol_table()
 {
@@ -130,6 +131,8 @@ std::string Symbol_table::to_string() const
         table_as_string += "  ";
         table_as_string += table[i]->binding;
         table_as_string += "  ";
+        table_as_string += table[i]->defined ? std::to_string(table[i]->value) : std::to_string(0);
+        table_as_string += "  ";  
         table_as_string += std::to_string(i);
         table_as_string += "\n";
     }

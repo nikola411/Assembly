@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <typeinfo>
+#include <set>
 
 class Relocation_table;
 class Line;
@@ -55,7 +56,7 @@ private:
 
     bool end_occured;
 
-    static std::string section_names[5];
+    static std::set<std::string> section_names;
     static std::map<Instruction_type, std::string> instruction_codes;
     static std::map<Jump_type, std::string> jump_codes;
     static std::map<std::string, std::string> register_codes;

@@ -4,7 +4,7 @@
 #include <bitset>
 #include <fstream>
 
-std::string Assembly::section_names[5] = {".text", ".data", ".bss", ".rel", ".rodata"};
+std::set<std::string> Assembly::section_names = std::set<std::string>();
 std::map<Instruction_type, std::string> Assembly::instruction_codes
 {
     { IRET, "00100000" },
@@ -165,7 +165,7 @@ void Assembly::handle_directive(Directive* directive)
         {
             std::string name = (directive->get_operands()) [0];
 
-            if (!does_section_exists(name))
+            if (does_section_exists(name))
             {
                 // ERROR
                 std::cout << "Error! Wrong section name! \n";
@@ -185,6 +185,8 @@ void Assembly::handle_directive(Directive* directive)
                 Symbol_table_entry* entry = new Symbol_table_entry();
                 entry->label = name;
                 entry->section = name;
+                entry->defined = true;
+                entry->value = 0x0;
                 entry->binding = "LOCAL";
 
                 this->symbol_table.add_symbol_table_entry(entry);
@@ -320,6 +322,7 @@ void Assembly::handle_directive(Directive* directive)
                 entry->section = current_section->get_section_name();
                 entry->offset = current_section->get_section_location_counter();
                 entry->defined = true;
+                entry->value = entry->offset;
                 entry->size = 2;
                 symbol_table.add_symbol_table_entry(entry);
             }
@@ -349,6 +352,7 @@ void Assembly::handle_directive(Directive* directive)
                 entry->section = current_section->get_section_name();
                 entry->size = 2;
                 entry->defined = true;              
+                entry->value = entry->offset;
             }
            
             break;
@@ -376,9 +380,14 @@ bool Assembly::does_section_exists(std::string section) const
 {
     for (int i = 0; i < 5; i++)
     {
-        if (section == section_names[i])
+        if (section_names.find(section) != section_names.end())
         {
             return true;
+        }
+        else
+        {
+            section_names.insert(section);
+            return false;
         }
     }
 
@@ -565,6 +574,7 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol)
             relocation->ord_number = symbol_table.get_symbol_ord_number(symbol);
             relocation->type = Relocation_type::R_ABSOLUTE;
             relocation->label = entry->label;
+            std::cout << relocation->label << "\n";
 
             relocation_table.add_new_relocation(relocation);
         }
@@ -579,8 +589,17 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol)
         relocation->offset = current_section->get_section_location_counter();
         relocation->section = current_section->get_section_name();
         relocation->ord_number = symbol_table.get_symbol_ord_number(symbol);
-        relocation->type = Relocation_type::R_PC_RELATIVE;
         relocation->label = entry->label;
+
+        if (entry->defined)
+        {
+            relocation->type = Relocation_type::R_ABSOLUTE;
+        }
+        else
+        {
+            relocation->type = Relocation_type::R_PC_RELATIVE;
+        }
+       
 
         relocation_table.add_new_relocation(relocation);
     }            
@@ -617,7 +636,7 @@ std::string Assembly::get_payload_byte_value(std::string operand, Label_type ope
         {
             to_convert = offset;
         }
-        std::cout << "Getting value of symbol " << to_convert << " \n";
+        
         value += get_symbol_value_or_relocate(to_convert);
     }
 
@@ -646,7 +665,7 @@ void Assembly::write_to_output()
 void Assembly::backpatch()
 {
     std::vector<Symbol_table_entry*> table = symbol_table.get_symbol_table_entry();
-
+    
     for (int i = 0; i < table.size(); i++)
     {
         if (table[i]->defined && table[i]->fref.size() != 0)
@@ -663,7 +682,9 @@ void Assembly::backpatch()
             }
 
             // get symbol value from the section (this can be better, we can keep symbol value in symbol table)
-            std::string value = my_section->read_section_data(table[i]->offset, table[i]->size);
+            // std::string value = my_section->read_section_data(table[i]->offset, table[i]->size);
+            
+            std::string value = std::bitset<16>(table[i]->value).to_string();
             // now write symbol value to the seciton where it is needed
             for (int j = 0; j < table[i]->fref.size(); j++)
             {

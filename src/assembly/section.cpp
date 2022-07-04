@@ -87,7 +87,8 @@ std::string Section::read_section_data(int offset, int size)
 
 void Section::write_section_data(int start, std::string data)
 {
-    if (start + data.size()/8 >= this->data.size() || start < 0)
+    std::cout << "START: " <<start << " size: "<< data.size() / 8 << " data_size " << this->data.size() << '\n';
+    if (start + data.size()/8 > this->data.size() || start < 0)
     {
         std::cout << "ERROR! Trying to write out of section bounds! \n";
     }

@@ -45,6 +45,8 @@ private:
     void make_aggregate_symbol_table();
     void make_aggregate_sections(std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
                                     std::vector<std::pair<std::string, int>>& sections_global);
+    
+    void handle_relocations();
    
     void link_sections();
 
