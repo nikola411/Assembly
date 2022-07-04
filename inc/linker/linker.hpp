@@ -38,9 +38,13 @@ private:
     void update_relocation_tables(std::vector<std::vector<std::string>>& sections_by_file_names,
                                         std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
                                         std::vector<std::pair<std::string, int>>& sections_global);
+
     Symbol_table_entry* check_for_symbol_definition(std::vector<Symbol_table*>::iterator current_symbol_table,
                                     std::string symbol);
+
     void make_aggregate_symbol_table();
+    void make_aggregate_sections(std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
+                                    std::vector<std::pair<std::string, int>>& sections_global);
    
     void link_sections();
 
@@ -52,7 +56,7 @@ private:
     std::vector<Symbol_table*> symbol_tables;
     std::vector<Relocation_table*> relocations;
 
-    Section* aggregate_section;
+    std::vector<Section*> aggregate_section;
     Symbol_table* aggregate_symbol_table;
     Relocation_table* aggregate_relocation_table;
 

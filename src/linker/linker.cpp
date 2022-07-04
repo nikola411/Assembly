@@ -27,6 +27,7 @@ void Linker::link()
     std::unordered_map<std::string, bool> visited_sections_map; // section_name, visited
     std::vector<std::pair<std::string, int>> sections_global; // section_name, global_offset
     
+    // populate help structures
     for (int i = 0; i < sections.size(); i++)
     {
         std::vector<std::string> _nfile_sections_vector;
@@ -59,41 +60,19 @@ void Linker::link()
     update_relocation_tables(sections_by_file_names, sections_by_file_values, sections_global);
 
     make_aggregate_symbol_table();
-    // free up space (this needs to be done for every structure (relocations, sections) so we can do this altogether in one method)
-    for (int file = 0; file < sections.size(); file++)
-    {
-        for (int section = 0; section < sections[file].size(); section++)
-        {
-            if (sections[file][section])
-            {
-                sections[file][section]->set_section_offset(sections_by_file_values[file][section].first);
-            }
-        }
-    }
-
-    std::vector<Section*> sec_vec;
-    for (auto secv: sections)
-    {
-        for (auto sec: secv)
-        {
-            if (sec && sec->get_section_name() == ".text")
-            {
-                sec_vec.emplace_back(sec);
-            }
-        }
-    }
-
-    Section* agg_sec = Section::create_aggregate_section(sec_vec, ".text");
+    make_aggregate_sections(sections_by_file_values, sections_global);
     // agg_sec->print();
-    std::cout << agg_sec->get_section_offset() << " " << agg_sec->get_section_name() << "\n";
-    std::cout << agg_sec->to_string();
-
+    for (auto agg_sec: aggregate_section)
+    {
+        std::cout << agg_sec->get_section_offset() << " " << agg_sec->get_section_name() << "\n";
+        std::cout << agg_sec->to_string();
+    }
+    
+    // free up space (this needs to be done for every structure (relocations, sections) so we can do this altogether in one method)
     for (auto symt: symbol_tables)
     {
         delete symt;
     }
-
-    // aggregate_symbol_table->print();
 
     link_sections();    
 }
@@ -187,9 +166,9 @@ void Linker::read_files()
         if (current_section)
         {
             file_sections.emplace_back(current_section);
-            sections.emplace_back(std::vector<Section*>());
-            sections.back().emplace_back(current_section);
+            sections.emplace_back(file_sections);
         }
+
         current_file.close();
 
         state = 0;
@@ -321,6 +300,10 @@ void Linker::update_relocation_tables(std::vector<std::vector<std::string>>& sec
     }
 }
 
+/*
+    Checks if symbol is defined (exists in some extern symbol table but not in that files relocation table)
+*/
+
 Symbol_table_entry* Linker::check_for_symbol_definition(std::vector<Symbol_table*>::iterator current_symbol_table,
                                                         std::string symbol)
 {
@@ -371,6 +354,12 @@ Symbol_table_entry* Linker::check_for_symbol_definition(std::vector<Symbol_table
     return extern_entry;
 }
 
+/*
+    Iterate through all symbol tables, look through symbols; if symbol is not defined(it is in that files relocation table)
+    then, look through all other symbol tables to find it's definition (it is in symbol table but not in relocation table).
+    Add that symbol to aggregate symbol table and remove it from the table it was previously.
+*/
+
 void Linker::make_aggregate_symbol_table()
 {
     aggregate_symbol_table = new Symbol_table();
@@ -418,16 +407,79 @@ void Linker::make_aggregate_symbol_table()
                     }
 
                     to_insert = new Symbol_table_entry(*extern_entry);                  
+                    to_insert->defined = true;
                 }
                 else
                 {
                     to_insert = new Symbol_table_entry(**symbol);
+                    to_insert->defined = false;
                 }
 
                 aggregate_symbol_table->add_symbol_table_entry(to_insert);
             }
+            else
+            {
+                if (!in_table_entry->defined && in_table_entry->label != in_table_entry->section)
+                {
+                    Symbol_table_entry* extern_entry = nullptr;
+                    extern_entry = check_for_symbol_definition(symbol_table, (*symbol)->label);
+                    std::cout << (*symbol)->label << "\n";
+
+                    if (extern_entry == nullptr)
+                    {
+                        std::cout << "ERROR! Symbol definition not found! \n";
+                        exit(-1);
+                    }
+
+                    Symbol_table_entry* fresh = new Symbol_table_entry(*extern_entry);
+                    fresh->defined = true;
+                    aggregate_symbol_table->remove_symbol_table_entry(*symbol);
+                    aggregate_symbol_table->add_symbol_table_entry(fresh);
+                }
+                else
+                {
+                    (*symbol_table)->remove_symbol_table_entry(*symbol);
+                }
+            }
         }
     }
+}
+
+void Linker::make_aggregate_sections(std::vector<std::vector<std::pair<int, int>>>& sections_by_file_values,
+                                    std::vector<std::pair<std::string, int>>& sections_global)
+{
+    
+    for (int file = 0; file < sections.size(); file++)
+    {
+        for (int section = 0; section < sections[file].size(); section++)
+        {
+            if (sections[file][section])
+            {
+                sections[file][section]->set_section_offset(sections_by_file_values[file][section].first);
+            }
+        }
+    }
+
+    aggregate_section = std::vector<Section*>();
+
+    for (auto section_name: sections_global)
+    {
+        std::vector<Section*> _arg_section_vector;
+        for (auto section_vector: sections)
+        {
+            for (auto section_ptr: section_vector)
+            {
+                if (section_ptr && section_ptr->get_section_name() == section_name.first)
+                {
+                    _arg_section_vector.emplace_back(section_ptr);
+                }
+            }
+        }
+
+        Section* unified_section = Section::create_aggregate_section(_arg_section_vector, section_name.first);
+        aggregate_section.emplace_back(unified_section);
+    }
+
 }
 
 void Linker::link_sections()
