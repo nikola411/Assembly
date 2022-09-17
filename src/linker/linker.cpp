@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <bitset>
+#include <iomanip>
 
 const int SECTION_MAX_OFFSET = 65535;
 
@@ -64,44 +65,74 @@ void Linker::link()
     make_aggregate_symbol_table();
     make_aggregate_sections(sections_by_file_values, sections_global);
 
-    for (auto agg_sec: aggregate_section)
-    {
-        std::cout << agg_sec->get_section_offset() << " " << agg_sec->get_section_name() << "\n";
-        std::cout << agg_sec->to_string();
-        std::cout << "\n";
-    }
-
-    std::cout << aggregate_symbol_table->to_string() << "\n";
-    
-    for (auto relocation_table: relocations)
-    {
-        std::cout << relocation_table->to_string();
-    }
-
     handle_relocations();
-    // agg_sec->print();
+}
 
-    // free up space (this needs to be done for every structure (relocations, sections) so we can do this altogether in one method)
-
-    for (auto agg_sec: aggregate_section)
-    {
-        std::cout << agg_sec->get_section_offset() << " " << agg_sec->get_section_name() << "\n";
-        std::cout << agg_sec->to_string();
-        std::cout << "\n";
-    }
-
+void Linker::generate_hex()
+{
+    std::ofstream current_file(output_file, std::ios_base::out);
+    std::string line;
+    int location_counter = 0;
+    auto cnt = 0;
     
-    for (auto symt: symbol_tables)
+    current_file
+            << std::internal
+            << std::setfill('0');
+
+    for (auto section: aggregate_section)
     {
-        delete symt;
+        std::vector<std::string> data = section->get_section_data();
+        
+        for (auto d: data)
+        {
+            if (cnt == 0)
+            {
+                current_file << std::hex << std::setw(4) << location_counter  << ": ";
+            }
+            cnt++;
+            int val = (int)std::bitset<16>(d).to_ulong();
+            current_file << std::hex << std::setw(2) << val << std::dec << " ";
+            if (cnt == 8)
+            {
+                cnt = 0;
+                current_file << " \n";
+            }
+
+            location_counter++;
+        }
     }
 
-    link_sections();    
 }
 
 Linker::~Linker()
 {
+    // Symbol_table* aggregate_symbol_table;
+    // Relocation_table* aggregate_relocation_table;
+    for (int i = 0; i < sections.size(); i++)
+    {
+        for (int j = 0; j < sections[i].size(); j++)
+        {
+            delete sections[i][j];
+        }
+    }
 
+    for (int i = 0; i < symbol_tables.size(); i++)
+    {
+        delete symbol_tables[i];
+    }
+
+    for (int i = 0; i < relocations.size(); i++)
+    {
+        delete relocations[i];
+    }
+
+    // for (int i = 0; i < aggregate_section.size(); i++)
+    // {
+    //     delete aggregate_section[i];
+    // }
+
+    // delete aggregate_symbol_table;
+    // delete aggregate_relocation_table;
 }
 
 void Linker::read_files()
@@ -111,7 +142,7 @@ void Linker::read_files()
     
     for (auto file : input_files)
     {
-        std::ifstream current_file("tests/" + file, std::ios_base::in);
+        std::ifstream current_file(file, std::ios_base::in);
         std::string line;
 
         Symbol_table* current_symbol_table = nullptr;
@@ -512,7 +543,6 @@ void Linker::handle_relocations()
 
         for (auto relocation: relocation_vector)
         {
-
             int _roffset = relocation->offset;
             std::string _rsymbol = relocation->label;
             std::string _rsection = relocation->section;
@@ -522,7 +552,6 @@ void Linker::handle_relocations()
             {
                 if (section->get_section_name() == _rsection)
                 {
-                    std::cout << "PISEMO :" << std::bitset<16>(_rvalue).to_string() << '\n';
                     section->write_section_data(_roffset - section->get_section_offset(), std::bitset<16>(_rvalue).to_string());
                     break;
                 }

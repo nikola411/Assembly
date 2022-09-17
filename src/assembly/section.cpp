@@ -22,14 +22,19 @@ int Section::get_section_location_counter() const
 /*
     We need to update section offset and offset of every memory location in this section.
 */
-void  Section::set_section_offset(int offset)
+void Section::set_section_offset(int offset)
 {
     this->offset = offset;
 }
 
-int  Section::get_section_offset() const
+int Section::get_section_offset() const
 {
     return this->offset;
+}
+
+std::vector<std::string> Section::get_section_data() const
+{
+    return data;
 }
 
 void Section::add_section_data(std::string data)

@@ -111,7 +111,6 @@ line:
     directive 
     | instruction
     | jump
-    | COMMENT
     ;
 
 directive:
@@ -220,6 +219,12 @@ jump:
     | JGT jump_operand
     {
         $$ = $2; $$ -> set_jump_type(Jump_type::JGT);
+        assembly.add_new_line($$);
+    }
+    | CALL jump_operand
+    {
+        $$ = $2;
+        $$ -> set_jump_type(Jump_type::CALL);
         assembly.add_new_line($$);
     }
     ;
@@ -387,12 +392,14 @@ instruction_type:
 one_operand_instructions:
     POP REGISTER 
     {
-        $$ = new Instruction(Instruction_type::POP, $2); 
+        $$ = new Instruction(Instruction_type::POP, $2);
+        $$->set_addressing_type(MEMORY); 
         assembly.add_new_line($$);
     }
     | PUSH REGISTER
     {
-        $$ = new Instruction(Instruction_type::PUSH, $2); 
+        $$ = new Instruction(Instruction_type::PUSH, $2);
+        $$->set_addressing_type(MEMORY);
         assembly.add_new_line($$);
     }
     | NOT REGISTER
@@ -403,12 +410,6 @@ one_operand_instructions:
     | INT REGISTER
     {
         $$ = new Instruction(Instruction_type::INT, $2); 
-        assembly.add_new_line($$);
-    }
-    | CALL operand 
-    {
-        $$ = $2;
-        $$ -> set_instruction_type(Instruction_type::CALL);
         assembly.add_new_line($$);
     }
     ;

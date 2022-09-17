@@ -1,5 +1,6 @@
 #include "linker.hpp"
 #include "error_handler.hpp"
+#include "relocation_table.hpp"
 
 #include <iostream>
 #include <string>
@@ -42,15 +43,19 @@ int main(int argc, char* argv[])
     }
 
     Linker lnk(input_files, output_file, is_hex);
-
+    
     try
     {
         lnk.link();
+        
     }
     catch(ErrorHandler e)
     {
         e.handle();
     }
+
+    lnk.generate_hex();
+    
     
     return 0;
 }

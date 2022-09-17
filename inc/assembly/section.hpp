@@ -19,6 +19,7 @@ public:
     std::string get_section_name() const;
     int get_section_location_counter() const;
     int get_section_offset() const;
+    std::vector<std::string> get_section_data() const;
     
     std::string read_section_data(int, int);
     void write_section_data(int, std::string);

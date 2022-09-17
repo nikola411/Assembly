@@ -1,6 +1,8 @@
 ASSEMBLY_INC_DIR = ./inc/assembly
 LINKER_INC_DIR =  ./inc/linker
 ERROR_HANDLER_IND_DIR = ./inc/error_handling
+EMULATOR_INC_DIR = ./inc/emulator
+
 PARSER_SCANNER_DIR = ./misc
 PARSER_INC = ${PARSER_SCANNER_DIR}/parser/
 PARSER_SRC = ${PARSER_SCANNER_DIR}/parser/
@@ -18,10 +20,8 @@ ASSEMBLY_SOURCE += $(wildcard ./src/assembly/*.cpp)
 ASSEMBLY_SOURCE += ${PARSER_SCANNER_DIR}/scanner/scanner.cpp
 ASSEMBLY_SOURCE += ${PARSER_SCANNER_DIR}/parser/parser.cpp
 ASSEMBLY_SOURCE += ./src/error_handling/error_handler.cpp
-
 ASSEMBLY_OUTPUT = -o ./asembler
 
-# here we put assembly_inc_dir as include dir since we will be using section and relocation table and possibly even more things
 LINKER_INCLUDES = -I${LINKER_INC_DIR} -I${ASSEMBLY_INC_DIR} -I${ERROR_HANDLER_IND_DIR}
 LINKER_SOURCE =
 LINKER_SOURCE += $(wildcard ./src/linker/*.cpp)
@@ -31,7 +31,15 @@ LINKER_SOURCE += ./src/assembly/relocation_table.cpp
 LINKER_SOURCE += ./src/error_handling/error_handler.cpp
 LINKER_OUTPUT = -o ./linker
 
+EMULATOR_INCLUDES = -I${EMULATOR_INC_DIR} -I${ERROR_HANDLER_IND_DIR}
+EMULATOR_SOURCE = 
+EMULATOR_SOURCE += $(wildcard ./src/emulator/*.cpp)
+EMULATOR_OUTPUT = -o ./emulator
+
 DEBUG_ENABLED = 1
+
+emu:
+	g++ ${EMULATOR_INCLUDES} -g ${EMULATOR_SOURCE} ${EMULATOR_OUTPUT}
 
 lnk:
 	g++ ${LINKER_INCLUDES} -g  ${LINKER_SOURCE} ${LINKER_OUTPUT}
@@ -50,3 +58,4 @@ clean:
 	rm -rf misc/parser/* misc/parser/*.hpp
 	rm -rf ./asembler
 	rm -rf ./linker
+	rm -rf ./emulator

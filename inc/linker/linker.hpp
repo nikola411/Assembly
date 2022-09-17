@@ -16,6 +16,7 @@ public:
     Linker(std::vector<std::string>, std::string, bool);
 
     void link();
+    void generate_hex();
     std::vector<std::string> split(char s, std::string delimeter) const;
 
     ~Linker();

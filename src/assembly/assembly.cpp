@@ -11,7 +11,6 @@ std::map<Instruction_type, std::string> Assembly::instruction_codes
     { HALT, "00000000" },
     { RET, "01000000" },
     { INT, "00010000" },
-    { CALL, "00110000" },
     { XCHG, "01100000" },
     { ADD, "01110000" },
     { SUB, "01110001" },
@@ -26,7 +25,9 @@ std::map<Instruction_type, std::string> Assembly::instruction_codes
     { SHL,  "10010000" },
     { SHR,  "10010001" },
     { STR, "10110000" },
-    { LDR, "10100000" }
+    { LDR, "10100000" },
+    { PUSH, "10110000"},
+    { POP, "10100000"}
 };
 
 std::map<Jump_type, std::string> Assembly::jump_codes
@@ -34,7 +35,8 @@ std::map<Jump_type, std::string> Assembly::jump_codes
     {JMP, "01010000"},
     {JEQ, "01010001"},
     {JNE, "01010010"},
-    {JGT, "01010011"}
+    {JGT, "01010011"},
+    {CALL, "00110000"}
 };
 
 std::map<std::string, std::string> Assembly::register_codes
@@ -64,7 +66,7 @@ std::map<std::string, std::string> Assembly::addressing_codes
 
 Assembly::Assembly(std::string output_file) : end_occured(false), output_file(output_file)
 {
-  
+    this->current_section = new Section("UNDEFINED");
 }
 
 Line* Assembly::get_current_line()
@@ -150,7 +152,6 @@ void Assembly::handle_jump(Jump* jump)
     // Filling addressing bytes
     Addressing_type addr_type = jump->get_addressing_type();
     value += get_addressing_byte_value(addr_type, jump->get_operand_type());
-
     // Filling payload bytes
     value += get_payload_byte_value(jump->get_operand_value(), jump->get_operand_type(), addr_type, jump->get_offset_value(), jump->get_offset_type());
     //Adding value to section
@@ -172,7 +173,7 @@ void Assembly::handle_directive(Directive* directive)
                 break;
             }
 
-            if (current_section == nullptr || name != current_section->get_section_name()) 
+            if (current_section == nullptr || name != current_section->get_section_name() || current_section->get_section_name() == "UNDEFINED") 
             { // new section, reset local counter and update secitions vectr
                 if (current_section != nullptr)
                 {
@@ -393,10 +394,11 @@ bool Assembly::does_section_exists(std::string section) const
 
     return false;
 }
-// this method will not return only addressing byte but also if needed the payload bytes
+
 std::string Assembly::get_addressing_byte_value(Addressing_type addr_type, Label_type label_type) const
 {
     std::string value = "0000"; // dummy padding, should have a meaningful value
+
     if (label_type == Label_type::REGISTER)
     {
         if (addr_type == Addressing_type::LITERAL_OFFSET)
@@ -452,34 +454,18 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
     {
         std::string operand_value = "";
         std::string operand;
-
         value += instruction_codes[type];
+        operand = instruction->get_first_operand();
 
-        if (type == Instruction_type::CALL)
+        if (type == PUSH || type == POP)
         {
-            // Here we call get second operand because when parsing, since Instruction class is
-            // made to recognize only registers as first operands
-            // we pack call operand as second operand to be able to know its type
-            operand = instruction->get_second_operand(); 
-            Label_type type = instruction->get_second_operand_type();
-
-            if (type == REGISTER)
-            {
-                value += register_codes[operand] + "1111";
-            }
-            else
-            {
-                value += "111111111";
-            }
-
-            value += get_addressing_byte_value(instruction->get_addressing_type(), type);
-            value += get_payload_byte_value(operand, type, instruction->get_addressing_type(), instruction->get_offset(), instruction->get_offset_type());
-
-            return value;
+            value += register_codes[operand] + register_codes["sp"];
+            std::string addr_byte = get_addressing_byte_value(instruction->get_addressing_type(), Label_type::REGISTER);
+            value += type == PUSH ? "0001" : "0100"; 
+            value += addr_byte.substr(4, 8);
         }
         else
         {
-            operand = instruction->get_first_operand();
             value += register_codes[operand] + "0000";
             value += get_addressing_byte_value(instruction->get_addressing_type(), Label_type::REGISTER);
         }
@@ -494,10 +480,9 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
         value += instruction_codes[type];
         std::string op1 = instruction->get_first_operand();
         std::string op2 = instruction->get_second_operand();
-        value += register_codes[op1];
-    
         Label_type sec_op_type = instruction->get_second_operand_type();
 
+        value += register_codes[op1];
         if (sec_op_type == Label_type::REGISTER)
         {
             value += register_codes[op2];
@@ -506,7 +491,7 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
         {
             value += "1111";
         }
-
+        
         value += get_addressing_byte_value(instruction->get_addressing_type(), sec_op_type);
         value += get_payload_byte_value(op2, sec_op_type, instruction->get_addressing_type(), instruction->get_offset(), instruction->get_offset_type());
         // second operand type is symbol so we need to see about that

@@ -17,12 +17,12 @@ enum Instruction_type
     ADD, SUB, DIV, MUL,
     CMP, NOT, AND, OR, XOR, TEST, SHL, SHR,
     LDR, STR,
-    IRET, HALT, RET, CALL, INT
+    IRET, HALT, RET, INT
 };
 
 enum Jump_type
 {
-    JMP, JEQ, JNE, JGT
+    JMP, JEQ, JNE, JGT, CALL
 };
 
 enum Label_type
