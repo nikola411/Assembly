@@ -299,7 +299,7 @@ void Assembly::handle_directive(Directive* directive)
                 else if (types[i] == Label_type::SYMBOL)
                 {
                     // If we know the value of the symbol, we write it to the section data
-                    std::string value = get_symbol_value_or_relocate(args[i]);
+                    std::string value = get_symbol_value_or_relocate(args[i], Addressing_type::ABSOLUTE);
                     current_section->add_section_data(value);
                 }
                 else
@@ -510,7 +510,7 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
     return value;
 }
 
-std::string Assembly::get_symbol_value_or_relocate(std::string symbol)
+std::string Assembly::get_symbol_value_or_relocate(std::string symbol, Addressing_type addr_type)
 {
     Symbol_table_entry* entry = symbol_table.find_symbol(symbol);
     std::string operand_value = std::bitset<16>(0).to_string();
@@ -623,7 +623,7 @@ std::string Assembly::get_payload_byte_value(std::string operand, Label_type ope
             to_convert = offset;
         }
         
-        value += get_symbol_value_or_relocate(to_convert);
+        value += get_symbol_value_or_relocate(to_convert, addr_type);
     }
 
     return value;

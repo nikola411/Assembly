@@ -108,12 +108,40 @@ struct Relocation_entry
     std::string label;
     int ord_number;
     Relocation_type type;
+
+    Relocation_entry()
+    {
+
+    }
+
+    Relocation_entry(Relocation_entry& orig)
+    {
+        this->offset = orig.offset;
+        this->section = orig.section;
+        this->label = orig.label;
+        this->ord_number = orig.ord_number;
+        this->type = orig.type;
+    }
+
+    Relocation_entry(Relocation_entry&&) = default;
 };
 
 struct Section_entry
 {
     int offset;
     int size;
+
+    Section_entry()
+    {
+
+    }
+
+    Section_entry(const Section_entry& orig)
+    {
+        this->offset = orig.offset;
+        this->size = orig.size;
+    }
+
 };
 
 #endif

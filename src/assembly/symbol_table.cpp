@@ -131,8 +131,10 @@ std::string Symbol_table::to_string() const
         table_as_string += "  ";
         table_as_string += table[i]->binding;
         table_as_string += "  ";
-        table_as_string += table[i]->defined ? std::to_string(table[i]->value) : std::to_string(0);
+        table_as_string += std::to_string((int)table[i]->defined);
         table_as_string += "  ";  
+        table_as_string += std::to_string(table[i]->defined ? table[i]->value : 0);
+        table_as_string += "  ";
         table_as_string += std::to_string(i);
         table_as_string += "\n";
     }
@@ -142,5 +144,8 @@ std::string Symbol_table::to_string() const
 
 Symbol_table::~Symbol_table()
 {
-
+    for (auto& entry: table)
+    {
+        delete entry;
+    }
 }

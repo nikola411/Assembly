@@ -47,17 +47,7 @@ int main(int argc, char* argv[])
     try
     {
         Linker lnk(input_files, output_file, is_hex);
-        lnk.link();
-
-        if (is_hex)
-        {
-            lnk.generate_hex();
-        }
-        else
-        {
-
-        }
-        
+        lnk.link();        
     }
     catch(ErrorHandler e)
     {

@@ -8,6 +8,7 @@ class Section
 {
 public:
     Section(std::string);
+    Section(const Section&);
 
     void add_section_data(std::string);
     void add_section_data(int data);

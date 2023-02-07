@@ -34,7 +34,7 @@ private:
     bool does_section_exists(std::string) const;
     std::string get_instruction_value(Instruction*);
     std::string get_addressing_byte_value(Addressing_type addr_type, Label_type label_type) const;
-    std::string get_symbol_value_or_relocate(std::string symbol);
+    std::string get_symbol_value_or_relocate(std::string symbol, Addressing_type addr_type);
     std::string get_payload_byte_value(std::string operand, Label_type operand_type, Addressing_type addr_type, std::string offset = "", Label_type offset_type = Label_type::REGISTER);
     void write_to_output();
 

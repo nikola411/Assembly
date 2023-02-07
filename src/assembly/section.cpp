@@ -9,6 +9,23 @@ Section::Section(std::string name) : section_name(name), location_counter{0}, of
 
 }
 
+Section::Section(const Section& orig)
+{
+    this->section_name = orig.section_name;
+    this->location_counter = orig.location_counter;
+    this->offset = orig.offset;
+
+    for (auto byte: orig.data)
+    {
+        this->data.emplace_back(byte);
+    }
+
+    for (auto info: orig.section_data)
+    {
+        this->section_data.emplace_back(new Section_entry(*info));
+    }
+}
+
 std::string Section::get_section_name() const
 {
     return this->section_name;
@@ -92,7 +109,8 @@ std::string Section::read_section_data(int offset, int size)
 
 void Section::write_section_data(int start, std::string data)
 {
-    std::cout << "START: " <<start << " size: "<< data.size() / 8 << " data_size " << this->data.size() << '\n';
+    std::cout << "START: " << start << " size: "<< data.size() / 8 << " data_size " << this->data.size() << '\n';
+    std::cout << "writing data: " << data << " \n";
     if (start + data.size()/8 > this->data.size() || start < 0)
     {
         std::cout << "ERROR! Trying to write out of section bounds! \n";
@@ -168,7 +186,11 @@ Section* Section::create_aggregate_section(std::vector<Section*> sections, std::
 
         for (auto data: section->section_data)
         {
-            aggregate->section_data.emplace_back(data);
+            Section_entry* section_entry_copy = new Section_entry();
+            section_entry_copy->offset = data->offset;
+            section_entry_copy->size = data->size;
+
+            aggregate->section_data.emplace_back(section_entry_copy);
             aggregate->section_data.back()->offset = last_chunk_offset;
             last_chunk_offset += aggregate->section_data.back()->size;
         }
