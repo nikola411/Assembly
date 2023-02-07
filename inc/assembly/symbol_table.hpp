@@ -26,7 +26,6 @@ public:
 
     ~Symbol_table();
 
-private:
     std::vector<Symbol_table_entry*> table;
     int location_counter;
     

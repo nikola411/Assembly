@@ -112,10 +112,10 @@ void Section::print() const
     int cnt = 0;
     for (int i = 0; i < section_data.size(); i++)
     {
-        int start = section_data[i]->offset - offset;
+        int start = section_data[i]->offset;
         int end = start + section_data[i]->size;
 
-        std::cout << start<< " ";
+        std::cout << start + offset<< " ";
 
         for (int j = start; j < end; j++)
         {

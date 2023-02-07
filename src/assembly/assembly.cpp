@@ -214,6 +214,7 @@ void Assembly::handle_directive(Directive* directive)
                     sym->label = operands[i];
                     sym->defined = false;
                     sym->binding = "GLOBAL";
+                    sym->section = "UNDEFINED";
 
                     symbol_table.add_symbol_table_entry(sym);
                 }
@@ -638,7 +639,10 @@ void Assembly::write_to_output()
     // write sections
     for (auto sec: sections)
     {
-        out_file << sec->to_string();
+        if (sec->get_section_name() != "UNDEFINED")
+        {
+            out_file << sec->to_string();
+        }
     }
     //write relocations
     out_file << "\n";
