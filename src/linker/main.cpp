@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
         }
         else if (read_output)
         {
+            std::cout << argv[i] << " ";
             output_file = argv[i];
             read_output = false;
         }
@@ -38,23 +39,21 @@ int main(int argc, char* argv[])
         }
         else
         {
+            std::cout << current << " ";
             input_files.emplace_back(current);
         }
     }
-
-    Linker lnk(input_files, output_file, is_hex);
     
     try
     {
-        lnk.link();
-        
+        Linker lnk(input_files, output_file, is_hex);
+        lnk.link();        
     }
     catch(ErrorHandler e)
     {
         e.handle();
     }
 
-    lnk.generate_hex();
     
     
     return 0;

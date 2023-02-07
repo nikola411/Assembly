@@ -111,7 +111,8 @@ void Emulator::start_emulating()
                     // exit(1);
                 }
 
-                current_instruction->op_code = jump_codes.find(byte) == jump_codes.end() ? instruction_codes[byte] : jump_codes[byte];
+                //current_instruction->op_code = jump_codes.find(byte) == jump_codes.end() ? instruction_codes[byte] : jump_codes[byte];
+                current_instruction->op_code = byte;
                 state = REGISTERS;
                 std::cout << "CODE \n";
                 break;
