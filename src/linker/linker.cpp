@@ -11,12 +11,6 @@
 #include <bitset>
 #include <iomanip>
 
-void BREAK()
-{
-    int a;
-    std::cin >> a;
-}
-
 const int SECTION_MAX_OFFSET = 65535;
 
 enum FILE_READ_STATE
@@ -26,14 +20,17 @@ enum FILE_READ_STATE
 
 struct File_handle
 {
-    File_handle()
-    {
-
-    }
-
     Symbol_table file_symbol_table;
     std::vector<Section*> file_sections;
     Relocation_table file_relocations;
+
+    ~File_handle()
+    {
+        for (auto sec: file_sections)
+        {
+            delete sec;
+        }
+    }
 };
 
 Linker::Linker(std::vector<std::string> input_files, std::string output_file, bool is_hex) :
@@ -41,37 +38,19 @@ Linker::Linker(std::vector<std::string> input_files, std::string output_file, bo
     output_file(output_file),
     is_hex(is_hex)
 {
-    read_files();
+    relocation_table = new Relocation_table();
+    symbol_table = new Symbol_table();
+    read_files(); 
 }
 
 void Linker::link()
 {
-    std::cout << "DEBUG INFO: Loaded files \n";
-    for (auto file: files)
-    {
-        file->file_symbol_table.print();
-        std::cout << "\n";
-        for (auto sec: file->file_sections)
-        {
-            sec->print();
-        }
-        
-        file->file_relocations.print();
-    }
-    
-    std::cout << "DEBUG INFO END. \n";
-
     //--------------------update sections offsets--------------------
     update_sections_offsets();
-
-    for(auto section: sections)
-    {
-        section->print();
-    }
     //--------------------update offsets in relocations--------------------
-
+    update_relocations_offsets();
     //--------------------make unified symbol table--------------------
-
+    merge_sections();
     //--------------------write relocation data to sections--------------------
 
     //--------------------write sections to output--------------------
@@ -84,19 +63,13 @@ void Linker::generate_hex()
 
 Linker::~Linker()
 {
-    for (int i = 0; i < files.size(); i++)
-    {
-        delete files[i];
-    }
-
     delete symbol_table;
     delete relocation_table;
 
-    for (int i = 0; i < sections.size(); i++)
+    for (auto section: sections)
     {
-        delete sections[i];
+        delete section;
     }
-
 }
 
 void Linker::update_sections_offsets()
@@ -111,9 +84,62 @@ void Linker::update_sections_offsets()
 
             section->set_section_offset(offset);
             offset += section->get_section_location_counter();
-            sections.emplace_back(section);
         }
     }
+}
+
+void Linker::update_relocations_offsets()
+{
+    for (auto file_handle: files)
+    {
+        auto relocation_vector = file_handle->file_relocations.get_relocation_table();
+        
+        for (auto relocation: relocation_vector)
+        {
+            if (!relocation) continue;
+
+            std::string relocation_section = relocation->section;
+
+            for (auto section: file_handle->file_sections)
+            {
+                if (section != nullptr && section->get_section_name() == relocation_section)
+                {
+                    relocation->offset += section->get_section_offset();
+                }
+            }
+        }
+    }
+}
+
+void Linker::merge_sections()
+{
+    std::map<std::string, std::vector<Section*>> sections_map = {};
+    std::vector<std::string> sections_order = {};
+
+    for (auto file_handle: files)
+    {
+        for (auto section: file_handle->file_sections)
+        {
+            std::string section_name = section->get_section_name();
+            std::cout << section_name << " \n";
+            if (sections_map[section_name].size() == 0)
+            {
+                sections_order.emplace_back(section_name);
+            }
+
+            sections_map[section_name].emplace_back(section);
+        }
+    }
+    
+    for (auto section_name: sections_order)
+    {
+        sections.emplace_back(Section::create_aggregate_section(sections_map[section_name], section_name));
+    }
+}
+
+void Linker::merge_relocations()
+{
+
 }
 
 void Linker::read_files()
@@ -122,13 +148,15 @@ void Linker::read_files()
     int file_cnt = 0;
     int line_cnt = 0;
     
-    
+    File_handle* current_file;
     for (auto file : input_files)
     {
-        File_handle* current_file = new File_handle();
         std::ifstream input_file(file, std::ios_base::in);
         std::string line;
+
+        current_file = new File_handle();
         Section* current_section = nullptr;
+        Relocation_entry* current_relocation = nullptr;
 
         while (std::getline(input_file, line))
         {
@@ -160,6 +188,7 @@ void Linker::read_files()
                 {
                     if (line == "")
                     {
+                        current_relocation = nullptr;
                         state = RELOCATION;
                         continue;
                     }
@@ -208,7 +237,7 @@ void Linker::read_files()
 
                     if (line == "") break;
 
-                    Relocation_entry* current_relocation = new Relocation_entry();
+                    current_relocation = new Relocation_entry();
                     std::vector<std::string> data = split(' ', line);
 
                     current_relocation->offset = atoi(data[0].c_str());
@@ -224,7 +253,20 @@ void Linker::read_files()
             }
         }
 
+        if (current_section)
+        {
+            current_file->file_sections.emplace_back(current_section);
+            current_section = nullptr;
+        }
+
+        if (current_relocation)
+        {
+            current_file->file_relocations.add_new_relocation(current_relocation);
+            current_relocation = nullptr;
+        }
+
         files.emplace_back(current_file);
+        current_file = nullptr;
         state = TABLE;
     }
 }

@@ -25,6 +25,9 @@ public:
 private:
 
     void update_sections_offsets();
+    void update_relocations_offsets();
+    void merge_sections();
+    void merge_relocations();
 
     void read_files();
     std::vector<std::string> split(char del, std::string agg) const;

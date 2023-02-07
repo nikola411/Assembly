@@ -36,12 +36,14 @@ EMULATOR_SOURCE =
 EMULATOR_SOURCE += $(wildcard ./src/emulator/*.cpp)
 EMULATOR_OUTPUT = -o ./emulator
 
-DEBUG_ENABLED = 1
+DEBUG_ENABLED = 0
 
 GPP_FLAGS = 
 
 ifeq (${DEBUG_ENABLED}, 1)
 	GPP_FLAGS += -g3
+else 
+	GPP_FLAGS += -g
 endif
 
 emu:

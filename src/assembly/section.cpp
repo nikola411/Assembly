@@ -4,7 +4,7 @@
 #include <iostream>
 #include <bitset>
 
-Section::Section(std::string name) : section_name(name), location_counter(0), offset(0)
+Section::Section(std::string name) : section_name(name), location_counter{0}, offset{0}
 {
 
 }
@@ -183,7 +183,10 @@ Section::~Section()
 {
     for (int i = 0; i < section_data.size(); i++)
     {
-        delete section_data[i];
+        if (section_data[i])
+        {
+            delete section_data[i];
+            section_data[i] = nullptr;
+        }
     }
-
 }

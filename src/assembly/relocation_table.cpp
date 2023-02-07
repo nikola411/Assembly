@@ -109,6 +109,10 @@ Relocation_table::~Relocation_table()
 {
     for (int i = 0; i < relocations.size(); i++)
     {
-        delete relocations[i];
+        if (relocations[i] != nullptr)
+        {
+            delete relocations[i];
+            relocations[i] = nullptr;
+        }
     }
 }
