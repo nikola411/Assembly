@@ -28,12 +28,6 @@ std::map<BYTE, Instruction_type> Emulator::instruction_codes
     { 0x91, SHR },
     { 0xB0, STR },
     { 0xA0, LDR },
-    { 0xB0, PUSH },
-    { 0xA0, POP }
-};
-
-std::map<BYTE, Jump_type> Emulator::jump_codes
-{
     { 0x50, JMP},
     { 0x51, JEQ},
     { 0x52, JNE},
@@ -66,9 +60,17 @@ std::map<BYTE, std::string> Emulator::addressing_codes
     {0x04, "MEMORY"}
 };
 
-Emulator::Emulator(std::string input_file) : input_file(input_file)
+Emulator::Emulator(std::string input_file) : input_file(input_file), finished(false)
 {
     pc = PR_START;
+    psw = 0;
+    r0 = 0;
+    r1 = 0;
+    r2 = 0;
+    r3 = 0;
+    r4 = 0;
+    r5 = 0;
+    sp = SP_START;
 
     registers["r0"] = &r0;
     registers["r1"] = &r1;
@@ -95,26 +97,40 @@ void Emulator::start_emulating()
 {
     int state = CODE;
     int i = 0;
-    while (i++ < 10)
+    this->finished = false;
+
+    Instruction* current_instruction = new Instruction();
+
+    while (pc <= PR_END)
     {
+        if (this->finished == true) break;
+
         BYTE byte = memory[pc];
-        ++pc;
-        Instruction* current_instruction = new Instruction();
-        std::cout << std::hex << (int)byte << " ";
+        std::cout << std::hex << pc << " " << std::hex << (int)byte << "\n";
+        if (state != EXECUTION)
+        {
+            ++pc;
+        }
+       
         switch (state)
         {
             case CODE:
             {
-                if (instruction_codes.find(byte) == instruction_codes.end() && jump_codes.find(byte) == jump_codes.end())
+                if (instruction_codes.find(byte) == instruction_codes.end())
                 {
-                    // std::cout << "ERROR! Operation does not exist! \n";
-                    // exit(1);
+                    std::cout << "ERROR! Operation does not exist! \n";
+                    exit(1);
                 }
 
-                //current_instruction->op_code = jump_codes.find(byte) == jump_codes.end() ? instruction_codes[byte] : jump_codes[byte];
+                if (instruction_codes[byte] == HALT)
+                {
+                    this->finished = true;
+                    break;
+                }
+
                 current_instruction->op_code = byte;
                 state = REGISTERS;
-                std::cout << "CODE \n";
+                
                 break;
             }
             case REGISTERS:
@@ -122,20 +138,20 @@ void Emulator::start_emulating()
                 if (register_codes.find(byte >> 4) == register_codes.end() && register_codes.find(byte & 0x0F) == register_codes.end())
                 {
                     std::cout << "ERROR! Wrong register! ";
-                    // exit(1);
+                    exit(1);
                 }
 
                 current_instruction->registers = byte;
                 state = ADDRESSING;
-                std::cout << "REGISTERS \n";
+                
                 break;
             }
             case ADDRESSING:
             {
                 if (addressing_codes.find(byte >> 4) == addressing_codes.end())
                 {
-                    // std::cout << "ERROR! Wrong register! ";
-                    // exit(1);
+                    std::cout << "ERROR! Wrong Addressing type! ";
+                    exit(1);
                 }
 
                 current_instruction->addressing = byte;
@@ -148,35 +164,39 @@ void Emulator::start_emulating()
                 {
                     state = PAYLOAD1;
                 }
-                std::cout << "ADDRESSING \n";
+                
                 break;
             }
             case PAYLOAD1:
             {
                 current_instruction->load1 = byte;
                 state = PAYLOAD2;
-                std::cout << "PAYLOAD1 \n";
+                
                 break;
             }
             case PAYLOAD2:
             {
                 current_instruction->load2 = byte;
                 state = EXECUTION;
-                std::cout << "PAYLOAD2 \n";
+                
                 break;
             }
             case EXECUTION:
             {
                 execute_instruction(current_instruction);
+                delete current_instruction;
+                current_instruction = new Instruction();
                 state = CODE;
-                std::cout << "EXECUTION \n";
+                
                 break;
             }
             default: break;
         }
 
-        delete current_instruction;
+        
     }
+    finish_emulation();
+    // write final output
 }
 
 void Emulator::read_input_and_load()
@@ -185,12 +205,14 @@ void Emulator::read_input_and_load()
     std::string line;
     std::stringstream ss;
     unsigned int value; 
-    BYTE start;
+    unsigned int start;
 
     while (std::getline(current_file, line))
     {
         std::vector<std::string> string_bytes = split(' ', line);
-        start = (BYTE)atoi(string_bytes[0].substr(0, 4).c_str());
+        ss.clear();
+        ss << std::hex << string_bytes[0].substr(0, 4);
+        ss >> start;
 
         for (int i = 1; i < string_bytes.size(); i++)
         {
@@ -203,7 +225,7 @@ void Emulator::read_input_and_load()
                 // ERROR
             }
 
-            memory[PR_START + start + i - 1] = (BYTE)value;
+            memory[PR_START + (int)start + i - 1] = (BYTE)value;
         }
     }
 }
@@ -213,10 +235,72 @@ Emulator::~Emulator()
 
 }
 
+void Emulator::finish_emulation()
+{
+    if (finished) 
+    {
+        std::cout << "Emulated processor executed halt instruction \n";
+    }
+    else
+    {
+        std::cout << "Emulated prcessor did not finish execution properly \n";
+    }
+
+    std::cout << "Emulated processor state: \n";
+    std::cout << "psw=0b" << std::bitset<16>(psw).to_string() << "\n";
+    for (int i = 0; i < 8; i++)
+    {
+        if (i % 4) std::cout << "\n";
+        std::cout << "r" << i << "=0b" << std::bitset<4>(*r[i]) << " ";
+    }
+}
+
+
 void Emulator::execute_instruction(Instruction* to_execute)
 {
-    switch (to_execute->op_code)
+    switch (instruction_codes[to_execute->op_code])
     {
+        case HALT:
+        {       
+            finished = true;
+            break;
+        }
+        case INT:
+        {
+            break;
+        }
+        case IRET:
+        {
+            break;
+        }
+        case CALL:
+        {
+            break;
+        }
+        case RET:
+        {
+            break;
+        }
+        case JMP:
+        {
+            break;
+        }
+        case JEQ:
+        {
+            break;
+        }
+        case JNE:
+        {
+            break;
+        }
+        case JGT:
+        {
+            break;
+        }
+        case XCHG:
+        {
+            break;
+        }
         case ADD:
         {
             BYTE r_byte = to_execute->registers;
@@ -239,6 +323,10 @@ void Emulator::execute_instruction(Instruction* to_execute)
         {
             BYTE r_byte = to_execute->registers;
             *r[r_byte >> 4] = *r[r_byte >> 4] / *r[r_byte & 0x0F]; 
+            break;
+        }
+        case CMP:
+        {
             break;
         }
         case NOT:
@@ -264,9 +352,39 @@ void Emulator::execute_instruction(Instruction* to_execute)
             *r[r_byte >> 4] = *r[r_byte >> 4] ^ *r[r_byte & 0x0F]; 
             break;
         }
-        
-        
+        case TEST:
+        {
+            break;
+        }
+        case SHL:
+        {
+            break;
+        }
+        case SHR:
+        {
+            break;
+        }
+        case LDR:
+        {
+            std::string addr_type = addressing_codes[to_execute->addressing];
+            WORD value = 0;
+            if (addr_type == "IMMEDIATE")
+            {
+                value = (int)(to_execute->load1 << 8 | to_execute->load2);
+            }
+            else if (addr_type == "MEMORY")
+            {
+                value = memory[to_execute->load1 << 4 + to_execute->load2];
+            }
 
+            *r[to_execute->registers >> 4] = value;
+
+            break;
+        }
+        case STR:
+        {
+            break;
+        }
         default: break;
     }
 }

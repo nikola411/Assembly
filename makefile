@@ -48,7 +48,6 @@ endif
 
 all: asm lnk emu
 
-	
 emu:
 	g++ ${EMULATOR_INCLUDES} ${GPP_FLAGS} ${EMULATOR_SOURCE} ${EMULATOR_OUTPUT}
 

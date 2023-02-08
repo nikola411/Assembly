@@ -13,10 +13,9 @@ int main(int argc, char* argv[])
 
     }
 
-    Emulator emu("output.hex");
+    Emulator emu("test.hex");
     
     emu.read_input_and_load();
-
     emu.start_emulating();
  
     return 0;

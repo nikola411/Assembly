@@ -5,6 +5,8 @@
 #include <cinttypes>
 #include <vector>
 #include <map>
+#include <iostream>
+#include <bitset>
 
 #define MEMORY_SIZE 64 * 1024
 #define SP_START 0xFEF6 / 2 - 1
@@ -23,6 +25,13 @@ struct Instruction
     BYTE addressing;
     BYTE load1;
     BYTE load2;
+
+    void print()
+    {
+        std::cout << std::bitset<8>(op_code) << " " << std::bitset<8>(registers)
+        << " " << std::bitset<8>(addressing) << " " << std::bitset<8>(load1)
+        << " " << std::bitset<8>(load2) << " \n";
+    }    
 };
 
 enum Instruction_type
@@ -31,11 +40,7 @@ enum Instruction_type
     ADD, SUB, DIV, MUL,
     CMP, NOT, AND, OR, XOR, TEST, SHL, SHR,
     LDR, STR,
-    IRET, HALT, RET, INT
-};
-
-enum Jump_type
-{
+    IRET, HALT, RET, INT,
     JMP, JEQ, JNE, JGT, CALL
 };
 
@@ -57,6 +62,7 @@ public:
     void start_emulating();
     ~Emulator();
 
+    void finish_emulation();
 
     std::vector<std::string> split(char del, std::string agg);
     void execute_instruction(Instruction* to_execute);
@@ -71,13 +77,13 @@ public:
     WORD r0, r1, r2, r3, r4, r5, sp, pc, psw;
 
     static std::map<BYTE, Instruction_type> instruction_codes;
-    static std::map<BYTE, Jump_type> jump_codes;
     static std::map<BYTE, std::string> register_codes;
     static std::map<BYTE, std::string> addressing_codes;
 
     std::map<std::string, REGISTER_PTR> registers;
     std::map<BYTE, REGISTER_PTR> r;
     
+    bool finished;
     std::string input_file;
 };
 
