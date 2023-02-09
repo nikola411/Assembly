@@ -14,45 +14,25 @@
 #define SP_END 0x0008
 #define PR_END 0xFEFF
 
+#define IVT_RESET 0x0000
+#define IVT_ERROR 0x0001
+#define IVT_TIMER 0x0002
+#define IVT_TERMINAL 0x0003
+#define IVT_END 0x0007
+
+#define TERM_OUT 0xFF00 
+#define TERM_IN 0xFF02
+#define TIM_CFG 0xFF10
+
 typedef unsigned char BYTE;
 typedef unsigned short WORD;
 typedef unsigned short* REGISTER_PTR;
 
-struct Instruction
-{
-    BYTE op_code;
-    BYTE registers;
-    BYTE addressing;
-    BYTE load1;
-    BYTE load2;
-
-    void print()
-    {
-        std::cout << std::bitset<8>(op_code) << " " << std::bitset<8>(registers)
-        << " " << std::bitset<8>(addressing) << " " << std::bitset<8>(load1)
-        << " " << std::bitset<8>(load2) << " \n";
-    }    
-};
-
-enum Instruction_type
-{
-    PUSH, POP, XCHG,
-    ADD, SUB, DIV, MUL,
-    CMP, NOT, AND, OR, XOR, TEST, SHL, SHR,
-    LDR, STR,
-    IRET, HALT, RET, INT,
-    JMP, JEQ, JNE, JGT, CALL
-};
-
-enum Label_type
-{
-    SYMBOL, LITERAL, REGISTER
-};
-
-enum Instruction_read_state
-{
-    CODE = 1, REGISTERS = 2, ADDRESSING = 3, PAYLOAD1 = 4, PAYLOAD2 = 5, EXECUTION = 6
-};
+class Terminal;
+struct Instruction;
+enum Instruction_type : short;
+enum Label_type : short;
+enum Instruction_read_state : short;
 
 class Emulator
 {
@@ -64,14 +44,19 @@ public:
 
     void finish_emulation();
 
+    void handle_ldr(Instruction* instr);
+    void handle_str(Instruction* instr);
+    void handle_call(Instruction* instr);
+
+    void fill_z_flag(WORD);
+    void fill_n_flag(WORD);
+
+    void stack_push(WORD);
+    WORD stack_pop();
+    void update_register(BYTE up, REGISTER_PTR reg);
+
     std::vector<std::string> split(char del, std::string agg);
     void execute_instruction(Instruction* to_execute);
-
-    WORD read_register_value(std::string reg) const;
-    void write_register_value(WORD value, std::string reg);
-
-    BYTE read_memory_byte(int offset) const;
-    void write_memory_byte(int offset, BYTE byte);
 
     BYTE memory[MEMORY_SIZE];
     WORD r0, r1, r2, r3, r4, r5, sp, pc, psw;
@@ -80,7 +65,6 @@ public:
     static std::map<BYTE, std::string> register_codes;
     static std::map<BYTE, std::string> addressing_codes;
 
-    std::map<std::string, REGISTER_PTR> registers;
     std::map<BYTE, REGISTER_PTR> r;
     
     bool finished;

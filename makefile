@@ -29,11 +29,13 @@ LINKER_SOURCE += ./src/assembly/symbol_table.cpp
 LINKER_SOURCE += ./src/assembly/section.cpp
 LINKER_SOURCE += ./src/assembly/relocation_table.cpp
 LINKER_SOURCE += ./src/error_handling/error_handler.cpp
+LINKER_SOURCE += ./src/error_handling/linker_error.cpp
 LINKER_OUTPUT = -o ./linker
 
 EMULATOR_INCLUDES = -I${EMULATOR_INC_DIR} -I${ERROR_HANDLER_IND_DIR}
 EMULATOR_SOURCE = 
 EMULATOR_SOURCE += $(wildcard ./src/emulator/*.cpp)
+EMULATOR_SOURCE += ./src/error_handling/error_handler.cpp ./src/error_handling/emulator_error.cpp
 EMULATOR_OUTPUT = -o ./emulator
 
 DEBUG_ENABLED = 0
@@ -57,7 +59,7 @@ lnk:
 asm: flex bison
 	g++ ${ASSEMBLY_INCLUDES} ${GPP_FLAGS} ${ASSEMBLY_SOURCE} ${ASSEMBLY_OUTPUT}
 
-flex:
+flex: 
 	flex ${FLEX_SOURCE}
 
 bison:

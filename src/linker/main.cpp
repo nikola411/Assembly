@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
     }
     catch(ErrorHandler e)
     {
-        e.handle();
+        std::cout << e.to_string();
     }
 
     

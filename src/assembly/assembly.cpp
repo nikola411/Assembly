@@ -3,6 +3,7 @@
 #include <iostream>
 #include <bitset>
 #include <fstream>
+#include <sstream>
 
 std::set<std::string> Assembly::section_names = std::set<std::string>();
 std::map<Instruction_type, std::string> Assembly::instruction_codes
@@ -58,9 +59,9 @@ std::map<std::string, std::string> Assembly::addressing_codes
 {
     {"IMMEDIATE", "0000"},
     {"REGISTER_DIRECT", "0001"},
-    {"REGISTER_ADD", "0101"},
+    {"REGISTER_DIRECT_OFFSET", "0101"},
     {"REGISTER_INDIRECT", "0010"},
-    {"REGISTER_OFFSET", "0011"},
+    {"REGISTER_INDIRECT_OFFSET", "0011"},
     {"MEMORY", "0100"}
 };
 
@@ -133,25 +134,22 @@ void Assembly::handle_jump(Jump* jump)
     std::string value = jump_codes[jump->get_type()];
     std::string operand = jump->get_operand_value();
     Label_type operand_type = jump->get_operand_type();
+    Addressing_type addr_type = jump->get_addressing_type();
     bool is_register = false;
     
     // Filling register bytes
     value += "1111";
     if (operand_type == Label_type::REGISTER)
     {
-        
         value += register_codes[jump->get_operand_value()];
-        is_register = true;
     }
     else
     {
-        
-        value += "1111";
+        value += (addr_type == Addressing_type::PC_RELATIVE ? register_codes["pc"] : "1111");
     }
     
     // Filling addressing bytes
-    Addressing_type addr_type = jump->get_addressing_type();
-    value += get_addressing_byte_value(addr_type, jump->get_operand_type());
+    value += get_addressing_byte_value(addr_type, jump->get_operand_type(), jump_type);
     // Filling payload bytes
     value += get_payload_byte_value(jump->get_operand_value(), jump->get_operand_type(), addr_type, jump->get_offset_value(), jump->get_offset_type());
     //Adding value to section
@@ -380,23 +378,19 @@ void Assembly::handle_instruction(Instruction* instruction)
 
 bool Assembly::does_section_exists(std::string section) const
 {
-    for (int i = 0; i < 5; i++)
+    
+    if (section_names.find(section) != section_names.end())
     {
-        if (section_names.find(section) != section_names.end())
-        {
-            return true;
-        }
-        else
-        {
-            section_names.insert(section);
-            return false;
-        }
+        return true;
     }
-
-    return false;
+    else
+    {
+        section_names.insert(section);
+        return false;
+    }
 }
 
-std::string Assembly::get_addressing_byte_value(Addressing_type addr_type, Label_type label_type) const
+std::string Assembly::get_addressing_byte_value(Addressing_type addr_type, Label_type label_type, const std::type_info& command_type) const
 {
     std::string value = "0000"; // dummy padding, should have a meaningful value
 
@@ -404,11 +398,11 @@ std::string Assembly::get_addressing_byte_value(Addressing_type addr_type, Label
     {
         if (addr_type == Addressing_type::LITERAL_OFFSET)
         {
-            value += addressing_codes["REGISTER_OFFSET"];
+            value += addressing_codes["REGISTER_INDIRECT_OFFSET"];
         }
         else if (addr_type == Addressing_type::SYMBOL_OFFSET)
         {
-            value += addressing_codes["REGISTER_OFFSET"];
+            value += addressing_codes["REGISTER_INDIRECT_OFFSET"];
         }
         else if (addr_type == Addressing_type::MEMORY)
         {
@@ -416,7 +410,7 @@ std::string Assembly::get_addressing_byte_value(Addressing_type addr_type, Label
         }
         else if (addr_type == Addressing_type::PC_RELATIVE)
         {
-            value += addressing_codes["REGISTER_OFFSET"];
+            value += addressing_codes["REGISTER_INDIRECT_OFFSET"];
         }
         else // REGISTER DIRECT
         {
@@ -428,6 +422,18 @@ std::string Assembly::get_addressing_byte_value(Addressing_type addr_type, Label
         if (addr_type == ABSOLUTE)
         {
             value += addressing_codes["IMMEDIATE"];
+        }
+        else if (addr_type == PC_RELATIVE)
+        {
+            if (command_type == instruction_type)
+            {
+                value += addressing_codes["REGISTER_INDIRECT_OFFSET"];
+            }
+            else
+            {
+                value += addressing_codes["REGISTER_DIRECT_OFFSET"];
+            }
+            
         }
         else
         {
@@ -441,6 +447,7 @@ std::string Assembly::get_addressing_byte_value(Addressing_type addr_type, Label
 std::string Assembly::get_instruction_value(Instruction* instruction)
 {
     Instruction_type type = instruction->get_type();
+    Addressing_type addr_type = instruction->get_addressing_type();
     std::string value = "";
 
     int operands_cnt = instruction->get_number_of_operands();
@@ -461,14 +468,15 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
         if (type == PUSH || type == POP)
         {
             value += register_codes[operand] + register_codes["sp"];
-            std::string addr_byte = get_addressing_byte_value(instruction->get_addressing_type(), Label_type::REGISTER);
+            std::string addr_byte = get_addressing_byte_value(addr_type, Label_type::REGISTER, instruction_type);
             value += type == PUSH ? "0001" : "0100"; 
             value += addr_byte.substr(4, 8);
+            value += "0000000000000000"; // adding payload since this will be read as a 5 byte instruction but it is 3 bytes 
         }
         else
         {
-            value += register_codes[operand] + "0000";
-            value += get_addressing_byte_value(instruction->get_addressing_type(), Label_type::REGISTER);
+            value += register_codes[operand] + (addr_type == Addressing_type::PC_RELATIVE ? register_codes["pc"] : "1111");
+            value += get_addressing_byte_value(addr_type, Label_type::REGISTER, instruction_type);
         }
 
         return value;
@@ -490,11 +498,11 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
         }
         else
         {
-            value += "1111";
+            value += (addr_type == Addressing_type::PC_RELATIVE ? register_codes["pc"] : "1111");
         }
         
-        value += get_addressing_byte_value(instruction->get_addressing_type(), sec_op_type);
-        value += get_payload_byte_value(op2, sec_op_type, instruction->get_addressing_type(), instruction->get_offset(), instruction->get_offset_type());
+        value += get_addressing_byte_value(addr_type, sec_op_type, instruction_type);
+        value += get_payload_byte_value(op2, sec_op_type, addr_type, instruction->get_offset(), instruction->get_offset_type());
         // second operand type is symbol so we need to see about that
     }
     else
@@ -504,7 +512,7 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
 
         value += instruction_codes[type] +
                 register_codes[r1] + register_codes[r2] + // registers byte
-                get_addressing_byte_value(instruction->get_addressing_type(), Label_type::REGISTER); // addressing byte
+                get_addressing_byte_value(addr_type, Label_type::REGISTER, instruction_type); // addressing byte
     }
     
     return value;
@@ -609,8 +617,21 @@ std::string Assembly::get_payload_byte_value(std::string operand, Label_type ope
         {
             to_convert = operand;
         }
+        // we need to check if it is hex, if it is, convert hex how ti should be converted
+        int int_value = 0;
+
+        if (to_convert.substr(0, 2) == "0x")
+        {
+            std::stringstream ss;
+            ss << std::hex << to_convert;
+            ss >> int_value;
+        }
+        else
+        {
+            int_value = std::stoi(to_convert);
+        }
         
-        value += std::bitset<16>(std::stoi(to_convert)).to_string();
+        value += std::bitset<16>(int_value).to_string();
     }
     else if (addr_type == Addressing_type::SYMBOL_OFFSET || operand_type == Label_type::SYMBOL)
     {

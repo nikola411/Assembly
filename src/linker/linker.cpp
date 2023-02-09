@@ -2,7 +2,7 @@
 #include "symbol_table.hpp"
 #include "section.hpp"
 #include "relocation_table.hpp"
-#include "error_handler.hpp"
+#include "linker_error.hpp"
 #include "define.hpp"
 
 #include <iostream>
@@ -37,28 +37,6 @@ Linker::Linker(std::vector<std::string> input_files, std::string output_file, bo
     is_hex(is_hex)
 {
     read_files(); 
-}
-
-void Linker:: debug_output() const
-{
-    for (auto file: files)
-    {
-        file->file_symbol_table.print();
-        std::cout << "\n";
-
-        for (auto sec: file->file_sections)
-        {
-            sec->print();
-        }
-
-        std::cout << "\n";
-
-        for (auto rel: file->file_relocations)
-        {
-            std::cout << rel.label << " " << rel.offset << " " << rel.section << " " << rel.type << " " << rel.ord_number << " \n";
-        }
-        std::cout << "\n";std::cout << "\n";
-    }
 }
 
 void Linker::link()
@@ -163,6 +141,13 @@ void Linker::merge_sections()
     }
 }
 
+/*
+    This method is merging symbol tables from all input files.
+    It does it in such a way that only symbols that are defined in their respective files
+    are put into this 'global' symbol table.
+    That is later used when resolving relocations to check if symbol is defined.
+*/
+
 void Linker::merge_symbol_tables()
 {
     // make one symbol table by taking every defined symbol in all symbol tables
@@ -172,14 +157,25 @@ void Linker::merge_symbol_tables()
         
         for (auto symbol: symbol_table_vector)
         {
-            if (symbol->defined && symbol_table.find_symbol(symbol->label) == nullptr) // this is a resolved local symbol
+            if (symbol->defined) // this is a resolved local symbol
             {
-                symbol_table.add_symbol_table_entry(new Symbol_table_entry(*symbol));
+                if (symbol_table.find_symbol(symbol->label) == nullptr)
+                {
+                    symbol_table.add_symbol_table_entry(new Symbol_table_entry(*symbol));
+                }
+                else
+                {
+                    if (symbol->label != symbol->section)
+                    {
+                        throw LinkerError("Duplicate symbol definition.", symbol->ord_num, symbol->label);
+                    }
+                    // ignore section names symbols
+                }
             }
         }
     }
 
-    // update symbol values by reading them from sections
+    // update symbol values and offsets by reading them from sections
     for (auto section: sections)
     {
         for (auto symbol: symbol_table.get_symbol_table_entry())
@@ -193,6 +189,14 @@ void Linker::merge_symbol_tables()
     }
 }
 
+/*
+    This method is resolving relocations.
+    It iterates through all relocations from all files and writes symbol data into proper sections.
+    If symbol is not defined, error is thrown. We know that symbol is not defined if we get
+    nullptr as a result of searching the symbol table, since unified symbol table is made only with
+    symbols that are defined from all other symbol tables.
+*/
+
 void Linker::resolve_relocations()
 {
     for (auto file_handle: files)
@@ -200,6 +204,9 @@ void Linker::resolve_relocations()
         for (auto relocation: file_handle->file_relocations)
         {
             auto symbol = symbol_table.find_symbol(relocation.label);
+            if (symbol == nullptr)
+                throw LinkerError("Symbol is not defined.", 0, relocation.label);
+
             for (auto section: sections)
             {
                 if (section->get_section_name() == relocation.section)
@@ -211,6 +218,11 @@ void Linker::resolve_relocations()
         }
     }
 }
+
+/*
+    This method is used for generating the output file.
+    It can be a hex file or object file depending on the flag given when linker is started.
+*/
 
 void Linker::write_to_output()
 {
@@ -249,7 +261,16 @@ void Linker::write_to_output()
         }
     }
 }
+/*
+    This method will read input files in order they appear in argument vector.
+    When reading the files, there are three stages:
+        1. TABLE: meaning, we are currently reading the symbol table of said file
+        2. SECTIONS: meaning, we are currently reading sections contets of the file
+        3. RELOCATIONS: - || -
+    Every input file has its own handle: a structure that holds data that is read from it.
+    Handles are found in std::vector<File_handle*> files;
 
+*/
 
 void Linker::read_files()
 {
@@ -305,13 +326,18 @@ void Linker::read_files()
                         state = RELOCATION;
                         continue;
                     }
+                    
+                    /*
+                        If current section is nullptr (first time reading sections) or it is UNDEFINED section,
+                        we need to process that data properly.
+                    */
 
                     if (current_section == nullptr)
                     {
                         std::vector<std::string> data = split(' ', line);
                         if (data.size() != 1)
                         {
-                            throw ErrorHandler("Trying to create a section, but name is not given in the current line number: " + line_cnt);
+                            throw LinkerError("Cannot create section with an empty string.", line_cnt);
                         }
 
                         if (data[0] == "UNDEFINED") break;

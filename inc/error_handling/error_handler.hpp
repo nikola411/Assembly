@@ -6,16 +6,9 @@
 class ErrorHandler
 {
 public:
-    ErrorHandler(std::string line, std::string file);
-    ErrorHandler(std::string);
-    void handle();
-    ~ErrorHandler();
-private:
-    std::string line;
-    std::string file;
-    std::string message;
-
-    bool is_msg;
+    ErrorHandler();
+    virtual ~ErrorHandler();
+    std::string to_string();
 };
 
 

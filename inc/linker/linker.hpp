@@ -10,7 +10,6 @@
 class Section;
 struct Relocation_entry;
 struct Symbol_table_entry;
-
 struct File_handle;
 
 class Linker
@@ -23,7 +22,6 @@ public:
     ~Linker();
 
 private:
-    void debug_output() const;
     void update_sections_offsets();
     void update_relocations_offsets();
     void merge_sections();
