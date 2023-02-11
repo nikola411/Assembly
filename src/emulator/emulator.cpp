@@ -18,7 +18,7 @@ const unsigned short TIM_FLAG = 0x01 << 13;
 const unsigned short TER_FLAG = 0x01 << 14;
 const unsigned short I_FLAG = 0x01 << 15;
 
-// const Terminal terminal;
+BYTE Emulator::memory[MEMORY_SIZE] = {0};
 
 enum Instruction_type : short
 {
@@ -91,7 +91,7 @@ enum Addressing_type : short
     ADR_MEM = 0x04
 };
 
-Emulator::Emulator(std::string input_file) : input_file(input_file), finished(false)
+Emulator::Emulator(std::string input_file) : input_file(input_file), finished(false), term()
 {
     pc = PR_START;
     psw = 0;
@@ -101,7 +101,7 @@ Emulator::Emulator(std::string input_file) : input_file(input_file), finished(fa
     r3 = 0;
     r4 = 0;
     r5 = 0;
-    sp = SP_START;
+    sp = SP_START - 1;
 
     r[0] = &r0;
     r[1] = &r1;
@@ -241,13 +241,14 @@ void Emulator::read_input_and_load()
                 throw EmulatorError("Writing outside of program bounds. ", start + i - 1, (BYTE)value);
             }
 
-            memory[PR_START + (int)start + i - 1] = (BYTE)value;
+            memory[(int)start + i - 1] = (BYTE)value;
         }
     }
 }
 
 Emulator::~Emulator()
 {
+    delete term;
 }
 
 void Emulator::finish_emulation()
@@ -263,12 +264,24 @@ void Emulator::finish_emulation()
 
     std::cout << "Emulated processor state: \n";
     std::cout << "psw=0b" << std::bitset<16>(psw).to_string() << "\n";
+    int w = 9;
+
+    std::cout 
+            << std::setfill('0');
+    
     for (int i = 0; i < 8; i++)
     {
-        if (i % 4)
-            std::cout << "\n";
-        std::cout << "r" << i << "=0b" << std::bitset<16>(*r[i]) << " ";
+        if (i!= 0 && i % 4 == 0) std::cout << "\n";
+        std::cout 
+            << "r"
+            << i
+            << "=0x"
+            << std::hex
+            << std::setw(4)
+            << *r[i]
+            << "  ";
     }
+    std::cout << "\n";
 }
 
 void Emulator::execute_instruction(Instruction *to_execute)
@@ -285,8 +298,12 @@ void Emulator::execute_instruction(Instruction *to_execute)
     }
     case INT: // push psw; pc <= mem16[(regD mod 8)*2];
     {
+        stack_push(pc);
         stack_push(psw);
-        pc = memory[(*r[DST] % 8) * 2];
+        
+        pc = memory[(*r[DST] % 8) * 2]  << 8 ;
+        pc |= memory[(*r[DST] % 8) * 2 + 1];
+        
 
         break;
     }
@@ -348,7 +365,6 @@ void Emulator::execute_instruction(Instruction *to_execute)
     case ADD:
     {
         *r[DST] = *r[DST] + *r[SRC];
-
         fill_z_flag(*r[DST]);
         fill_n_flag(*r[DST]);
 
@@ -357,7 +373,6 @@ void Emulator::execute_instruction(Instruction *to_execute)
     case SUB:
     {
         *r[DST] = *r[DST] - *r[SRC];
-
         fill_z_flag(*r[DST]);
         fill_n_flag(*r[DST]);
 
@@ -366,7 +381,6 @@ void Emulator::execute_instruction(Instruction *to_execute)
     case MUL:
     {
         *r[DST] = *r[DST] * *r[SRC];
-
         fill_z_flag(*r[DST]);
         fill_n_flag(*r[DST]);
 
@@ -386,6 +400,7 @@ void Emulator::execute_instruction(Instruction *to_execute)
 
         fill_z_flag(temp);
         fill_n_flag(temp);
+        fill_c_flag(*r[DST] < *r[SRC]);
 
         if (temp > 0x7FFF || temp < -0x7FFF)
         {
@@ -394,15 +409,6 @@ void Emulator::execute_instruction(Instruction *to_execute)
         else
         {
             psw &= ~O_FLAG;
-        }
-
-        if (*r[DST] < *r[SRC])
-        {
-            psw |= C_FLAG;
-        }
-        else
-        {
-            psw &= ~C_FLAG;
         }
 
         break;
@@ -449,15 +455,7 @@ void Emulator::execute_instruction(Instruction *to_execute)
     }
     case SHL:
     { // Z C N
-        if ((*r[DST] << (*r[SRC] - 1)) & (1 << 15))
-        {
-            psw |= C_FLAG;
-        }
-        else
-        {
-            psw &= ~C_FLAG;
-        }
-
+        fill_c_flag((*r[DST] << (*r[SRC] - 1)) & (1 << 15));
         *r[DST] = *r[DST] << *r[SRC];
         fill_z_flag(*r[DST]);
         fill_n_flag(*r[DST]);
@@ -466,7 +464,7 @@ void Emulator::execute_instruction(Instruction *to_execute)
     }
     case SHR:
     {
-        psw |= (*r[DST] >> (*r[SRC] - 1)) & 1 ? C_FLAG : 0;
+        fill_c_flag((*r[DST] >> (*r[SRC] - 1)) & 1 );
         *r[DST] = *r[DST] >> *r[SRC];
         fill_z_flag(*r[DST]);
         fill_n_flag(*r[DST]);
@@ -642,27 +640,38 @@ void Emulator::fill_n_flag(WORD value)
     }
 }
 
+void Emulator::fill_c_flag(bool fill)
+{
+    if (fill)
+    {
+        psw |= C_FLAG;
+    }
+    else
+    {
+        psw &= ~C_FLAG;
+    }
+}
+
 void Emulator::stack_push(WORD val)
 {
     BYTE high = val >> 8;
     BYTE low = val & 0xFF;
 
-    if (sp + 2 > SP_START)
+    if (sp - 2 < SP_END)
         throw EmulatorError("Stack underflow when trying to push to stack. Stack: ", sp, val);
-
-    memory[sp++] = low;
-    memory[sp++] = high;
+    memory[sp] = low;
+    --sp; memory[sp] = high;
 }
 
 WORD Emulator::stack_pop()
 {
     BYTE high, low;
 
-    if (sp - 2 < SP_END)
+    if (sp + 2 > SP_START)
         throw EmulatorError("Stack overflow when trying to pop from stack. Stack: ", sp, memory[sp]);
 
-    high = memory[sp--];
-    low = memory[sp--];
+    high = memory[sp]; ++sp;
+    low = memory[sp];
 
     return high << 8 | low;
 }
@@ -672,6 +681,25 @@ void Emulator::update_register(BYTE up, REGISTER_PTR reg)
     WORD inc = up & 0x01 ? -2 : 2;
     *reg = *reg + inc;
 }
+
+void Emulator::write_mem_reg(BYTE byte, int offset)
+{
+    if (offset < 0xFF00)
+        throw EmulatorError("Trying to write outside of memory mapped registers.", byte, offset);
+    if (offset >= MEMORY_SIZE)
+        throw EmulatorError("Trying to write outside of memory bounds.", ' ', offset);
+    memory[offset] = byte;
+}
+
+BYTE Emulator::read_mem_reg(int offset)
+{
+    if (offset < 0xFF00)
+        throw EmulatorError("Trying to read outside of memory mapped registers.", ' ', offset);
+    if (offset >= MEMORY_SIZE)
+        throw EmulatorError("Trying to read outside of memory bounds.", ' ', offset);
+    return memory[offset];
+}
+
 
 std::vector<std::string> Emulator::split(char del, std::string agg)
 {

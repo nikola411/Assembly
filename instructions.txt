@@ -1,0 +1,34 @@
+halt                  |  Zaustavlja izvršavanje instrukcija
+int regD              |  push psw; pc <= mem16[(regD mod 8)*2];
+iret pop              |  pop psw; pop pc; psw 
+call operand          |  push pc; pc <= operand;
+ret                   |  pop pc;
+jmp operand           |  pc <= operand;
+jeq operand           |  if (equal) pc <= operand;
+jne operand           |  if (not equal) pc <= operand;
+jgt operand           |  if (signed greater) pc <= operand;
+push regD             |  sp <= sp - 2; mem16[sp] <= regD;
+pop regD              |  regD <= mem16[sp]; sp <= sp + 2;
+xchg regD, regS       |  temp <= regD; regD <= regS; regS <= temp;
+add regD, regS        |  regD <= regD + regS;
+sub regD, regS        |  regD <= regD - regS;
+mul regD, regS        |  regD <= regD * regS;
+div regD, regS        |  regD <= regD / regS;
+cmp regD, regS        |  temp <= regD - regS; Z O C N
+not regD              |  regD <= ~regD;
+and regD, regS        |  regD <= regD & regS;
+or regD, regS         |  regD <= regD | regS;
+xor regD, regS        |  regD <= regD ^ regS;
+test regD, regS       |  temp <= regD & regS; Z N
+shl regD, regS        |  regD <= regD << regS; Z C N
+shr regD, regS        |  regD <= regD >> regS; Z C N
+ldr regD, operand     |  regD <= operand;
+str regD, operand     |  operand <= regD; 
+
+
+UP bits:
+• 0b0000 - nema ažuriranja,
+• 0b0001 - umanjuje se za dva pre formiranje adrese operanda,
+• 0b0010 - uvećava se za dva pre formiranja adrese operanda
+• 0b0011 - umanjuje se za dva nakon formiranja adrese operanda i
+• 0b0100 - uvećava se za dva nakon formiranja adrese operanda.

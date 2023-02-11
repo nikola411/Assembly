@@ -9,16 +9,16 @@
 #include <bitset>
 
 #define MEMORY_SIZE 64 * 1024
-#define SP_START 0xFEF6 / 2 - 1
-#define PR_START 0xFEF6 / 2
-#define SP_END 0x0008
-#define PR_END 0xFEFF
+#define PR_END 0xFEF6 / 2 - 1
+#define SP_END 0xFEF6 / 2
+#define PR_START 0x0010
+#define SP_START 0xFEFF
 
-#define IVT_RESET 0x0000
-#define IVT_ERROR 0x0001
-#define IVT_TIMER 0x0002
-#define IVT_TERMINAL 0x0003
-#define IVT_END 0x0007
+#define IVT_RESET 0x0000 * 2
+#define IVT_ERROR 0x0001 * 2
+#define IVT_TIMER 0x0002 * 2
+#define IVT_TERMINAL 0x0003 * 2
+#define IVT_END 0x0007 * 2
 
 #define TERM_OUT 0xFF00 
 #define TERM_IN 0xFF02
@@ -50,15 +50,18 @@ public:
 
     void fill_z_flag(WORD);
     void fill_n_flag(WORD);
+    void fill_c_flag(bool);
 
     void stack_push(WORD);
     WORD stack_pop();
     void update_register(BYTE up, REGISTER_PTR reg);
+    static void write_mem_reg(BYTE byte, int offset);
+    static BYTE read_mem_reg(int offset);
 
     std::vector<std::string> split(char del, std::string agg);
     void execute_instruction(Instruction* to_execute);
 
-    BYTE memory[MEMORY_SIZE];
+    static BYTE memory[MEMORY_SIZE];
     WORD r0, r1, r2, r3, r4, r5, sp, pc, psw;
 
     static std::map<BYTE, Instruction_type> instruction_codes;
@@ -69,6 +72,7 @@ public:
     
     bool finished;
     std::string input_file;
+    Terminal* term;
 };
 
 #endif

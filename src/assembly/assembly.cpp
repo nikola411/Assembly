@@ -5,38 +5,41 @@
 #include <fstream>
 #include <sstream>
 
+const std::string REG_PLACEHOLDER = "1111";
+const std::string PAY_PLACEHOLDER = "0000000000000000";
+
 std::set<std::string> Assembly::section_names = std::set<std::string>();
 std::map<Instruction_type, std::string> Assembly::instruction_codes
 {
     { IRET, "00100000" },
     { HALT, "00000000" },
-    { RET, "01000000" },
-    { INT, "00010000" },
+    { RET,  "01000000" },
+    { INT,  "00010000" },
     { XCHG, "01100000" },
-    { ADD, "01110000" },
-    { SUB, "01110001" },
-    { MUL, "01110010" },
-    { DIV, "01110011" },
-    { CMP, "01110100" },
-    { NOT, "10000000" },
-    { AND, "10000001" },
-    { OR,  "10000010" },
-    { XOR, "10000011" },
+    { ADD,  "01110000" },
+    { SUB,  "01110001" },
+    { MUL,  "01110010" },
+    { DIV,  "01110011" },
+    { CMP,  "01110100" },
+    { NOT,  "10000000" },
+    { AND,  "10000001" },
+    { OR,   "10000010" },
+    { XOR,  "10000011" },
     { TEST, "10000100" },
     { SHL,  "10010000" },
     { SHR,  "10010001" },
-    { STR, "10110000" },
-    { LDR, "10100000" },
-    { PUSH, "10110000"},
-    { POP, "10100000"}
+    { STR,  "10110000" },
+    { LDR,  "10100000" },
+    { PUSH, "10110000" },
+    { POP,  "10100000" }
 };
 
 std::map<Jump_type, std::string> Assembly::jump_codes
 {
-    {JMP, "01010000"},
-    {JEQ, "01010001"},
-    {JNE, "01010010"},
-    {JGT, "01010011"},
+    {JMP,  "01010000"},
+    {JEQ,  "01010001"},
+    {JNE,  "01010010"},
+    {JGT,  "01010011"},
     {CALL, "00110000"}
 };
 
@@ -297,7 +300,7 @@ void Assembly::handle_directive(Directive* directive)
                 else if (types[i] == Label_type::SYMBOL)
                 {
                     // If we know the value of the symbol, we write it to the section data
-                    std::string value = get_symbol_value_or_relocate(args[i], Addressing_type::ABSOLUTE);
+                    std::string value = get_symbol_value_or_relocate(args[i], Addressing_type::ABSOLUTE, true);
                     current_section->add_section_data(value);
                 }
                 else
@@ -518,7 +521,7 @@ std::string Assembly::get_instruction_value(Instruction* instruction)
     return value;
 }
 
-std::string Assembly::get_symbol_value_or_relocate(std::string symbol, Addressing_type addr_type)
+std::string Assembly::get_symbol_value_or_relocate(std::string symbol, Addressing_type addr_type, bool is_directive)
 {
     Symbol_table_entry* entry = symbol_table.find_symbol(symbol);
     std::string operand_value = std::bitset<16>(0).to_string();
@@ -528,11 +531,12 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol, Addressin
     and since we dont have that symbol value(this method is called only for symbols that are not being defined)
     we need to add current address as a forward reference to the symbol
     */
+    int addend = is_directive ? 0 : 3;
     if (entry == nullptr)
     {
         entry = new Symbol_table_entry();
         entry->label = symbol;
-        entry->fref.emplace_back(current_section->get_section_location_counter() + 3);
+        entry->fref.emplace_back(current_section->get_section_location_counter() + addend);
         entry->defined = false;
         entry->section = current_section->get_section_name();
         entry->binding = "LOCAL";
@@ -563,7 +567,7 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol, Addressin
             // or will its offset change (section a gets before our symbols section, so 
             // base offset of our symbols section gets changed)
             Relocation_entry* relocation = new Relocation_entry();
-            relocation->offset = current_section->get_section_location_counter() + 3;
+            relocation->offset = current_section->get_section_location_counter() + addend;
             relocation->section = current_section->get_section_name();
             relocation->ord_number = symbol_table.get_symbol_ord_number(symbol);
             relocation->type = Relocation_type::R_ABSOLUTE;
@@ -574,13 +578,13 @@ std::string Assembly::get_symbol_value_or_relocate(std::string symbol, Addressin
         }
         else
         {
-            entry->fref.emplace_back(current_section->get_section_location_counter() + 3);
+            entry->fref.emplace_back(current_section->get_section_location_counter() + addend);
         }
     }
     else
     {
         Relocation_entry* relocation = new Relocation_entry();
-        relocation->offset = current_section->get_section_location_counter();
+        relocation->offset = current_section->get_section_location_counter() + addend;
         relocation->section = current_section->get_section_name();
         relocation->ord_number = symbol_table.get_symbol_ord_number(symbol);
         relocation->label = entry->label;
@@ -644,7 +648,7 @@ std::string Assembly::get_payload_byte_value(std::string operand, Label_type ope
             to_convert = offset;
         }
         
-        value += get_symbol_value_or_relocate(to_convert, addr_type);
+        value += get_symbol_value_or_relocate(to_convert, addr_type, false);
     }
 
     return value;

@@ -207,11 +207,13 @@ void Linker::resolve_relocations()
             if (symbol == nullptr)
                 throw LinkerError("Symbol is not defined.", 0, relocation.label);
 
+            std::cout << symbol->label << " " << std::hex << symbol->value << "\n";
+
             for (auto section: sections)
             {
                 if (section->get_section_name() == relocation.section)
                 { 
-                    section->write_section_data(relocation.offset, std::bitset<16>(symbol->value).to_string());
+                    section->write_section_data(relocation.offset, std::bitset<16>(symbol->offset).to_string());
                     break;
                 }
             }
