@@ -33,6 +33,7 @@ int Driver::parse (const std::string &f)
 
     scan_begin();
     yy::parser parser(*this, *(this->assembly));
+    // parser.set_debug_level(true);
     int res = parser.parse();
 
     scan_end();

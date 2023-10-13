@@ -14,18 +14,31 @@ public:
 
     void SetInstruction(eInstructionIdentifier instruction, eInstructionType type);
     void SetOperand(std::string value, eOperandType type);
-    void SetMultipleOperands(std::vector<std::pair<std::string, eOperandType>> operands);
-    void SetAddressingType(eAddressingType addrType);
-
+    void SetOperand(ParserUtil::ParserOperand& operand);
+    void SetMultipleOperands(std::vector<ParserUtil::ParserOperand> operands);
     void FinishInstruction();
-    void ParseLine();
 
+    void ContinueParsing();
+
+    void PrintProgram();
 private:
-    line_ptr m_currentLine;
-    std::vector<line_ptr> m_program;
-    std::vector<symbol_ptr> m_symbolTable;
-    std::vector<relocation_ptr> m_relcationTable;
-    
+    void HandleDirective();
+    void HandleBranchInstruction();
+    void HandleDataInstruction();
+    void HandleMemoryInstruction();
+    void HandleProcessorInstruction();
+    void HandleSpecialInstruction();
+    void HandleStackInstruction();
+
+
+    AssemblyUtil::line_ptr m_currentLine;
+    std::vector<AssemblyUtil::line_ptr> m_program;
+    std::vector<AssemblyUtil::symbol_ptr> m_symbolTable;
+    std::vector<AssemblyUtil::section_ptr> m_sections;
+    std::vector<AssemblyUtil::relocation_ptr> m_relcationTable;
+
+    AssemblyUtil::section_ptr m_currentSection;
+    bool m_end;    
     int m_locationCounter;
 };
 
