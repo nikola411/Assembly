@@ -1,4 +1,5 @@
 #include "assembly.hpp"
+#include "instruction.hpp"
 
 #include <iostream>
 #include <memory>

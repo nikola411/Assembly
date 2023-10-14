@@ -9,7 +9,7 @@ BISON_SOURCE = ./misc/parser.yy
 BISON_OUTPUT = ./misc/parser/parser.cpp
 
 UTIL = ./inc/util
-UTIL_SOURCE = ./src/util/util.cpp
+UTIL_SOURCE = $(wildcard ./src/util/*.cpp)
 
 ASSEMBLY_INCLUDES = -I${ASSEMBLY_INC_DIR} -I${PARSER_INC} -I${SCANNER_INC} -I${UTIL}
 ASSEMBLY_SOURCE =

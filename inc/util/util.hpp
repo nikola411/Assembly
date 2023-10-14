@@ -9,6 +9,8 @@
 
 #define EMPTY_BYTE 0xFF
 
+
+
 typedef uint8_t BYTE;
 
 enum eInstructionIdentifier
@@ -108,16 +110,6 @@ namespace ParserUtil
 
 namespace AssemblyUtil
 {
-    struct Instruction
-    {
-        std::vector<BYTE> instructionData;
-
-        Instruction()
-        {
-            instructionData = {EMPTY_BYTE, EMPTY_BYTE, EMPTY_BYTE, EMPTY_BYTE};
-        }
-    };
-
     struct SymbolTableEntry
     {
         std::string label;
@@ -175,7 +167,7 @@ namespace AssemblyUtil
 
     typedef std::shared_ptr<SymbolTableEntry> symbol_ptr;
     typedef std::shared_ptr<RelocationTableEntry> relocation_ptr;
-    typedef std::shared_ptr<Instruction> instruction_ptr;
+    
     typedef std::shared_ptr<ProgramLine> line_ptr;
     typedef std::shared_ptr<SectionEntry> section_ptr;
 
@@ -185,7 +177,7 @@ namespace AssemblyUtil
     bool UpdateSymbolSection(std::vector<symbol_ptr>& table, symbol_ptr symbol, std::string section);
     bool UpdateSymbolLocality(std::vector<symbol_ptr>& table, symbol_ptr symbol, bool isLocal);
 
-    bool WriteDataToSection(std::vector<section_ptr>& sections, std::vector<BYTE> data, int offset);
+    bool WriteDataToSection(section_ptr sections, std::vector<BYTE>& data, int offset);
 }
 
 #endif

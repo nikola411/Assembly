@@ -25,6 +25,11 @@ eCSR ParserUtil::CSRStringToEnum(std::string csr)
     return CSRMap[csr];
 }
 
+std::unordered_map<eInstructionIdentifier, std::vector<BYTE>> InstructionValueMap =
+{
+    { }
+};
+
 AssemblyUtil::symbol_ptr AssemblyUtil::FindSymbol(std::vector<symbol_ptr>& table, std::string& name)
 {
     for (auto entry: table)
@@ -89,4 +94,18 @@ bool AssemblyUtil::UpdateSymbolLocality(std::vector<symbol_ptr>& table, symbol_p
     }
 
     return false;
+}
+
+bool AssemblyUtil::WriteDataToSection(section_ptr section, std::vector<BYTE>& data, int offset)
+{
+    if (section->sectionData.size() < offset )
+        return false;
+    
+    if (offset + data.size() > section->sectionData.size())
+        return false;
+
+    for (auto byte: data)
+        section->sectionData[++offset] = byte;
+
+    return true;
 }
