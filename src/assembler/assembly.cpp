@@ -1,5 +1,6 @@
 #include "assembly.hpp"
 #include "instruction.hpp"
+#include "codes.hpp"
 
 #include <iostream>
 #include <memory>
@@ -15,6 +16,8 @@ using namespace AssemblyUtil;
 Assembly::Assembly():
     m_end(false), m_locationCounter(0)
 {
+    ProcessorUtil::CodesMap::PopulateMap();
+
     m_currentSection = std::make_shared<SectionEntry>();
     m_currentSection->name = DEFAULT_SECTION;
 }
@@ -75,7 +78,7 @@ void Assembly::FinishInstruction()
                 }
                 else
                 {
-                    //error
+                    throw AssemblyException("Cannot declare same section two times in a row");
                 }
             }
 
@@ -124,34 +127,12 @@ void Assembly::ContinueParsing()
     for (auto line: m_program)
     {
         m_currentLine = line;
-        switch (line->type)
-        {
-            case ParserUtil::eInstructionType::DIRECTIVE:
-                HandleDirective();
-                break;
-            case ParserUtil::eInstructionType::LABEL:
-                break;
-            case ParserUtil::eInstructionType::BRANCH:
-                HandleBranchInstruction();
-                break;
-            case ParserUtil::eInstructionType::DATA:
-                HandleDataInstruction();
-                break;
-            case ParserUtil::eInstructionType::MEMORY:
-                HandleMemoryInstruction();
-                break;
-            case ParserUtil::eInstructionType::PROCESSOR:
-                HandleProcessorInstruction();
-                break;
-            case ParserUtil::eInstructionType::SPECIAL:
-                HandleSpecialInstruction();
-                break;
-            case ParserUtil::eInstructionType::STACK:
-                HandleStackInstruction();
-                break;
-        }
+        auto addressingType = GetProcessorAddressingType(m_currentLine->addressingType);
+        auto variantOperandNumber = VariantOperandNumber(m_currentLine);
+        auto operandType = variantOperandNumber == 0 ? GetProcessorOperandType(ParserUtil::eOperandType::GPR) :
+                        CanOperandHaveOffset(m_currentLine) ? GetProcessorOperandType(m_currentLine->operands[variantOperandNumber].type) :
+                            GetProcessorOperandType(ParserUtil::eOperandType::SYM);
     }
-
 }
 
 void Assembly::PrintProgram()
@@ -185,4 +166,42 @@ void Assembly::HandleSpecialInstruction()
 
 void Assembly::HandleStackInstruction()
 {
+}
+
+ProcessorUtil::eAddressingType Assembly::GetProcessorAddressingType(ParserUtil::eAddressingType addressingType) const
+{
+    return (ProcessorUtil::eAddressingType)addressingType;
+}
+
+int Assembly::VariantOperandNumber(AssemblyUtil::line_ptr line) const
+{
+    if (line->instruction == ParserUtil::eInstructionIdentifier::LD ||
+            line->instruction == ParserUtil::eInstructionIdentifier::JMP ||
+            line->instruction == ParserUtil::eInstructionIdentifier::CALL)
+        return 1;
+    if (line->instruction == ParserUtil::eInstructionIdentifier::ST)
+        return 2;
+    if (line->instruction == ParserUtil::eInstructionIdentifier::BEQ ||
+            line->instruction == ParserUtil::eInstructionIdentifier::BNE ||
+            line->instruction == ParserUtil::eInstructionIdentifier::BGT)
+        return 3;
+
+    return 0;
+}
+
+bool Assembly::CanOperandHaveOffset(AssemblyUtil::line_ptr line) const
+{
+    if (line->instruction == ParserUtil::eInstructionIdentifier::LD || line->instruction == ParserUtil::eInstructionIdentifier::ST)
+        return true;
+    return false;
+}
+
+ProcessorUtil::eOperandType Assembly::GetProcessorOperandType(ParserUtil::eOperandType operandType) const
+{
+    if (operandType == ParserUtil::eOperandType::CSR || operandType == ParserUtil::eOperandType::GPR)
+        return ProcessorUtil::eOperandType::REGISTER;
+    if (operandType == ParserUtil::eOperandType::SYM || operandType == ParserUtil::eOperandType::LTR)
+        return ProcessorUtil::eOperandType::IMMEDIATE;
+    
+    throw AssemblyUtil::AssemblyException("Wrong argument passed for conversion on line: " + __LINE__);
 }

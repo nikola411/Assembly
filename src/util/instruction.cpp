@@ -7,7 +7,7 @@ Instruction::Instruction()
     m_instructionData = {EMPTY_BYTE, EMPTY_BYTE, EMPTY_BYTE, EMPTY_BYTE};
 }
 
-AssemblyUtil::Instruction::Instruction(uint32_t instructionCode)
+Instruction::Instruction(uint32_t instructionCode)
 {
     m_instructionData = {EMPTY_BYTE, EMPTY_BYTE, EMPTY_BYTE, EMPTY_BYTE};
 
@@ -48,12 +48,12 @@ void Instruction::SetInstructionPayload(uint16_t payload)
     m_instructionData[3] = (uint8_t)(payload & 0x0FF);
 }
 
-std::vector<BYTE> AssemblyUtil::Instruction::GetInstructionVector() const
+std::vector<BYTE> Instruction::GetInstructionVector() const
 {
     return m_instructionData;
 }
 
-uint32_t AssemblyUtil::Instruction::GetInstructionUInt32() const
+uint32_t Instruction::GetInstructionUInt32() const
 {
     uint32_t instruction = 0;
 

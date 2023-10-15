@@ -30,6 +30,10 @@ private:
     void HandleSpecialInstruction();
     void HandleStackInstruction();
 
+    ProcessorUtil::eOperandType GetProcessorOperandType(ParserUtil::eOperandType operandType) const;
+    ProcessorUtil::eAddressingType GetProcessorAddressingType(ParserUtil::eAddressingType addressingType) const;
+    int VariantOperandNumber(AssemblyUtil::line_ptr line) const;
+    bool CanOperandHaveOffset(AssemblyUtil::line_ptr line) const;
 
     AssemblyUtil::line_ptr m_currentLine;
     std::vector<AssemblyUtil::line_ptr> m_program;

@@ -157,9 +157,9 @@ namespace AssemblyUtil
             m_msg = msg;
         }
 
-        std::string to_string()
+        const char* what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW override
         {
-            return m_msg;
+            return m_msg.c_str();
         }
 
     private:
@@ -179,20 +179,21 @@ namespace AssemblyUtil
     bool WriteDataToSection(section_ptr sections, std::vector<BYTE>& data, int offset);
 }
 
-
 namespace ProcessorUtil
 {
     enum eAddressingType
     {
         DIRECT,
         MEMORY,
-        MEMORY_OFFSET
+        MEMORY_OFFSET,
+        NONE_ADDR
     };
 
     enum eOperandType
     {
         REGISTER,
-        IMMEDIATE
+        IMMEDIATE,
+        NONE_TYPE
     };
 
     enum eCodePopulationMethod

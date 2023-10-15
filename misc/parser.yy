@@ -319,8 +319,8 @@ NT_LiteralList:
 //---------------------LISTS-END---------------------
 //---------------------OPERANDS----------------------
 NT_JumpOperand:
-    SYMBOL    { $$.value = $1; $$.type = eOperandType::SYM; }
-    | LITERAL { $$.value = $1; $$.type = eOperandType::LTR; }
+    SYMBOL    { $$.value = $1; $$.type = eOperandType::SYM; $$.addressingType = eAddressingType::ADDR_DIRECT; }
+    | LITERAL { $$.value = $1; $$.type = eOperandType::LTR; $$.addressingType = eAddressingType::ADDR_DIRECT; }
     ;
 
 NT_Operand:

@@ -41,18 +41,23 @@ int main(int argc, char* argv[])
     std::cout << "Starting to read the input file.\n";
     // FINISH PARSING THE ARGUMENTS
     // START ASSEMBLY
-    auto assembly = new Assembly();
-    Driver driver(debug, assembly);
-    driver.parse(input_file);
+    try
+    {
+        auto assembly = new Assembly();
+        Driver driver(debug, assembly);
+        driver.parse(input_file);
 
-    assembly->PrintProgram();
-    assembly->ContinueParsing();
+        assembly->PrintProgram();
+        assembly->ContinueParsing();
 
-    CodesMap::PopulateMap();
-    auto entry = CodesMap::GetInstructionCodes(ParserUtil::eInstructionIdentifier::LD, ProcessorUtil::eOperandType::IMMEDIATE, ProcessorUtil::eAddressingType::MEMORY);
-    entry = CodesMap::GetInstructionCodes(ParserUtil::eInstructionIdentifier::LD, ProcessorUtil::eOperandType::REGISTER, ProcessorUtil::eAddressingType::DIRECT);
-    // entry = CodesMap::GetInstructionCodes(ParserUtil::eInstructionIdentifier::ADD, ProcessorUtil::eOperandType::REGISTER, ProcessorUtil::eAddressingType::DIRECT);
-    delete assembly;
+        delete assembly;
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    
+    
 
     return 0;
 }
