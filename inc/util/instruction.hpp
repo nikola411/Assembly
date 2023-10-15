@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <stdint.h>
+#include <unordered_map>
 
 #define EMPTY_BYTE 0xFF
 #define BYTE_SIZE 8
@@ -16,18 +17,18 @@ namespace AssemblyUtil
     {
     public:
         Instruction();
+        Instruction(uint32_t instructionCode);
 
-        void SetInstructionCode(uint8_t code);
-        void SetInstructionRegisterA(uint8_t rA);
-        void SetInstructionRegisterB(uint8_t rB);
-        void SetInstructionRegisterC(uint8_t rC);
+        void SetInstructionCode(uint16_t code);
+        void SetInstructionRegisterA(uint16_t rA);
+        void SetInstructionRegisterB(uint16_t rB);
+        void SetInstructionRegisterC(uint16_t rC);
         void SetInstructionPayload(uint16_t payload);
 
         std::vector<BYTE> GetInstructionVector() const;
         uint32_t GetInstructionUInt32() const;
     private:
-        std::vector<BYTE> instructionData;
-
+        std::vector<BYTE> m_instructionData;
     };
 
     typedef std::shared_ptr<Instruction> instruction_ptr;

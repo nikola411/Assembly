@@ -1,4 +1,140 @@
 #include "util.hpp"
+#include "instruction.hpp"
+
+#include <map>
+
+using AssemblyUtil::Instruction;
+using AssemblyUtil::instruction_ptr;
+
+std::map<eInstructionIdentifier, std::map<ProcessorUtil::eOperandType, std::map<ProcessorUtil::eAddressingType, std::vector<AssemblyUtil::instruction_ptr>>>>
+InstructionCodesMap
+{
+    {
+        eInstructionIdentifier::LD,
+        {
+            {
+                ProcessorUtil::eOperandType::REGISTER,
+                {
+                    {
+                        ProcessorUtil::eAddressingType::DIRECT,
+                        {
+                            std::make_shared<Instruction>((uint32_t)0x91000000)
+                        }
+                    },
+                    {
+                        ProcessorUtil::eAddressingType::MEMORY,
+                        {
+                            std::make_shared<Instruction>((uint32_t)0x93000000)
+                        }
+                    },
+                    {
+                        ProcessorUtil::eAddressingType::MEMORY_OFFSET,
+                        {
+                            std::make_shared<Instruction>((uint32_t)0x91000000),
+                            std::make_shared<Instruction>((uint32_t)0x93000000)
+                        }
+                    }
+                }
+            },
+            {
+                ProcessorUtil::eOperandType::IMMEDIATE,
+                {
+                    {
+                        ProcessorUtil::eAddressingType::MEMORY,
+                        {
+                            std::make_shared<Instruction>((uint32_t)0x81E00000),
+                            std::make_shared<Instruction>((uint32_t)0x51000000),
+                            std::make_shared<Instruction>((uint32_t)0x91000000),
+                            std::make_shared<Instruction>((uint32_t)0x93000000),
+                            std::make_shared<Instruction>((uint32_t)0x930E0004),
+                        }
+                    }
+                }
+            }
+        }
+    },
+    {
+        eInstructionIdentifier::ST,
+        {
+            {
+                ProcessorUtil::eOperandType::REGISTER,
+                {
+                    {
+                        ProcessorUtil::eAddressingType::DIRECT,
+                        {
+                            std::make_shared<Instruction>((uint32_t)0x91000000)
+                        }
+                    },
+                    {
+                        ProcessorUtil::eAddressingType::MEMORY,
+                        {
+                            std::make_shared<Instruction>((uint32_t)0x81000000)
+                        }
+                    },
+                    {
+                        ProcessorUtil::eAddressingType::MEMORY_OFFSET,
+                        {
+                            std::make_shared<Instruction>((uint32_t)0x81000000)
+                        }
+                    }
+                }
+            },
+            {
+                ProcessorUtil::eOperandType::IMMEDIATE,
+                {
+                    {
+                        ProcessorUtil::eAddressingType::MEMORY,
+                        {
+                            std::make_shared<Instruction>((uint32_t)0x81E00FFC),
+                            std::make_shared<Instruction>((uint32_t)0x51000000),
+                            std::make_shared<Instruction>((uint32_t)0x91000000),
+                            std::make_shared<Instruction>((uint32_t)0x81000000),
+                            std::make_shared<Instruction>((uint32_t)0x930E0004),
+                            
+                        }
+                    }
+                }
+            }
+        }
+    },
+    {
+        eInstructionIdentifier::PUSH,
+        {
+            {
+                ProcessorUtil::eOperandType::REGISTER,
+                {
+                    {
+                        ProcessorUtil::eAddressingType::DIRECT,
+                        {
+                            std::make_shared<Instruction>((uint32_t)0x81E00FFC)
+                        }
+                    }
+                }
+            }
+        }
+    },
+    {
+        eInstructionIdentifier::POP,
+        {
+            {
+                ProcessorUtil::eOperandType::REGISTER,
+                {
+                    {
+                        ProcessorUtil::eAddressingType::DIRECT,
+                        {
+                            std::make_shared<Instruction>((uint32_t)0x930E0004)
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
+
+std::vector<AssemblyUtil::instruction_ptr> ProcessorUtil::GetInstructionCode(eInstructionIdentifier instruction, ProcessorUtil::eOperandType operandType, ProcessorUtil::eAddressingType addressingType)
+{
+    return InstructionCodesMap[instruction][operandType][addressingType];
+}
 
 std::unordered_map<std::string, eGPR> GPRMap =
 {
@@ -24,11 +160,6 @@ eCSR ParserUtil::CSRStringToEnum(std::string csr)
 {
     return CSRMap[csr];
 }
-
-std::unordered_map<eInstructionIdentifier, std::vector<BYTE>> InstructionValueMap =
-{
-    { }
-};
 
 AssemblyUtil::symbol_ptr AssemblyUtil::FindSymbol(std::vector<symbol_ptr>& table, std::string& name)
 {

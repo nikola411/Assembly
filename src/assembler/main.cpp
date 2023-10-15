@@ -3,6 +3,8 @@
 
 #include "driver.hpp"
 #include "assembly.hpp"
+#include "util.hpp"
+#include "instruction.hpp"
 
 #include <bitset>
 

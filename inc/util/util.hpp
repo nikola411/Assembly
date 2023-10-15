@@ -4,12 +4,13 @@
 #include <stdint.h>
 #include <string>
 #include <unordered_map>
+#include <map>
 #include <memory>
 #include <vector>
 
+#include "instruction.hpp"
+
 #define EMPTY_BYTE 0xFF
-
-
 
 typedef uint8_t BYTE;
 
@@ -167,7 +168,6 @@ namespace AssemblyUtil
 
     typedef std::shared_ptr<SymbolTableEntry> symbol_ptr;
     typedef std::shared_ptr<RelocationTableEntry> relocation_ptr;
-    
     typedef std::shared_ptr<ProgramLine> line_ptr;
     typedef std::shared_ptr<SectionEntry> section_ptr;
 
@@ -176,8 +176,26 @@ namespace AssemblyUtil
     bool UpdateSymbolOffset(std::vector<symbol_ptr>& table, symbol_ptr symbol, int offset);
     bool UpdateSymbolSection(std::vector<symbol_ptr>& table, symbol_ptr symbol, std::string section);
     bool UpdateSymbolLocality(std::vector<symbol_ptr>& table, symbol_ptr symbol, bool isLocal);
-
     bool WriteDataToSection(section_ptr sections, std::vector<BYTE>& data, int offset);
+}
+
+
+namespace ProcessorUtil
+{
+    enum eAddressingType
+    {
+        DIRECT,
+        MEMORY,
+        MEMORY_OFFSET
+    };
+
+    enum eOperandType
+    {
+        REGISTER,
+        IMMEDIATE
+    };
+
+    std::vector<AssemblyUtil::instruction_ptr> GetInstructionCode(eInstructionIdentifier instruction, ProcessorUtil::eOperandType operandType, ProcessorUtil::eAddressingType addressingType);
 }
 
 #endif
