@@ -1,69 +1,307 @@
-
-{blank}+   loc.step ();
-\n+        loc.lines (yyleng); loc.step ();
-
-.extern  return yy::parser::make_EXTERN (loc);
-.section return yy::parser::make_SECTION(loc);
-.word    return yy::parser::make_WORD   (loc);
-.skip    return yy::parser::make_SKIP   (loc);
-.ascii   return yy::parser::make_ASCII  (loc);
-.equ     return yy::parser::make_EQU    (loc);
-.end     return yy::parser::make_END    (loc);
-
-halt  return yy::parser::make_HALT (loc);
-int   return yy::parser::make_INT  (loc);
-iret  return yy::parser::make_IRET (loc);
-ret   return yy::parser::make_RET  (loc);
-
-call return yy::parser::make_CALL (loc);
-jmp  return yy::parser::make_JMP  (loc);
-beq  return yy::parser::make_BEQ  (loc);
-bne  return yy::parser::make_BNE  (loc);
-bgt  return yy::parser::make_BGT  (loc);
-
-push return yy::parser::make_PUSH  (loc);
-pop  return yy::parser::make_POP   (loc);
-xchg return yy::parser::make_XCHG  (loc);
-
-add return yy::parser::make_ADD (loc);
-sub return yy::parser::make_SUB (loc);
-div return yy::parser::make_DIV (loc);
-mul return yy::parser::make_MUL (loc);
-
-
-not  return yy::parser::make_NOT  (loc);
-and  return yy::parser::make_AND  (loc);
-or   return yy::parser::make_OR   (loc);
-xor  return yy::parser::make_XOR  (loc);
-shl  return yy::parser::make_SHL  (loc);
-shr  return yy::parser::make_SHR  (loc);
-
-ld   return yy::parser::make_LD   (loc);
-st   return yy::parser::make_ST   (loc);
-
-csrrd return yy::parser::make_CSRRD (loc);
-csrwr return yy::parser::make_CSRWR (loc);
-
-
-
-%r[0-15]|sp|pc|status      return yy::parser::make_REGISTER (yytext, loc);
-[a-zA-Z\.][\_a-zA-Z0-9]*  return yy::parser::make_SYMBOL   (yytext, loc);
-(0x[0-9ABCDEF]+)|[0-9]+   return yy::parser::make_LITERAL  (yytext, loc);
-
-#.*        loc.step ();
-
-"-"        return yy::parser::make_MINUS  (loc);
-"+"        return yy::parser::make_PLUS   (loc);
-"*"        return yy::parser::make_STAR   (loc);
-"/"        return yy::parser::make_SLASH  (loc);
-"("        return yy::parser::make_LPAREN (loc);
-")"        return yy::parser::make_RPAREN (loc);
-":="       return yy::parser::make_ASSIGN (loc);
-"\,"       return yy::parser::make_COMMA (loc);
-"\$"       return yy::parser::make_DOLLAR (loc);
-"\%"       return yy::parser::make_PERCENT (loc);
-"\["       return yy::parser::make_LBRACKET (loc);
-"\]"       return yy::parser::make_RBRACKET (loc);
-"\:"       return yy::parser::make_COLON(loc);
-
-<<EOF>>    return yy::parser::make_EOF (loc);
+ // {
+    //     eInstructionIdentifier::LD,
+    //     {
+    //         {
+    //             ProcessorUtil::eOperandType::REGISTER,
+    //             {
+    //                 {
+    //                     ProcessorUtil::eAddressingType::DIRECT,
+    //                     {
+    //                         {
+    //                             std::make_shared<Instruction>((uint32_t)0x91000000),
+    //                             {
+    //                                 std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_A, eValueToUse::FIRST_OPERAND),
+    //                                 std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_B, eValueToUse::SECOND_OPERAND)
+    //                             }
+    //                         }
+    //                     }
+    //                 },
+    //                 {
+    //                     ProcessorUtil::eAddressingType::MEMORY,
+    //                     {
+    //                         {
+    //                             std::make_shared<Instruction>((uint32_t)0x93000000),
+    //                             {
+    //                                 std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_A, eValueToUse::SECOND_OPERAND),
+    //                                 std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_B, eValueToUse::FIRST_OPERAND)
+    //                             }
+    //                         }   
+    //                     }
+    //                 },
+    //                 {
+    //                     ProcessorUtil::eAddressingType::MEMORY_OFFSET,
+    //                     {
+    //                         {
+    //                             std::make_shared<Instruction>((uint32_t)0x91000000),
+    //                             {
+    //                                 std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_A, eValueToUse::FIRST_OPERAND),
+    //                                 std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_B, eValueToUse::FIRST_OPERAND),
+    //                                 std::make_shared<CodePopulation>(eCodePopulationMethod::SET_PAYLOAD, eValueToUse::FIRST_OFFSET)
+    //                             }
+    //                         },
+    //                         {
+    //                             std::make_shared<Instruction>((uint32_t)0x93000000),
+    //                             {
+    //                                 std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_A, eValueToUse::SECOND_OPERAND),
+    //                                 std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_B, eValueToUse::FIRST_OPERAND)
+    //                             }
+    //                         }   
+    //                     }
+    //                 }
+    //             }
+    //         },
+    //         {
+    //             ProcessorUtil::eOperandType::IMMEDIATE,
+    //             {
+    //                 {
+    //                     ProcessorUtil::eAddressingType::MEMORY,
+    //                     {
+    //                         {
+    //                             std::make_shared<Instruction>((uint32_t)0x81E00000), // push r0
+    //                             {
+    //                                 DO_NOTHING
+    //                             }
+    //                         },
+    //                         {
+    //                             std::make_shared<Instruction>((uint32_t)0x51000000), // r0 = r0 - r0
+    //                             {
+    //                                 DO_NOTHING
+    //                             }
+    //                         },
+    //                         {
+    //                             std::make_shared<Instruction>((uint32_t)0x91000000), // r0 = r0 + value
+    //                             {
+    //                                 std::make_shared<CodePopulation>(eCodePopulationMethod::SET_PAYLOAD, eValueToUse::FIRST_OPERAND)
+    //                             }
+    //                         },
+    //                         {
+    //                             std::make_shared<Instruction>((uint32_t)0x93000000), // mem[r0] = r[B]
+    //                             {
+    //                                 std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_A, eValueToUse::SECOND_OPERAND)
+    //                             }
+    //                         },
+    //                         {
+    //                             std::make_shared<Instruction>((uint32_t)0x930E0004), // pop r0
+    //                             {
+    //                                 DO_NOTHING
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // },
+    {
+        eInstructionIdentifier::ST,
+        {
+            {
+                ProcessorUtil::eOperandType::REGISTER,
+                {
+                    {
+                        ProcessorUtil::eAddressingType::DIRECT,
+                        {
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x91000000),
+                                {
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_A, eValueToUse::FIRST_OPERAND),
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_B, eValueToUse::SECOND_OPERAND)
+                                }
+                            }
+                        }
+                    },
+                    {
+                        ProcessorUtil::eAddressingType::MEMORY,
+                        {
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x81000000),
+                                {
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_A, eValueToUse::SECOND_OPERAND),
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_B, eValueToUse::FIRST_OPERAND)
+                                }
+                            }
+                        }
+                    },
+                    {
+                        ProcessorUtil::eAddressingType::MEMORY_OFFSET,
+                        {
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x81000000),
+                                {
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_A, eValueToUse::SECOND_OPERAND),
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_C, eValueToUse::FIRST_OPERAND),
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_PAYLOAD, eValueToUse::SECOND_OFFSET)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                ProcessorUtil::eOperandType::IMMEDIATE,
+                {
+                    {
+                        ProcessorUtil::eAddressingType::MEMORY,
+                        {
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x81E00FFC),
+                                {
+                                    DO_NOTHING
+                                }
+                            },
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x51000000),
+                                {
+                                    DO_NOTHING
+                                }
+                            },
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x91000000),
+                                {
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_PAYLOAD, eValueToUse::SECOND_OPERAND)   
+                                }
+                            },
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x81000000),
+                                {
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_B, eValueToUse::FIRST_OPERAND)
+                                }
+                            },
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x930E0004),
+                                {
+                                    DO_NOTHING
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    {
+        eInstructionIdentifier::PUSH,
+        {
+            {
+                ProcessorUtil::eOperandType::REGISTER,
+                {
+                    {
+                        ProcessorUtil::eAddressingType::DIRECT,
+                        {
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x81E00FFC),
+                                {
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_C, eValueToUse::FIRST_OPERAND)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    {
+        eInstructionIdentifier::POP,
+        {
+            {
+                ProcessorUtil::eOperandType::REGISTER,
+                {
+                    {
+                        ProcessorUtil::eAddressingType::DIRECT,
+                        {
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x930E0004),
+                                {
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_REG_A, eValueToUse::FIRST_OPERAND)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    {
+        eInstructionIdentifier::CALL, // push pc; pc <= operand
+        {
+            {
+                eOperandType::IMMEDIATE,
+                {
+                    {
+                        eAddressingType::DIRECT,
+                        {
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x81E0F004), //push PC
+                                {
+                                    DO_NOTHING
+                                }
+                            },
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x81E00004), //push r0
+                                {
+                                    DO_NOTHING
+                                }
+                            },
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x51000000), // r0 = r0 - r0 (r0 = 0)
+                                {
+                                    DO_NOTHING
+                                }
+                            },
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x30000000), // pc <= r0 + payload
+                                {
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_PAYLOAD, eValueToUse::FIRST_OPERAND)
+                                }
+                            },
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x930E0004), //pop r0 (restore r0 back)
+                                {
+                                    DO_NOTHING
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    {
+        eInstructionIdentifier::JMP, // pc <= operand
+        {
+            {
+                eOperandType::IMMEDIATE,
+                {
+                    {
+                        eAddressingType::DIRECT,
+                        {
+                             {
+                                std::make_shared<Instruction>((uint32_t)0x81E00004), //push r0
+                                {
+                                    DO_NOTHING
+                                }
+                            },
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x51000000), // r0 = r0 - r0 (r0 = 0)
+                                {
+                                    DO_NOTHING
+                                }
+                            },
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x30000000), // pc <= r0 + payload
+                                {
+                                    std::make_shared<CodePopulation>(eCodePopulationMethod::SET_PAYLOAD, eValueToUse::FIRST_OPERAND)
+                                }
+                            },
+                            {
+                                std::make_shared<Instruction>((uint32_t)0x930E0004), //pop r0 (restore r0 back)
+                                {
+                                    DO_NOTHING
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }

@@ -14,65 +14,65 @@
 
 typedef uint8_t BYTE;
 
-enum eInstructionIdentifier
-{
-    GLOBAL, EXTERN, WORD, SECTION, SKIP, LBL,
-    HALT, INT, IRET, RET,
-    JMP, CALL,
-    BEQ, BNE, BGT,
-    XCHG, ADD, SUB, MUL, DIV, NOT, AND, OR, XOR, SHL, SHR,
-    PUSH, POP,
-    LD, ST,
-    CSRRD, CSRWR
-};
-
-enum eInstructionType
-{
-    DIRECTIVE,
-    BRANCH,
-    PROCESSOR,
-    STACK,
-    DATA,
-    MEMORY,
-    SPECIAL,
-    LABEL
-};
-
-enum eOperandType
-{
-    GPR = 0,
-    CSR,
-    SYM,
-    LTR
-};
-
-enum eAddressingType
-{
-    ADDR_DIRECT = 0,
-    ADDR_MEMORY,
-    ADDR_MEMORY_OFFSET
-};
-
-enum eRelocationType
-{
-
-};
-
-enum eGPR
-{
-    R0 = 0x00,  R1 = 0x01,  R2 = 0x02,  R3 = 0x03,
-    R4 = 0x04,  R5 = 0x05,  R6 = 0x06,  R7 = 0x07,
-    R8 = 0x08,  R9 = 0x09,  R10 = 0x0A, R11 = 0x0B,
-    R12 = 0x0C, R13 = 0x0D, R14 = 0x0E, R15 = 0x0F
-};
-
-enum eCSR
-{
-    STATUS = 0x00, HANDLER = 0x01, CAUSE = 0x02
-};
-
 namespace ParserUtil
 {
+    enum eInstructionIdentifier
+    {
+        GLOBAL, EXTERN, WORD, SECTION, SKIP, LBL,
+        HALT, INT, IRET, RET,
+        JMP, CALL,
+        BEQ, BNE, BGT,
+        XCHG, ADD, SUB, MUL, DIV, NOT, AND, OR, XOR, SHL, SHR,
+        PUSH, POP,
+        LD, ST,
+        CSRRD, CSRWR
+    };
+
+    enum eInstructionType
+    {
+        DIRECTIVE,
+        BRANCH,
+        PROCESSOR,
+        STACK,
+        DATA,
+        MEMORY,
+        SPECIAL,
+        LABEL
+    };
+
+    enum eOperandType
+    {
+        GPR = 0,
+        CSR,
+        SYM,
+        LTR
+    };
+
+    enum eAddressingType
+    {
+        ADDR_DIRECT = 0,
+        ADDR_MEMORY,
+        ADDR_MEMORY_OFFSET
+    };
+
+    enum eRelocationType
+    {
+
+    };
+
+    enum eGPR
+    {
+        R0 = 0x00,  R1 = 0x01,  R2 = 0x02,  R3 = 0x03,
+        R4 = 0x04,  R5 = 0x05,  R6 = 0x06,  R7 = 0x07,
+        R8 = 0x08,  R9 = 0x09,  R10 = 0x0A, R11 = 0x0B,
+        R12 = 0x0C, R13 = 0x0D, R14 = 0x0E, R15 = 0x0F
+    };
+
+    enum eCSR
+    {
+        STATUS = 0x00, HANDLER = 0x01, CAUSE = 0x02
+    };
+
     struct ParserOperand
     {
         std::string value;
@@ -128,7 +128,7 @@ namespace AssemblyUtil
     {
         std::string label;
         std::string section;
-        eRelocationType type; // promeni ovo u enum
+        ParserUtil::eRelocationType type; // promeni ovo u enum
         BYTE value; // promeni ovo u byte
         BYTE addend; // promeni ovo u int
     };
@@ -142,11 +142,11 @@ namespace AssemblyUtil
 
     struct ProgramLine
     {
-        eInstructionIdentifier instruction;
+        ParserUtil::eInstructionIdentifier instruction;
         std::vector<ParserUtil::ParserOperand> operands;
         int numberOfArguments;
-        eInstructionType type;
-        eAddressingType addressingType;
+        ParserUtil::eInstructionType type;
+        ParserUtil::eAddressingType addressingType;
     };
 
     class AssemblyException: public std::exception
@@ -195,7 +195,29 @@ namespace ProcessorUtil
         IMMEDIATE
     };
 
-    std::vector<AssemblyUtil::instruction_ptr> GetInstructionCode(eInstructionIdentifier instruction, ProcessorUtil::eOperandType operandType, ProcessorUtil::eAddressingType addressingType);
+    enum eCodePopulationMethod
+    {
+        SET_REG_A, SET_REG_B, SET_REG_C, SET_PAYLOAD
+    };
+
+    enum eValueToUse
+    {
+        FIRST_OPERAND = 0x00, SECOND_OPERAND = 0x01, THIRD_OPERAND = 0x02,
+        FIRST_OFFSET, SECOND_OFFSET, THIRD_OFFSET
+    };
+
+    struct CodePopulation
+    {
+        eCodePopulationMethod method;
+        eValueToUse operand;
+
+        CodePopulation(eCodePopulationMethod method, eValueToUse operand):
+            method(method), operand(operand)
+        {
+        }
+    };
+
+    typedef std::shared_ptr<CodePopulation> codePopulation_ptr;
 }
 
 #endif

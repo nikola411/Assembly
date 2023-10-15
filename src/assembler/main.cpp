@@ -5,11 +5,13 @@
 #include "assembly.hpp"
 #include "util.hpp"
 #include "instruction.hpp"
+#include "codes.hpp"
 
 #include <bitset>
+#include <memory>
+#include <vector>
 
 using std::string;
-
 
 int main(int argc, char* argv[])
 {
@@ -46,6 +48,10 @@ int main(int argc, char* argv[])
     assembly->PrintProgram();
     assembly->ContinueParsing();
 
+    CodesMap::PopulateMap();
+    auto entry = CodesMap::GetInstructionCodes(ParserUtil::eInstructionIdentifier::LD, ProcessorUtil::eOperandType::IMMEDIATE, ProcessorUtil::eAddressingType::MEMORY);
+    entry = CodesMap::GetInstructionCodes(ParserUtil::eInstructionIdentifier::LD, ProcessorUtil::eOperandType::REGISTER, ProcessorUtil::eAddressingType::DIRECT);
+    // entry = CodesMap::GetInstructionCodes(ParserUtil::eInstructionIdentifier::ADD, ProcessorUtil::eOperandType::REGISTER, ProcessorUtil::eAddressingType::DIRECT);
     delete assembly;
 
     return 0;

@@ -21,8 +21,7 @@
     using std::vector;
     using std::pair;
 
-    using ParserUtil::ParserOperand;
-    using ParserUtil::ConditionalJumpOperands;
+    using namespace ParserUtil;
 }
 
 %param { Driver& drv }

@@ -12,8 +12,8 @@ class Assembly
 public:
     Assembly();
 
-    void SetInstruction(eInstructionIdentifier instruction, eInstructionType type);
-    void SetOperand(std::string value, eOperandType type);
+    void SetInstruction(ParserUtil::eInstructionIdentifier instruction, ParserUtil::eInstructionType type);
+    void SetOperand(std::string value, ParserUtil::eOperandType type);
     void SetOperand(ParserUtil::ParserOperand& operand);
     void SetMultipleOperands(std::vector<ParserUtil::ParserOperand> operands);
     void FinishInstruction();

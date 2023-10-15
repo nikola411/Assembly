@@ -19,14 +19,14 @@ Assembly::Assembly():
     m_currentSection->name = DEFAULT_SECTION;
 }
 
-void Assembly::SetInstruction(eInstructionIdentifier instruction, eInstructionType type)
+void Assembly::SetInstruction(ParserUtil::eInstructionIdentifier instruction, ParserUtil::eInstructionType type)
 {
     m_currentLine = std::make_shared<ProgramLine>();
     m_currentLine->instruction = instruction;
     m_currentLine->type = type;
 }
 
-void Assembly::SetOperand(std::string value, eOperandType type)
+void Assembly::SetOperand(std::string value, ParserUtil::eOperandType type)
 {
     m_currentLine->operands.push_back(ParserUtil::ParserOperand(value, type));
 }
@@ -48,9 +48,9 @@ void Assembly::FinishInstruction()
 {
     switch (m_currentLine->type)
     {
-        case eInstructionType::DIRECTIVE:
+        case ParserUtil::eInstructionType::DIRECTIVE:
         {
-            if (m_currentLine->instruction == eInstructionIdentifier::EXTERN)
+            if (m_currentLine->instruction == ParserUtil::eInstructionIdentifier::EXTERN)
             {
                 for (auto operand: m_currentLine->operands)
                 {
@@ -58,7 +58,7 @@ void Assembly::FinishInstruction()
                     m_symbolTable.push_back(entry);
                 }
             }
-            else if (m_currentLine->instruction == eInstructionIdentifier::SECTION)
+            else if (m_currentLine->instruction == ParserUtil::eInstructionIdentifier::SECTION)
             {
                 auto sectionName = m_currentLine->operands.front().value;
 
@@ -81,7 +81,7 @@ void Assembly::FinishInstruction()
 
             break;
         }
-        case eInstructionType::LABEL:
+        case ParserUtil::eInstructionType::LABEL:
         {
             auto name = m_currentLine->operands.front().value;
             name = name.substr(0, name.size() - 1);
@@ -100,12 +100,12 @@ void Assembly::FinishInstruction()
 
             break;
         }
-        case eInstructionType::BRANCH:
-        case eInstructionType::DATA:
-        case eInstructionType::MEMORY:
-        case eInstructionType::PROCESSOR:
-        case eInstructionType::SPECIAL:
-        case eInstructionType::STACK:
+        case ParserUtil::eInstructionType::BRANCH:
+        case ParserUtil::eInstructionType::DATA:
+        case ParserUtil::eInstructionType::MEMORY:
+        case ParserUtil::eInstructionType::PROCESSOR:
+        case ParserUtil::eInstructionType::SPECIAL:
+        case ParserUtil::eInstructionType::STACK:
             m_locationCounter += INSTRUCTION_SIZE;
             break;
     }
@@ -126,27 +126,27 @@ void Assembly::ContinueParsing()
         m_currentLine = line;
         switch (line->type)
         {
-            case eInstructionType::DIRECTIVE:
+            case ParserUtil::eInstructionType::DIRECTIVE:
                 HandleDirective();
                 break;
-            case eInstructionType::LABEL:
+            case ParserUtil::eInstructionType::LABEL:
                 break;
-            case eInstructionType::BRANCH:
+            case ParserUtil::eInstructionType::BRANCH:
                 HandleBranchInstruction();
                 break;
-            case eInstructionType::DATA:
+            case ParserUtil::eInstructionType::DATA:
                 HandleDataInstruction();
                 break;
-            case eInstructionType::MEMORY:
+            case ParserUtil::eInstructionType::MEMORY:
                 HandleMemoryInstruction();
                 break;
-            case eInstructionType::PROCESSOR:
+            case ParserUtil::eInstructionType::PROCESSOR:
                 HandleProcessorInstruction();
                 break;
-            case eInstructionType::SPECIAL:
+            case ParserUtil::eInstructionType::SPECIAL:
                 HandleSpecialInstruction();
                 break;
-            case eInstructionType::STACK:
+            case ParserUtil::eInstructionType::STACK:
                 HandleStackInstruction();
                 break;
         }
