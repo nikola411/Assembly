@@ -26,7 +26,7 @@ private:
     int GetVariantOperandNumber(AssemblyUtil::line_ptr line) const;
     bool CanOperandHaveOffset(AssemblyUtil::line_ptr line) const;
     uint16_t GetDataValue(std::vector<ParserUtil::ParserOperand>& operands, ProcessorUtil::eValueToUse value);
-    uint16_t GetSymbolValue(std::string& name);
+    uint16_t GetSymbolValue(std::string& name, ParserUtil::eAddressingType adressingType);
     uint16_t GetRegisterValue(std::string& name, eOperandType type);
     uint16_t GetLiteralValue(std::string& value);
 

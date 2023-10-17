@@ -46,9 +46,9 @@ int main(int argc, char* argv[])
         auto assembly = new Assembly();
         Driver driver(debug, assembly);
         driver.parse(input_file);
-
-        assembly->PrintProgram();
         assembly->ContinueParsing();
+        
+        assembly->PrintProgram();
 
         delete assembly;
     }

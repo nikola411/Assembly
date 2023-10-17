@@ -24,13 +24,13 @@ namespace AssemblyUtil
         void SetInstructionRegisterB(uint16_t rB);
         void SetInstructionRegisterC(uint16_t rC);
         void SetInstructionPayload(uint16_t payload);
+        void DoNothing(uint16_t payload);
 
-        void CallMethod(int num, uint16_t value);
-
-        std::vector<BYTE> GetInstructionVector() const;
+        std::vector<BYTE> GetInstructionVector();
         uint32_t GetInstructionUInt32() const;
     private:
         std::vector<BYTE> m_instructionData;
+        uint32_t m_intInstructionData;
     };
 
     typedef std::shared_ptr<Instruction> instruction_ptr;

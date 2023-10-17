@@ -24,6 +24,14 @@ DEBUG_ENABLED = 0
 
 GPP_FLAGS = 
 
+TEST_INC = ${ASSEMBLY_INCLUDES}
+TEST_SRC = ./tests/tests.cpp
+TEST_SRC += ${UTIL_SOURCE}
+TEST_OUT = -o ./test
+
+test:
+	g++ -g ${TEST_INC} ${GPP_FLAGS} ${TEST_SRC} ${TEST_OUT}
+
 all: asm
 
 asm: flex bison

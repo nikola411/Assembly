@@ -99,11 +99,16 @@ bool AssemblyUtil::WriteDataToSection(section_ptr section, const std::vector<BYT
     if (section->sectionData.size() < offset )
         return false;
     
+    auto sectionSize = section->sectionData.size();
     if (offset + data.size() > section->sectionData.size())
-        return false;
+    {
+        auto size = (offset + data.size()) - sectionSize;
+        for (auto i = 0; i < size; ++i)
+            section->sectionData.push_back(EMPTY_BYTE);
+    }
 
     for (auto byte: data)
-        section->sectionData[++offset] = byte;
+        section->sectionData[offset++] = byte;
 
     return true;
 }

@@ -7,11 +7,11 @@ using AssemblyUtil::Instruction;
 
 #define DO_NOTHING {}
 #define PUSH_AND_RESET_R0\
-    AddInstructionPair(entry, 0x81E00000, DO_NOTHING); \
-    AddInstructionPair(entry, 0x51000000, DO_NOTHING); \
+    AddInstructionPair(0x81E00000, DO_NOTHING); \
+    AddInstructionPair(0x51000000, DO_NOTHING); \
 
 #define POP_R0\
-    AddInstructionPair(entry, 0x930E0004, DO_NOTHING); \
+    AddInstructionPair(0x930E0004, DO_NOTHING); \
 
 std::map<eInstructionIdentifier, std::map<eOperandType, std::map<eAddressingType, std::vector<instructionPopulationPair>>>>
     CodesMap::InstructionCodesMap = {};
@@ -19,8 +19,9 @@ std::map<eInstructionIdentifier, std::map<eOperandType, std::map<eAddressingType
 eInstructionIdentifier CodesMap::currentIdentifier = (eInstructionIdentifier)0;
 eOperandType CodesMap::currentOperandType = eOperandType::NONE_TYPE;
 eAddressingType CodesMap::currentAddressingType = eAddressingType::ADDR_NONE;
+std::vector<instructionPopulationPair> CodesMap::currentEntry = {};
 
-void CodesMap::AddInstructionPair(std::vector<instructionPopulationPair>& instructions, int code, std::vector<std::pair<InstructionMethodPtr, eValueToUse>> methods)
+void CodesMap::AddInstructionPair(int code, std::vector<std::pair<InstructionMethodPtr, eValueToUse>> methods)
 {
     auto codePopulationVector = std::vector<codePopulation_ptr>();
 
@@ -32,12 +33,12 @@ void CodesMap::AddInstructionPair(std::vector<instructionPopulationPair>& instru
         codePopulationVector.push_back(std::make_shared<CodePopulation>(method.first, method.second));
     }
 
-    auto instructionPtr = std::make_shared<Instruction>((uint32_t) code);
-    instructions.push_back(std::pair<instruction_ptr, std::vector<codePopulation_ptr>>(instructionPtr, codePopulationVector));
+    auto instruction((uint32_t) code);
+    currentEntry.push_back(std::pair<Instruction, std::vector<codePopulation_ptr>>(instruction, codePopulationVector));
 }
 
-std::vector<instructionPopulationPair>&
-CodesMap::GetMapEntry(ParserUtil::eInstructionIdentifier identifier, eOperandType operand, eAddressingType addressing)
+void 
+CodesMap::SetMapEntry(ParserUtil::eInstructionIdentifier identifier, eOperandType operand, eAddressingType addressing)
 {
     currentIdentifier = identifier;
     currentOperandType = operand;
@@ -46,349 +47,349 @@ CodesMap::GetMapEntry(ParserUtil::eInstructionIdentifier identifier, eOperandTyp
     InstructionCodesMap[identifier];
     InstructionCodesMap[identifier][operand];
 
-    return InstructionCodesMap[identifier][operand][addressing];
+    currentEntry = InstructionCodesMap[identifier][operand][addressing];
 }
 
-void CodesMap::AddMapEntry(std::vector<instructionPopulationPair>& entry)
+void CodesMap::AddMapEntry()
 {
-    InstructionCodesMap[currentIdentifier][currentOperandType][currentAddressingType] = entry;
+    InstructionCodesMap[currentIdentifier][currentOperandType][currentAddressingType] = currentEntry;
 }
 
 void CodesMap::PopulateMap()
 {
     { // program control methods population
-        auto entry = GetMapEntry(eInstructionIdentifier::HALT, eOperandType::NONE_TYPE, eAddressingType::ADDR_NONE);
-        AddInstructionPair(entry, 0x00000000, DO_NOTHING);
-        AddMapEntry(entry);
+        SetMapEntry(eInstructionIdentifier::HALT, eOperandType::NONE_TYPE, eAddressingType::ADDR_NONE);
+        AddInstructionPair(0x00000000, DO_NOTHING);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::INT, eOperandType::NONE_TYPE, eAddressingType::ADDR_NONE);
-        AddInstructionPair(entry, 0x10000000, DO_NOTHING);
-        AddMapEntry(entry);
+        SetMapEntry(eInstructionIdentifier::INT, eOperandType::NONE_TYPE, eAddressingType::ADDR_NONE);
+        AddInstructionPair(0x10000000, DO_NOTHING);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::IRET, eOperandType::NONE_TYPE, eAddressingType::ADDR_NONE);
-        AddInstructionPair(entry, 0x93FE0004, DO_NOTHING);
-        AddInstructionPair(entry, 0x970E0004, DO_NOTHING); // pop status
-        AddMapEntry(entry);
+        SetMapEntry(eInstructionIdentifier::IRET, eOperandType::NONE_TYPE, eAddressingType::ADDR_NONE);
+        AddInstructionPair(0x93FE0004, DO_NOTHING);
+        AddInstructionPair(0x970E0004, DO_NOTHING); // pop status
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::RET, eOperandType::NONE_TYPE, eAddressingType::ADDR_NONE);
-        AddInstructionPair(entry, 0x93FE0004, DO_NOTHING);
-        AddMapEntry(entry);
+        SetMapEntry(eInstructionIdentifier::RET, eOperandType::NONE_TYPE, eAddressingType::ADDR_NONE);
+        AddInstructionPair(0x93FE0004, DO_NOTHING);
+        AddMapEntry();
     }
 
     { // LD map population
-        auto entry = GetMapEntry(eInstructionIdentifier::LD, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x91000000,
+        SetMapEntry(eInstructionIdentifier::LD, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x91000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::SECOND_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::LD, eOperandType::GPR, eAddressingType::ADDR_MEMORY);
-        AddInstructionPair(entry, 0x93000000,
+        SetMapEntry(eInstructionIdentifier::LD, eOperandType::GPR, eAddressingType::ADDR_MEMORY);
+        AddInstructionPair(0x93000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::LD, eOperandType::GPR, eAddressingType::ADDR_MEMORY_OFFSET);
-        AddInstructionPair(entry, 0x91000000,
+        SetMapEntry(eInstructionIdentifier::LD, eOperandType::GPR, eAddressingType::ADDR_MEMORY_OFFSET);
+        AddInstructionPair(0x91000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionPayload, eValueToUse::FIRST_OFFSET }
         });
-        AddInstructionPair(entry, 0x93000000,
+        AddInstructionPair(0x93000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::LD, eOperandType::SYM, eAddressingType::ADDR_MEMORY);
+        SetMapEntry(eInstructionIdentifier::LD, eOperandType::SYM, eAddressingType::ADDR_MEMORY);
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x91000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
-        AddInstructionPair(entry, 0x93000000, {{ &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND }});
+        AddInstructionPair(0x91000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
+        AddInstructionPair(0x93000000, {{ &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND }});
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::LD, eOperandType::LTR, eAddressingType::ADDR_MEMORY);
+        SetMapEntry(eInstructionIdentifier::LD, eOperandType::LTR, eAddressingType::ADDR_MEMORY);
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x91000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
-        AddInstructionPair(entry, 0x93000000, {{ &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND }});
+        AddInstructionPair(0x91000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
+        AddInstructionPair(0x93000000, {{ &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND }});
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
     }
 
     { // ST Map population
-        auto entry = GetMapEntry(eInstructionIdentifier::ST, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x91000000,
+        SetMapEntry(eInstructionIdentifier::ST, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x91000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::SECOND_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::ST, eOperandType::GPR, eAddressingType::ADDR_MEMORY);
-        AddInstructionPair(entry, 0x81000000,
+        SetMapEntry(eInstructionIdentifier::ST, eOperandType::GPR, eAddressingType::ADDR_MEMORY);
+        AddInstructionPair(0x81000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::ST, eOperandType::GPR, eAddressingType::ADDR_MEMORY_OFFSET);
-        AddInstructionPair(entry, 0x81000000,
+        SetMapEntry(eInstructionIdentifier::ST, eOperandType::GPR, eAddressingType::ADDR_MEMORY_OFFSET);
+        AddInstructionPair(0x81000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionPayload, eValueToUse::SECOND_OFFSET }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::ST, eOperandType::SYM, eAddressingType::ADDR_MEMORY);
+        SetMapEntry(eInstructionIdentifier::ST, eOperandType::SYM, eAddressingType::ADDR_MEMORY);
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x91000000, {{ &Instruction::SetInstructionPayload, eValueToUse::SECOND_OPERAND }});
-        AddInstructionPair(entry, 0x81000000, {{ &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND }});
+        AddInstructionPair(0x91000000, {{ &Instruction::SetInstructionPayload, eValueToUse::SECOND_OPERAND }});
+        AddInstructionPair(0x81000000, {{ &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND }});
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::ST, eOperandType::LTR, eAddressingType::ADDR_MEMORY);
+        SetMapEntry(eInstructionIdentifier::ST, eOperandType::LTR, eAddressingType::ADDR_MEMORY);
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x91000000, {{ &Instruction::SetInstructionPayload, eValueToUse::SECOND_OPERAND }});
-        AddInstructionPair(entry, 0x81000000, {{ &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND }});
+        AddInstructionPair(0x91000000, {{ &Instruction::SetInstructionPayload, eValueToUse::SECOND_OPERAND }});
+        AddInstructionPair(0x81000000, {{ &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND }});
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
     }
 
     { // PUSH and POP map population
-        auto entry = GetMapEntry(eInstructionIdentifier::PUSH, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x81E00FFC, {{ &Instruction::SetInstructionRegisterC, eValueToUse::FIRST_OPERAND }});
-        AddMapEntry(entry);
+        SetMapEntry(eInstructionIdentifier::PUSH, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x81E00FFC, {{ &Instruction::SetInstructionRegisterC, eValueToUse::FIRST_OPERAND }});
+        AddMapEntry();
         
-        entry = GetMapEntry(eInstructionIdentifier::POP, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x930E0004, {{ &Instruction::SetInstructionRegisterA, eValueToUse::FIRST_OPERAND }});
-        AddMapEntry(entry);
+        SetMapEntry(eInstructionIdentifier::POP, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x930E0004, {{ &Instruction::SetInstructionRegisterA, eValueToUse::FIRST_OPERAND }});
+        AddMapEntry();
     }
 
     { // Branch methods map population
-        auto entry = GetMapEntry(eInstructionIdentifier::CALL, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x81E0F004, DO_NOTHING); // push pc
+        SetMapEntry(eInstructionIdentifier::CALL, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x81E0F004, DO_NOTHING); // push pc
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x30000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
+        AddInstructionPair(0x30000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::CALL, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x81E0F004, DO_NOTHING); // push pc
+        SetMapEntry(eInstructionIdentifier::CALL, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x81E0F004, DO_NOTHING); // push pc
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x30000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
+        AddInstructionPair(0x30000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::JMP, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
+        SetMapEntry(eInstructionIdentifier::JMP, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x30000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
+        AddInstructionPair(0x30000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::JMP, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
+        SetMapEntry(eInstructionIdentifier::JMP, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x30000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
+        AddInstructionPair(0x30000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::BEQ, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
+        SetMapEntry(eInstructionIdentifier::BEQ, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x31000000,
+        AddInstructionPair(0x31000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND },
-            { &Instruction::SetInstructionPayload, eValueToUse::THIRD_OPERAND }
+            { &Instruction::SetInstructionPayload,   eValueToUse::THIRD_OPERAND }
         });
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::BEQ, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
+        SetMapEntry(eInstructionIdentifier::BEQ, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x31000000,
+        AddInstructionPair(0x31000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND },
-            { &Instruction::SetInstructionPayload, eValueToUse::THIRD_OPERAND }
+            { &Instruction::SetInstructionPayload,   eValueToUse::THIRD_OPERAND }
         });
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::BNE, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
+        SetMapEntry(eInstructionIdentifier::BNE, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x32000000,
+        AddInstructionPair(0x32000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND },
-            { &Instruction::SetInstructionPayload, eValueToUse::THIRD_OPERAND }
+            { &Instruction::SetInstructionPayload,   eValueToUse::THIRD_OPERAND }
         });
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::BNE, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
+        SetMapEntry(eInstructionIdentifier::BNE, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x32000000,
+        AddInstructionPair(0x32000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND },
-            { &Instruction::SetInstructionPayload, eValueToUse::THIRD_OPERAND }
+            { &Instruction::SetInstructionPayload,   eValueToUse::THIRD_OPERAND }
         });
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::BGT, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
+        SetMapEntry(eInstructionIdentifier::BGT, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x33000000,
+        AddInstructionPair(0x33000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND },
-            { &Instruction::SetInstructionPayload, eValueToUse::THIRD_OPERAND }
+            { &Instruction::SetInstructionPayload,   eValueToUse::THIRD_OPERAND }
         });
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::BGT, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
+        SetMapEntry(eInstructionIdentifier::BGT, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
         PUSH_AND_RESET_R0
-        AddInstructionPair(entry, 0x33000000,
+        AddInstructionPair(0x33000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND },
-            { &Instruction::SetInstructionPayload, eValueToUse::THIRD_OPERAND }
+            { &Instruction::SetInstructionPayload,   eValueToUse::THIRD_OPERAND }
         });
         POP_R0
-        AddMapEntry(entry);
+        AddMapEntry();
     }
 
     { // XCHG and arithmetic methods map population
-        auto entry = GetMapEntry(eInstructionIdentifier::XCHG, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x40000000,
+        SetMapEntry(eInstructionIdentifier::XCHG, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x40000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
         
-        entry = GetMapEntry(eInstructionIdentifier::ADD, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x50000000,
+        SetMapEntry(eInstructionIdentifier::ADD, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x50000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::SUB, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x51000000,
+        SetMapEntry(eInstructionIdentifier::SUB, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x51000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::MUL, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x52000000,
+        SetMapEntry(eInstructionIdentifier::MUL, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x52000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::DIV, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x53000000,
+        SetMapEntry(eInstructionIdentifier::DIV, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x53000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
     }
 
     { // Logical methods map population
-        auto entry = GetMapEntry(eInstructionIdentifier::NOT, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x60000000,
+        SetMapEntry(eInstructionIdentifier::NOT, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x60000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::AND, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x61000000,
+        SetMapEntry(eInstructionIdentifier::AND, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x61000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::OR, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x62000000,
+        SetMapEntry(eInstructionIdentifier::OR, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x62000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::XOR, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x63000000,
+        SetMapEntry(eInstructionIdentifier::XOR, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x63000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
     }
 
     { // SHL SHR methods map population
-        auto entry = GetMapEntry(eInstructionIdentifier::SHL, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x70000000,
+        SetMapEntry(eInstructionIdentifier::SHL, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x70000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::SHR, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
-        AddInstructionPair(entry, 0x71000000,
+        SetMapEntry(eInstructionIdentifier::SHR, eOperandType::GPR, eAddressingType::ADDR_DIRECT);
+        AddInstructionPair(0x71000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
     }
 
     { // CSRRD and CSRWR
-        auto entry = GetMapEntry(eInstructionIdentifier::CSRRD, eOperandType::GPR, eAddressingType::ADDR_DIRECT); // gpr <= csr
-        AddInstructionPair(entry, 0x90000000,
+        SetMapEntry(eInstructionIdentifier::CSRRD, eOperandType::GPR, eAddressingType::ADDR_DIRECT); // gpr <= csr
+        AddInstructionPair(0x90000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
 
-        entry = GetMapEntry(eInstructionIdentifier::CSRWR, eOperandType::GPR, eAddressingType::ADDR_DIRECT); // csr <= gpr
-        AddInstructionPair(entry, 0x95000000,
+        SetMapEntry(eInstructionIdentifier::CSRWR, eOperandType::GPR, eAddressingType::ADDR_DIRECT); // csr <= gpr
+        AddInstructionPair(0x95000000,
         {
             { &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND }
         });
-        AddMapEntry(entry);
+        AddMapEntry();
     }
 }
 
-std::vector<std::pair<instruction_ptr, std::vector<codePopulation_ptr>>>
+std::vector<instructionPopulationPair>
 CodesMap::GetInstructionCodes(eInstructionIdentifier identifier, eOperandType operand, eAddressingType addressing)
 {
     return InstructionCodesMap[identifier][operand][addressing];

@@ -1,3 +1,5 @@
 .vscode
 ./misc/parser/*
 ./misc/scanner/*
+./test
+./tests

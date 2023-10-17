@@ -7,6 +7,7 @@
 #include <map>
 
 using AssemblyUtil::instruction_ptr;
+using AssemblyUtil::Instruction;
 using ParserUtil::eAddressingType;
 using ParserUtil::eInstructionIdentifier;
 using ParserUtil::eOperandType;
@@ -31,7 +32,7 @@ namespace ProcessorUtil
     };
 
     typedef std::shared_ptr<CodePopulation> codePopulation_ptr;
-    typedef std::pair<instruction_ptr, std::vector<codePopulation_ptr>> instructionPopulationPair;
+    typedef std::pair<Instruction, std::vector<codePopulation_ptr>> instructionPopulationPair;
     
     class CodesMap
     {
@@ -39,13 +40,16 @@ namespace ProcessorUtil
         static void PopulateMap();
         static std::vector<instructionPopulationPair> GetInstructionCodes(eInstructionIdentifier identifier, eOperandType operand, eAddressingType addressing);
     private:
-        static void AddInstructionPair(std::vector<instructionPopulationPair>& instructions, int code, std::vector<std::pair<InstructionMethodPtr, eValueToUse>> methods);
-        static std::vector<instructionPopulationPair>& GetMapEntry(eInstructionIdentifier identifier, eOperandType operand, eAddressingType addressing);
-        static void AddMapEntry(std::vector<instructionPopulationPair>& entry);
+        static void AddInstructionPair(int code, std::vector<std::pair<InstructionMethodPtr, eValueToUse>> methods);
+        static void AddInstructionList(std::vector<instructionPopulationPair>& instructions, std::vector<std::pair<int, std::vector<std::pair<InstructionMethodPtr, eValueToUse>>>> pairsVector);
+        static void SetMapEntry(eInstructionIdentifier identifier, eOperandType operand, eAddressingType addressing);
+        static void AddMapEntry();
 
         static eInstructionIdentifier currentIdentifier;
         static eOperandType currentOperandType;
         static eAddressingType currentAddressingType;
+
+        static std::vector<instructionPopulationPair> currentEntry;
 
         static std::map<eInstructionIdentifier, std::map<eOperandType, std::map<eAddressingType, std::vector<instructionPopulationPair>>>> InstructionCodesMap;
     };
