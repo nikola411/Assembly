@@ -2,6 +2,7 @@
 #define ASSEMBLY_HPP
 
 #include "util.hpp"
+#include "codes.hpp"
 
 #include <vector>
 #include <memory>
@@ -22,18 +23,14 @@ public:
 
     void PrintProgram();
 private:
-    void HandleDirective();
-    void HandleBranchInstruction();
-    void HandleDataInstruction();
-    void HandleMemoryInstruction();
-    void HandleProcessorInstruction();
-    void HandleSpecialInstruction();
-    void HandleStackInstruction();
-
-    ProcessorUtil::eOperandType GetProcessorOperandType(ParserUtil::eOperandType operandType) const;
-    ProcessorUtil::eAddressingType GetProcessorAddressingType(ParserUtil::eAddressingType addressingType) const;
-    int VariantOperandNumber(AssemblyUtil::line_ptr line) const;
+    int GetVariantOperandNumber(AssemblyUtil::line_ptr line) const;
     bool CanOperandHaveOffset(AssemblyUtil::line_ptr line) const;
+    uint16_t GetDataValue(std::vector<ParserUtil::ParserOperand>& operands, ProcessorUtil::eValueToUse value);
+    uint16_t GetSymbolValue(std::string& name);
+    uint16_t GetRegisterValue(std::string& name, eOperandType type);
+    uint16_t GetLiteralValue(std::string& value);
+
+    void HandleDirective(AssemblyUtil::line_ptr line);
 
     AssemblyUtil::line_ptr m_currentLine;
     std::vector<AssemblyUtil::line_ptr> m_program;

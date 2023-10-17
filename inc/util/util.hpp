@@ -18,7 +18,7 @@ namespace ParserUtil
 {
     enum eInstructionIdentifier
     {
-        GLOBAL, EXTERN, WORD, SECTION, SKIP, LBL,
+        GLOBAL, EXTERN, WORD, SECTION, SKIP, LBL, END,
         HALT, INT, IRET, RET,
         JMP, CALL,
         BEQ, BNE, BGT,
@@ -42,7 +42,8 @@ namespace ParserUtil
 
     enum eOperandType
     {
-        GPR = 0,
+        NONE_TYPE = 0,
+        GPR,
         CSR,
         SYM,
         LTR
@@ -50,9 +51,10 @@ namespace ParserUtil
 
     enum eAddressingType
     {
-        ADDR_DIRECT = 0,
+        ADDR_NONE = 0,
+        ADDR_DIRECT,
         ADDR_MEMORY,
-        ADDR_MEMORY_OFFSET
+        ADDR_MEMORY_OFFSET        
     };
 
     enum eRelocationType
@@ -176,49 +178,13 @@ namespace AssemblyUtil
     bool UpdateSymbolOffset(std::vector<symbol_ptr>& table, symbol_ptr symbol, int offset);
     bool UpdateSymbolSection(std::vector<symbol_ptr>& table, symbol_ptr symbol, std::string section);
     bool UpdateSymbolLocality(std::vector<symbol_ptr>& table, symbol_ptr symbol, bool isLocal);
-    bool WriteDataToSection(section_ptr sections, std::vector<BYTE>& data, int offset);
+    bool WriteDataToSection(section_ptr sections, const std::vector<BYTE>& data, int offset);
+    std::vector<BYTE> ReadDataFromSection(std::vector<section_ptr>& sections, std::string& name, int offsetStart, int offsetEnd);
 }
 
 namespace ProcessorUtil
 {
-    enum eAddressingType
-    {
-        DIRECT,
-        MEMORY,
-        MEMORY_OFFSET,
-        NONE_ADDR
-    };
-
-    enum eOperandType
-    {
-        REGISTER,
-        IMMEDIATE,
-        NONE_TYPE
-    };
-
-    enum eCodePopulationMethod
-    {
-        SET_REG_A, SET_REG_B, SET_REG_C, SET_PAYLOAD
-    };
-
-    enum eValueToUse
-    {
-        FIRST_OPERAND = 0x00, SECOND_OPERAND = 0x01, THIRD_OPERAND = 0x02,
-        FIRST_OFFSET, SECOND_OFFSET, THIRD_OFFSET
-    };
-
-    struct CodePopulation
-    {
-        eCodePopulationMethod method;
-        eValueToUse operand;
-
-        CodePopulation(eCodePopulationMethod method, eValueToUse operand):
-            method(method), operand(operand)
-        {
-        }
-    };
-
-    typedef std::shared_ptr<CodePopulation> codePopulation_ptr;
+    
 }
 
 #endif

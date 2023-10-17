@@ -25,6 +25,8 @@ namespace AssemblyUtil
         void SetInstructionRegisterC(uint16_t rC);
         void SetInstructionPayload(uint16_t payload);
 
+        void CallMethod(int num, uint16_t value);
+
         std::vector<BYTE> GetInstructionVector() const;
         uint32_t GetInstructionUInt32() const;
     private:

@@ -135,6 +135,10 @@ NT_Directive:
     | NT_DirectiveWithList
     | NT_DirectiveSingleArgument
     | END
+    {
+        assembly.SetInstruction(eInstructionIdentifier::END, eInstructionType::DIRECTIVE);
+
+    }
     ;
 
 NT_DirectiveWithList:
