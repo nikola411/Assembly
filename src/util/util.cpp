@@ -141,3 +141,27 @@ std::vector<BYTE> AssemblyUtil::ReadDataFromSection(std::vector<AssemblyUtil::se
 
     return ret;
 }
+
+bool AssemblyUtil::WriteDataToSection(AssemblyUtil::section_ptr section, uint32_t data, int offset, int bytesToWrite)
+{
+    if (section->sectionData.size() < offset + bytesToWrite)
+        return false;
+    if (offset < 0)
+        return false;
+
+    for (auto i = 0; i < bytesToWrite; i++)
+    {
+        uint8_t byte = data >> ((bytesToWrite - 1 - i) * BYTE_SIZE);
+        section->sectionData[offset + i] = byte;
+    }
+        
+    return true;
+}
+
+bool AssemblyUtil::AllocateSectionData(AssemblyUtil::section_ptr section, int size)
+{
+    for (auto i = 0; i < size; i++)
+        section->sectionData.push_back(0x0);
+        
+    return true;
+}

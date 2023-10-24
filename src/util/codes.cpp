@@ -37,8 +37,7 @@ void CodesMap::AddInstructionPair(int code, std::vector<std::pair<InstructionMet
     currentEntry.push_back(std::pair<Instruction, std::vector<codePopulation_ptr>>(instruction, codePopulationVector));
 }
 
-void 
-CodesMap::SetMapEntry(ParserUtil::eInstructionIdentifier identifier, eOperandType operand, eAddressingType addressing)
+void CodesMap::SetMapEntry(ParserUtil::eInstructionIdentifier identifier, eOperandType operand, eAddressingType addressing)
 {
     currentIdentifier = identifier;
     currentOperandType = operand;
@@ -387,6 +386,12 @@ void CodesMap::PopulateMap()
         });
         AddMapEntry();
     }
+}
+
+int ProcessorUtil::CodesMap::GetInstructionCount(eInstructionIdentifier identifier, eOperandType operand, eAddressingType addressing)
+{
+    auto instructionVector = InstructionCodesMap[identifier][operand][addressing];
+    return instructionVector.size();
 }
 
 std::vector<instructionPopulationPair>

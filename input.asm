@@ -1,10 +1,6 @@
 .section sekcija
-
-    not %r1
-    not %r6
 program:
+    jmp karr
     add %r1, %r2
-    jmp program
-labela:
-
+    jmp arddd
 .end

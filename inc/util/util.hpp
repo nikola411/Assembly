@@ -10,7 +10,7 @@
 
 #include "instruction.hpp"
 
-#define EMPTY_BYTE 0xFF
+#define EMPTY_BYTE 0x00
 
 typedef uint8_t BYTE;
 
@@ -18,26 +18,33 @@ namespace ParserUtil
 {
     enum eInstructionIdentifier
     {
+        // directive
         GLOBAL, EXTERN, WORD, SECTION, SKIP, LBL, END,
-        HALT, INT, IRET, RET,
+        // branch
         JMP, CALL,
         BEQ, BNE, BGT,
-        XCHG, ADD, SUB, MUL, DIV, NOT, AND, OR, XOR, SHL, SHR,
+        // processor
+        HALT, INT, IRET, RET,
+        // stack
         PUSH, POP,
+        // data
+        XCHG, ADD, SUB, MUL, DIV, NOT, AND, OR, XOR, SHL, SHR,
+        // memory
         LD, ST,
+        // special
         CSRRD, CSRWR
     };
 
     enum eInstructionType
     {
-        DIRECTIVE,
-        BRANCH,
-        PROCESSOR,
-        STACK,
-        DATA,
-        MEMORY,
-        SPECIAL,
-        LABEL
+        DIRECTIVE = 0x00,
+        BRANCH = 0x01,
+        PROCESSOR = 0x02,
+        STACK = 0x03,
+        DATA = 0x04,
+        MEMORY = 0x05,
+        SPECIAL = 0x06,
+        LABEL = 0x07
     };
 
     enum eOperandType
@@ -59,7 +66,8 @@ namespace ParserUtil
 
     enum eRelocationType
     {
-
+        REL_GLOBAL_OFFSET,
+        REL_
     };
 
     enum eGPR
@@ -85,19 +93,15 @@ namespace ParserUtil
 
         eAddressingType addressingType;
 
-        ParserOperand()
-        {
-        }
+        ParserOperand(){}
 
         ParserOperand(std::string value, eOperandType type):
             value(value), type(type)
-        {
-        }
+        {}
 
         ParserOperand(std::string value, eOperandType type, std::string offset, eOperandType offsetType, eAddressingType addressingType):
             value(value), type(type), offset(offset), offsetType(offsetType), addressingType(addressingType)
-        {
-        }
+        {}
     };
 
     struct ConditionalJumpOperands
@@ -131,8 +135,7 @@ namespace AssemblyUtil
         std::string label;
         std::string section;
         ParserUtil::eRelocationType type; // promeni ovo u enum
-        BYTE value; // promeni ovo u byte
-        BYTE addend; // promeni ovo u int
+        int offset; // promeni ovo u byte
     };
 
     struct SectionEntry
@@ -179,12 +182,10 @@ namespace AssemblyUtil
     bool UpdateSymbolSection(std::vector<symbol_ptr>& table, symbol_ptr symbol, std::string section);
     bool UpdateSymbolLocality(std::vector<symbol_ptr>& table, symbol_ptr symbol, bool isLocal);
     bool WriteDataToSection(section_ptr sections, const std::vector<BYTE>& data, int offset);
-    std::vector<BYTE> ReadDataFromSection(std::vector<section_ptr>& sections, std::string& name, int offsetStart, int offsetEnd);
-}
-
-namespace ProcessorUtil
-{
+    bool WriteDataToSection(AssemblyUtil::section_ptr section, uint32_t data, int offset, int bytesToWrite);
+    bool AllocateSectionData(section_ptr section, int size);
     
+    std::vector<BYTE> ReadDataFromSection(std::vector<section_ptr>& sections, std::string& name, int offsetStart, int offsetEnd);
 }
 
 #endif

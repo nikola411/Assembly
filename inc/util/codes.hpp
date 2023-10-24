@@ -38,6 +38,7 @@ namespace ProcessorUtil
     {
     public:
         static void PopulateMap();
+        static int GetInstructionCount(eInstructionIdentifier identifier, eOperandType operand, eAddressingType addressing);
         static std::vector<instructionPopulationPair> GetInstructionCodes(eInstructionIdentifier identifier, eOperandType operand, eAddressingType addressing);
     private:
         static void AddInstructionPair(int code, std::vector<std::pair<InstructionMethodPtr, eValueToUse>> methods);
