@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <memory>
 #include <bitset>
+#include <fstream>
 
 #define FIRST_PASS false
 #define SECOND_PASS true
@@ -67,6 +68,7 @@ void Assembly::FinishInstruction()
         return;
 
     CallAssemblyMethod(m_end, m_currentLine);
+
     m_program.push_back(m_currentLine);
 }
 
@@ -110,34 +112,39 @@ void Assembly::ContinueParsing()
     }
 }
 
-void Assembly::PrintProgram()
+void Assembly::PrintProgram(std::string outFile)
 {
-    std::cout << "symbol_table" << "\n";
+    std::fstream file;
+    file.open(outFile, std::ios_base::openmode::_S_out);
+
+    file << "symbol_table" << "\n";
     for (auto entry: m_symbolTable)
     {
-        std::cout << entry->label << " " << entry->section << " " << std::hex << entry->offset << " " << entry->local <<    "\n";
+        file << entry->label << " " << entry->section << " " << std::hex << entry->offset << " " << entry->local <<    "\n";
     }
-    std::cout << "\n" << "sections" << "\n";
+    file << "\n" << "sections" << "\n";
     for (auto section: m_sections)
     {
-        std::cout << section->name << " " << section->locationCounter << "\n";
+        file << section->name << " " << section->locationCounter << "\n";
         auto i = 0;
         for (auto byte: section->sectionData)
         {
-            std::cout << std::hex << std::setw(2) << std::setfill('0') <<(short)byte << " ";
+            file << std::hex << std::setw(2) << std::setfill('0') <<(short)byte << " ";
             if (++i == 4)
             {
                 i = 0;
-                std::cout << "\n";
+                file << "\n";
             }
         }
     }
-    std::cout << "\nrelocations \n";
+    file << "\nrelocations \n";
     for (auto relocation: m_relcationTable)
     {
-        std::cout << relocation->label << " " << relocation->section << " "
+        file << relocation->label << " " << relocation->section << " "
                     << relocation->type << " " << relocation->offset << " \n";
     }
+
+    file.close();
 }
 
 int Assembly::GetVariantOperandNumber(AssemblyUtil::line_ptr line) const
@@ -190,7 +197,7 @@ uint16_t Assembly::GetSymbolValue(std::string& name, eAddressingType addressingT
     auto entry = FindSymbol(m_symbolTable, name);
     std::vector<BYTE> dataToConvert = { 0x00, 0x00 };
 
-    if (entry == nullptr)
+    if (entry == nullptr || entry->section != m_currentSection->name)
     {
         CreateRelocationEntry(name, m_currentSection->name, m_locationCounter + 3);
         return 0x000;
@@ -259,7 +266,7 @@ bool Assembly::CreateRelocationEntry(std::string name, std::string section, int 
     auto entry = std::make_shared<AssemblyUtil::RelocationTableEntry>();
     entry->label = name;
     entry->section = section;
-    entry->type = eRelocationType::REL_GLOBAL_OFFSET;
+    entry->type = eRelocationType::REL_RELATIVE;
     entry->offset = offset;
 
     m_relcationTable.push_back(entry);
@@ -333,11 +340,19 @@ void Assembly::SectionSecondPass(AssemblyUtil::line_ptr line)
     auto sectionName = line->operands.front().value;
 
     for (auto section: m_sections)
+    {
         if (section->name == sectionName)
+        {
             m_currentSection = section;
+            break;
+        }
+    }
 
     if (m_currentSection == nullptr)
         throw AssemblyException("Section " + sectionName + " is not found in sections vector in second pass.");
+
+    m_currentSection->locationCounter = 0;
+    m_locationCounter = 0;
 }
 
 void Assembly::EndSecondPass(AssemblyUtil::line_ptr line)
@@ -453,6 +468,12 @@ void Assembly::InitializeHandleMap()
         { eInstructionIdentifier::ST, &Assembly::MemoryTypeFirstPass }
     };
 
+    m_handles[SECOND_PASS][eInstructionType::MEMORY] =
+    {
+        { eInstructionIdentifier::LD, NO_ACTION },
+        { eInstructionIdentifier::ST, NO_ACTION }
+    };
+
     m_handles[FIRST_PASS][eInstructionType::DATA] =
     {
         { eInstructionIdentifier::XCHG, &Assembly::OtherTypeFirstPass },
@@ -468,6 +489,21 @@ void Assembly::InitializeHandleMap()
         { eInstructionIdentifier::SHR,  &Assembly::OtherTypeFirstPass },
     };
 
+    m_handles[SECOND_PASS][eInstructionType::DATA] =
+    {
+        { eInstructionIdentifier::XCHG, NO_ACTION },
+        { eInstructionIdentifier::ADD,  NO_ACTION },
+        { eInstructionIdentifier::SUB,  NO_ACTION },
+        { eInstructionIdentifier::MUL,  NO_ACTION },
+        { eInstructionIdentifier::DIV,  NO_ACTION },
+        { eInstructionIdentifier::NOT,  NO_ACTION },
+        { eInstructionIdentifier::AND,  NO_ACTION },
+        { eInstructionIdentifier::OR,   NO_ACTION },
+        { eInstructionIdentifier::XOR,  NO_ACTION },
+        { eInstructionIdentifier::SHL,  NO_ACTION },
+        { eInstructionIdentifier::SHR,  NO_ACTION },
+    };
+
     m_handles[FIRST_PASS][eInstructionType::PROCESSOR] =
     {
         { eInstructionIdentifier::HALT, &Assembly::OtherTypeFirstPass },
@@ -476,16 +512,36 @@ void Assembly::InitializeHandleMap()
         { eInstructionIdentifier::RET,  &Assembly::OtherTypeFirstPass },
     };
 
+    m_handles[SECOND_PASS][eInstructionType::PROCESSOR] =
+    {
+        { eInstructionIdentifier::HALT, NO_ACTION },
+        { eInstructionIdentifier::INT,  NO_ACTION },
+        { eInstructionIdentifier::IRET, NO_ACTION },
+        { eInstructionIdentifier::RET,  NO_ACTION },
+    };
+
     m_handles[FIRST_PASS][eInstructionType::STACK] =
     {
         { eInstructionIdentifier::PUSH, &Assembly::OtherTypeFirstPass },
         { eInstructionIdentifier::POP,  &Assembly::OtherTypeFirstPass },
     };
 
+    m_handles[SECOND_PASS][eInstructionType::STACK] =
+    {
+        { eInstructionIdentifier::PUSH, NO_ACTION },
+        { eInstructionIdentifier::POP,  NO_ACTION },
+    };
+
     m_handles[FIRST_PASS][eInstructionType::SPECIAL] =
     {
         { eInstructionIdentifier::CSRRD, &Assembly::OtherTypeFirstPass },
         { eInstructionIdentifier::CSRWR, &Assembly::OtherTypeFirstPass },
+    };
+
+    m_handles[SECOND_PASS][eInstructionType::SPECIAL] =
+    {
+        { eInstructionIdentifier::CSRRD, NO_ACTION },
+        { eInstructionIdentifier::CSRWR, NO_ACTION },
     };
 
     m_handles[FIRST_PASS][eInstructionType::BRANCH] =
@@ -495,5 +551,14 @@ void Assembly::InitializeHandleMap()
         { eInstructionIdentifier::BEQ,  &Assembly::OtherTypeFirstPass },
         { eInstructionIdentifier::BNE,  &Assembly::OtherTypeFirstPass },
         { eInstructionIdentifier::BGT,  &Assembly::OtherTypeFirstPass },
+    };
+
+    m_handles[SECOND_PASS][eInstructionType::BRANCH] =
+    {
+        { eInstructionIdentifier::JMP,  NO_ACTION },
+        { eInstructionIdentifier::CALL, NO_ACTION },
+        { eInstructionIdentifier::BEQ,  NO_ACTION },
+        { eInstructionIdentifier::BNE,  NO_ACTION },
+        { eInstructionIdentifier::BGT,  NO_ACTION },
     };
 }

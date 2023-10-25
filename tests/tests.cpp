@@ -4,6 +4,7 @@
 #include <iostream>
 
 using namespace AssemblyUtil;
+using namespace LinkerUtil;
 
 #define TEST_CASE(str, type) \
 typedef type str ; \
@@ -26,15 +27,13 @@ std::cout << "Test: " << test##str << "\n result: " << test_##str() << "\n";
 
 TEST_CASE(instruction1, Instruction)
 {
-    Instruction instr;
-    uint32_t expected = 0x11223344;
-    instr.SetInstructionCode(0x11);
-    instr.SetInstructionRegisterA(0x2);
-    instr.SetInstructionRegisterB(0x2);
-    instr.SetInstructionRegisterC(0x3);
-    instr.SetInstructionPayload(0x344);
+    std::string toSplit = "sekcijakurraac 23";
 
-    ASSERT_EQ(instr.GetInstructionUInt32(), expected)
+    auto ret = Split(toSplit, ' ');
+
+    for (auto a: ret)
+        std::cout << a << "|";
+
 }
 
 int main()

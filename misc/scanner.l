@@ -73,8 +73,8 @@ csrwr return yy::parser::make_CSRWR(loc);
 [a-zA-Z_]+:            return yy::parser::make_LABEL(yytext, loc);
 status|handler|cause   return yy::parser::make_CSR(yytext, loc);
 r[0-9][0-5]{0,1}|sp|pc return yy::parser::make_GPR(yytext, loc);
-[a-zA-Z_]+             return yy::parser::make_SYMBOL (yytext, loc);
-(0x){0,1}[0-9ABCDEF]+         return yy::parser::make_LITERAL(yytext, loc);
+[a-zA-Z_0-9]+             return yy::parser::make_SYMBOL (yytext, loc);
+(0x){0,1}[0-9ABCDEF]+  return yy::parser::make_LITERAL(yytext, loc);
 
 <<EOF>>    return yy::parser::make_EOF  (loc);
 

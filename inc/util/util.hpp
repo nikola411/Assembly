@@ -66,8 +66,7 @@ namespace ParserUtil
 
     enum eRelocationType
     {
-        REL_GLOBAL_OFFSET,
-        REL_
+        REL_RELATIVE,
     };
 
     enum eGPR
@@ -186,6 +185,43 @@ namespace AssemblyUtil
     bool AllocateSectionData(section_ptr section, int size);
     
     std::vector<BYTE> ReadDataFromSection(std::vector<section_ptr>& sections, std::string& name, int offsetStart, int offsetEnd);
+}
+
+namespace LinkerUtil
+{
+    static const std::string OUT_FLAG("-o");
+    static const std::string HEX_FLAG("-hex");
+    static const std::string RELOCATABLE_FLAG("-relocatable");
+    static const std::string LINKER_FLAG("./linker");
+    static std::string PLACE_FLAG("-place=");
+
+    class LinkerException: std::exception
+    {
+    public:
+        LinkerException(std::string msg):msg(msg){}
+        std::string what(){return msg;}
+    private:
+        std::string msg;
+    };
+
+    struct LinkerArguments
+    {
+        bool hex;
+        bool relocatable;
+        std::vector<std::string> place;
+        std::string outFile;
+        std::vector<std::string> inFiles;
+    };
+
+    enum ArgumentParsingState
+    {
+        DO_NOTHING = 0x00,
+        READ_OUTPUT = 0x01
+    };
+
+    int Contains(std::string& base, char c);
+    bool StartsWith(std::string& base, std::string& start);
+    std::vector<std::string> Split(std::string& toSplit, char c);
 }
 
 #endif

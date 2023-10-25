@@ -16,15 +16,21 @@ ASSEMBLY_SOURCE =
 ASSEMBLY_SOURCE += $(wildcard ./src/assembler/*.cpp)
 ASSEMBLY_SOURCE += ./misc/parser/parser.cpp
 ASSEMBLY_SOURCE += ./misc/scanner/scanner.cpp
-
 ASSEMBLY_SOURCE += ${UTIL_SOURCE}
 ASSEMBLY_OUTPUT = -o ./asembler
+
+LINKER_INCLUDE_DIR = ./inc/linker
+LINKER_INCLUDES = -I${LINKER_INCLUDE_DIR} -I${UTIL}
+LINKER_SOURCE =
+LINKER_SOURCE += $(wildcard ./src/linker/*.cpp)
+LINKER_SOURCE += ${UTIL_SOURCE}
+LINKER_OUTPUT = -o ./linker
 
 DEBUG_ENABLED = 0
 
 GPP_FLAGS = 
 
-TEST_INC = ${ASSEMBLY_INCLUDES}
+TEST_INC = ${ASSEMBLY_INCLUDES} ${LINKER_INCLUDES}
 TEST_SRC = ./tests/tests.cpp
 TEST_SRC += ${UTIL_SOURCE}
 TEST_OUT = -o ./test
@@ -33,6 +39,9 @@ test:
 	g++ -g ${TEST_INC} ${GPP_FLAGS} ${TEST_SRC} ${TEST_OUT}
 
 all: asm
+
+lnk:
+	g++ -g ${LINKER_INCLUDES} ${GPP_FLAGS} ${LINKER_SOURCE} ${LINKER_OUTPUT}
 
 asm: flex bison
 	g++ -g ${ASSEMBLY_INCLUDES} ${GPP_FLAGS} ${ASSEMBLY_SOURCE} ${ASSEMBLY_OUTPUT}

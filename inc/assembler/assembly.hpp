@@ -21,11 +21,11 @@ public:
     void SetOperand(std::string value, ParserUtil::eOperandType type);
     void SetOperand(ParserUtil::ParserOperand& operand);
     void SetMultipleOperands(std::vector<ParserUtil::ParserOperand> operands);
+    
     void FinishInstruction();
-
     void ContinueParsing();
 
-    void PrintProgram();
+    void PrintProgram(std::string outFile);
 private:
     // util
     int GetVariantOperandNumber(AssemblyUtil::line_ptr line) const;
@@ -53,8 +53,8 @@ private:
     // Other handles
     void OtherTypeFirstPass(AssemblyUtil::line_ptr line);
     void MemoryTypeFirstPass(AssemblyUtil::line_ptr line);
-
     void DoNothing(AssemblyUtil::line_ptr line);
+
     void InitializeHandleMap();
 
     AssemblyUtil::line_ptr m_currentLine;
@@ -65,9 +65,8 @@ private:
     std::map<bool, std::map<ParserUtil::eInstructionType, std::map<ParserUtil::eInstructionIdentifier, HandleMethodPtr>>> m_handles;
 
     AssemblyUtil::section_ptr m_currentSection;
-    bool m_end;    
+    bool m_end; // .END encountered
     int m_locationCounter;
 };
-
 
 #endif
