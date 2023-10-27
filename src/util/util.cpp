@@ -110,6 +110,8 @@ bool AssemblyUtil::WriteDataToSection(section_ptr section, const std::vector<BYT
     for (auto byte: data)
         section->sectionData[offset++] = byte;
 
+    section->locationCounter = section->sectionData.size();
+
     return true;
 }
 
@@ -190,8 +192,8 @@ bool LinkerUtil::StartsWith(std::string& base, std::string& start)
 std::vector<std::string> LinkerUtil::Split(std::string& toSplit, char c)
 {
     std::vector<std::string> ret = {};
+    
     auto i = Contains(toSplit, c);
-
     while (i != -1)
     {
         auto part = toSplit.substr(0, i);
@@ -207,4 +209,17 @@ std::vector<std::string> LinkerUtil::Split(std::string& toSplit, char c)
         ret.push_back(toSplit);
 
     return ret;
+}
+
+AssemblyUtil::relocation_ptr AssemblyUtil::FindRelocation(std::vector<AssemblyUtil::relocation_ptr>& relocations, std::string& name)
+{
+    for (auto relocation: relocations)
+        if (relocation->label == name)
+            return relocation;
+    return nullptr;
+}
+
+AssemblyUtil::symbol_ptr AssemblyUtil::CreateSymbolEntry(std::string label, std::string section, int offset, bool local, bool defined, int index)
+{
+    return std::make_shared<SymbolTableEntry>(label, section, offset, local, defined, index);
 }

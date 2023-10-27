@@ -66,7 +66,8 @@ namespace ParserUtil
 
     enum eRelocationType
     {
-        REL_RELATIVE,
+        REL_LOCAL,
+        REL_EXTERN
     };
 
     enum eGPR
@@ -122,9 +123,11 @@ namespace AssemblyUtil
         std::string section;
         int offset;
         bool local;
+        bool defined;
+        int index;
 
-        SymbolTableEntry(std::string label = "", std::string section = "", int offset = 0, bool local = true)
-            :label(label), section(section), offset(offset), local(local)
+        SymbolTableEntry(std::string label = "", std::string section = "", int offset = 0, bool local = true, bool defined = false, int index = 0)
+            :label(label), section(section), offset(offset), local(local), defined(defined), index(index)
         {
         }
     };
@@ -133,8 +136,9 @@ namespace AssemblyUtil
     {
         std::string label;
         std::string section;
-        ParserUtil::eRelocationType type; // promeni ovo u enum
-        int offset; // promeni ovo u byte
+        ParserUtil::eRelocationType type;
+        int offset;
+        int index;
     };
 
     struct SectionEntry
@@ -142,6 +146,7 @@ namespace AssemblyUtil
         std::string name;
         std::vector<BYTE> sectionData;
         int locationCounter;
+        int offset;
     };
 
     struct ProgramLine
@@ -176,6 +181,7 @@ namespace AssemblyUtil
     typedef std::shared_ptr<SectionEntry> section_ptr;
 
     symbol_ptr FindSymbol(std::vector<symbol_ptr>& table, std::string& name);
+    symbol_ptr CreateSymbolEntry(std::string label = "", std::string section = "", int offset = 0, bool local = true, bool defined = false, int index = 0);
     bool InsertSymbol(std::vector<symbol_ptr>& table, symbol_ptr symbol);
     bool UpdateSymbolOffset(std::vector<symbol_ptr>& table, symbol_ptr symbol, int offset);
     bool UpdateSymbolSection(std::vector<symbol_ptr>& table, symbol_ptr symbol, std::string section);
@@ -183,6 +189,7 @@ namespace AssemblyUtil
     bool WriteDataToSection(section_ptr sections, const std::vector<BYTE>& data, int offset);
     bool WriteDataToSection(AssemblyUtil::section_ptr section, uint32_t data, int offset, int bytesToWrite);
     bool AllocateSectionData(section_ptr section, int size);
+    relocation_ptr FindRelocation(std::vector<relocation_ptr>& relocations, std::string& name);
     
     std::vector<BYTE> ReadDataFromSection(std::vector<section_ptr>& sections, std::string& name, int offsetStart, int offsetEnd);
 }
