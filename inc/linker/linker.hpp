@@ -30,11 +30,23 @@ public:
     void StartLinking();
     void WriteOutput();
 private:
+    void MergeSymbolTables();
+    void MergeRelocationTables();
+    void MergeSectionsInOrder();
+
+    std::vector<section_ptr> FindSectionInFiles(std::string& name, int currentFile);
+    section_ptr FindSectionInGlobalSectionsTable(std::string& name);
+    bool HandleSymbolSecondEncounter(symbol_ptr original, symbol_ptr found);
+    void UpdateSymbolOffset(std::string& sectionName, int file, int sectionOffset);
+
     void ReadInputFiles();
 
-    symbol_ptr ReadSymbolTableEntry(std::string& line);
-    section_ptr ReadSectionsLine(std::string& line);
-    relocation_ptr ReadRelocationsEntry(std::string& line);
+    void ReadSymbolTableEntry(std::string& line, SymbolTable& currentSymbolTable);
+    void ReadSectionsLine(std::string& line, SectionTable& currentSectionTable);
+    void ReadRelocationsEntry(std::string& line, RelocationTable& currentRelocationTable);
+
+    void PrintHexProgramData();
+    void PrintRelocatableProgramData();
 
     SymbolTable mSymbolTable;
     SectionTable mSectionTable;

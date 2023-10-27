@@ -68,7 +68,7 @@ void ParseArguments(std::vector<std::string>& argVector, LinkerArguments& args)
 int main(int argc, char* argv[])
 {
     std::vector<std::string> argVector = {};
-    for (auto i = 0; i < argc; ++i)
+    for (auto i = 1; i < argc; ++i)
     {
         argVector.push_back(std::string(argv[i]));
     }
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << "\033[31m ERROR: " << e.what() << '\n';
     }
     
     return 0;
