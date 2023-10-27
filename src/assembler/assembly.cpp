@@ -13,7 +13,6 @@
 #define SECOND_PASS true
 #define INSTRUCTION_SIZE 4
 #define LOCAL true
-#define GLOBAL false
 #define DEFAULT_SECTION "default"
 #define PAYLOAD_MASK 0x0FFF
 
@@ -120,7 +119,7 @@ void Assembly::PrintProgram(std::string outFile)
     file << "symbol_table" << "\n";
     for (auto entry: m_symbolTable)
     {
-        file << entry->label << " " << entry->section << " " << std::hex << entry->offset << " " << entry->local <<    "\n";
+        file << entry->label << " " << entry->section << " " << std::hex << entry->offset << " " << entry->local << " " << entry->defined << "\n";
     }
     file << "\n" << "sections" << "\n";
     for (auto section: m_sections)
@@ -197,9 +196,15 @@ uint16_t Assembly::GetSymbolValue(std::string& name, eAddressingType addressingT
     auto entry = FindSymbol(m_symbolTable, name);
     std::vector<BYTE> dataToConvert = { 0x00, 0x00 };
 
-    if (entry == nullptr || entry->section != m_currentSection->name)
+    if (entry == nullptr || !entry->local)
     {
-        CreateRelocationEntry(name, m_currentSection->name, m_locationCounter + 3);
+        CreateRelocationEntry(name, m_currentSection->name, m_locationCounter + 3, eRelocationType::REL_EXTERN);
+        return 0x000;
+    }
+
+    if (entry->section != m_currentSection->name)
+    {
+        CreateRelocationEntry(name, m_currentSection->name, m_locationCounter + 3, eRelocationType::REL_LOCAL);
         return 0x000;
     }
     
@@ -261,12 +266,12 @@ bool Assembly::InsertSection(AssemblyUtil::section_ptr section)
     return isInserted;
 }
 
-bool Assembly::CreateRelocationEntry(std::string name, std::string section, int offset)
+bool Assembly::CreateRelocationEntry(std::string name, std::string section, int offset, ParserUtil::eRelocationType type)
 {
     auto entry = std::make_shared<AssemblyUtil::RelocationTableEntry>();
     entry->label = name;
     entry->section = section;
-    entry->type = eRelocationType::REL_RELATIVE;
+    entry->type = type;
     entry->offset = offset;
 
     m_relcationTable.push_back(entry);
@@ -407,6 +412,14 @@ void Assembly::LabelSecondPass(AssemblyUtil::line_ptr line)
     throw AssemblyException("Label not found in first pass but found in second");
 }
 
+void Assembly::GlobalSecondPass(AssemblyUtil::line_ptr line)
+{
+    for (auto operand: line->operands)
+        for (auto symbol: m_symbolTable)
+            if (symbol->label == operand.value)
+                symbol->local = false;
+}
+
 void Assembly::OtherTypeFirstPass(AssemblyUtil::line_ptr line)
 {
     auto addressingType = eAddressingType::ADDR_DIRECT;
@@ -440,7 +453,8 @@ void Assembly::InitializeHandleMap()
         { eInstructionIdentifier::END,     &Assembly::EndFirstPass },
         { eInstructionIdentifier::SKIP,    NO_ACTION },
         { eInstructionIdentifier::EXTERN,  &Assembly::ExternFirstPass },
-        { eInstructionIdentifier::WORD,    NO_ACTION }
+        { eInstructionIdentifier::WORD,    NO_ACTION },
+        { eInstructionIdentifier::GLOBAL,  NO_ACTION }
     };
 
     m_handles[SECOND_PASS][eInstructionType::DIRECTIVE] =
@@ -449,7 +463,8 @@ void Assembly::InitializeHandleMap()
         { eInstructionIdentifier::END,     &Assembly::EndSecondPass },
         { eInstructionIdentifier::SKIP,    &Assembly::SkipSecondPass },
         { eInstructionIdentifier::EXTERN,  NO_ACTION },
-        { eInstructionIdentifier::WORD,    &Assembly::WordSecondPass }
+        { eInstructionIdentifier::WORD,    &Assembly::WordSecondPass },
+        { eInstructionIdentifier::GLOBAL,  &Assembly::GlobalSecondPass }
     };
 
     m_handles[FIRST_PASS][eInstructionType::LABEL] =

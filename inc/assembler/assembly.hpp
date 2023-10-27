@@ -37,7 +37,7 @@ private:
     ParserUtil::eOperandType GetOperandType(std::vector<ParserUtil::ParserOperand>& operands, AssemblyUtil::line_ptr line);
 
     bool InsertSection(AssemblyUtil::section_ptr section);
-    bool CreateRelocationEntry(std::string name, std::string section, int offset);
+    bool CreateRelocationEntry(std::string name, std::string section, int offset, ParserUtil::eRelocationType type);
 
     // Directives handles
     void SectionFirstPass(AssemblyUtil::line_ptr line);
@@ -50,6 +50,7 @@ private:
     void SkipSecondPass(AssemblyUtil::line_ptr line);
     void WordSecondPass(AssemblyUtil::line_ptr line);
     void LabelSecondPass(AssemblyUtil::line_ptr line);
+    void GlobalSecondPass(AssemblyUtil::line_ptr line);
     // Other handles
     void OtherTypeFirstPass(AssemblyUtil::line_ptr line);
     void MemoryTypeFirstPass(AssemblyUtil::line_ptr line);

@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << "\033[31m ERROR: " <<  e.what() << '\n';
     }
     
     
