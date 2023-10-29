@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <string>
 #include <set>
+#include <algorithm>
 
 #define SPACE ' '
 #define HEX_BASE 16
@@ -15,6 +16,10 @@
 #define TYPE_INDEX 3
 #define DEFINED_INDEX 4
 #define EMPTY_LINE ""
+
+#define FILE first
+#define DATA second
+#define LocationCounter sectionData.size()
 
 using AssemblyUtil::FindSymbol;
 using AssemblyUtil::AllocateSectionData;
@@ -96,6 +101,8 @@ void Linker::MergeSymbolTables()
 
         ++currentFile;
     }
+
+    UpdateSymbolPointers();
 }
 
 void Linker::MergeRelocationTables()
@@ -114,58 +121,64 @@ void Linker::MergeRelocationTables()
 
 void Linker::MergeSectionsInOrder()
 {
-    auto currentFile = 0;
-    for (auto sections: mSectionTableVector)
+    std::vector<SectionMergeDataPtr> mergeVector = {};
+    PopulateMergeDataVector(mergeVector);
+    
+    auto offset = 0;
+
+    for (auto entry: mergeVector)
     {
-        auto currentSection = 0;
-        for (auto section: sections)
+        auto sectionName = entry->sections.front().DATA->name;
+        auto baseSection = std::make_shared<AssemblyUtil::SectionEntry>();
+        baseSection->name = sectionName;
+        baseSection->offset = offset;
+    
+        for (auto section: entry->sections)
         {
-            auto globalSection = FindSectionInGlobalSectionsTable(section->name);
-            if (globalSection == nullptr)
+            WriteDataToSection(baseSection, section.DATA->sectionData, baseSection->LocationCounter);
+            UpdateSymbolsOffset(mSymbolTableVector[section.FILE], sectionName, offset);
+            UpdateRelocationsOffset(mRelocationTableVector[section.FILE], sectionName, offset);     
+
+            offset += section.DATA->LocationCounter;
+        }
+
+        mSectionTable.push_back(baseSection);
+    }
+}
+
+void Linker::PopulateMergeDataVector(std::vector<SectionMergeDataPtr>& vector)
+{
+    std::map<std::string, SectionMergeDataPtr> sectionsMap;
+    auto index = 0;
+    auto file  = 0;
+
+    for (auto fileSections: mSectionTableVector)
+    {
+        for (auto section: fileSections)
+        {
+            if (sectionsMap.find(section->name) == sectionsMap.end())
             {
-                mSectionTable.push_back(section);
-                globalSection = section;
+                auto mergeData = std::make_shared<SectionMergeData>();;
+                mergeData->index = ++index;
+                mergeData->name = section->name;
+                mergeData->AddSection(file, section);
+
+                sectionsMap[section->name] = mergeData;
+                continue;
             }
 
-            auto size = section->sectionData.size();
-            AllocateSectionData(globalSection, size);
-            WriteDataToSection(globalSection, section->sectionData, globalSection->locationCounter);
-
-            for (auto symbol: mSymbolTableVector[currentFile])
-                if (symbol->section == section->name)
-                    symbol->offset += section->offset;
+            sectionsMap[section->name]->AddSection(file, section);
         }
-
-        ++currentFile;
+        ++file;
     }
-}
 
-std::vector<section_ptr> Linker::FindSectionInFiles(std::string& name, int currentFile)
-{
-    std::vector<section_ptr> ret = {};
-
-    for (auto i = currentFile + 1; i < mSectionTableVector.size(); ++i)
+    for (auto sectionEntry: sectionsMap)
     {
-        if (i == currentFile)
-            continue;
-        
-        for (auto section: mSectionTableVector[i])
-        {
-            if (section->name == name)
-                ret.push_back(section);
-        }
+        auto sectionMergeData = sectionEntry.second;
+        vector.push_back(sectionMergeData);
     }
 
-    return ret;
-}
-
-section_ptr Linker::FindSectionInGlobalSectionsTable(std::string& name)
-{
-    for (auto section: mSectionTable)
-        if (section->name == name)
-            return section;
-
-    return nullptr;
+    std::sort(vector.begin(), vector.end(), [](SectionMergeDataPtr first, SectionMergeDataPtr second){ return first->index < second->index; });
 }
 
 bool Linker::HandleSymbolSecondEncounter(symbol_ptr original, symbol_ptr found)
@@ -195,14 +208,21 @@ bool Linker::HandleSymbolSecondEncounter(symbol_ptr original, symbol_ptr found)
     return true;
 }
 
-void Linker::UpdateSymbolOffset(std::string& sectionName, int file, int sectionOffset)
+void Linker::UpdateSymbolPointers()
 {
-    for (auto symbol: mSymbolTableVector[file])
+    for (auto symbol: mSymbolTable) // update symbol pointers in all tables to the defined version of the symbol
     {
-        if (symbol->section == sectionName && symbol->label != symbol->section)
-            symbol->offset += sectionOffset;
+        for (auto table: mSymbolTableVector)
+        {
+            for (auto i = 0; i < table.size(); ++i)
+            {
+                if (table[i]->label == symbol->label)
+                {
+                    table[i] = symbol;
+                }
+            }
+        }
     }
-    
 }
 
 void Linker::ReadInputFiles()
@@ -317,13 +337,13 @@ void Linker::PrintRelocatableProgramData()
     for (auto entry: mSymbolTable)
     {
         file << entry->label << " " << entry->section << " "
-                << std::hex << entry->offset << " " << entry->local << " "
+                << entry->offset << " " << entry->local << " "
                 << entry->defined << "\n";
     }
     file << "\n" << "sections" << "\n";
     for (auto section: mSectionTable)
     {
-        file << section->name << " " << section->locationCounter << "\n";
+        file << section->name << " " << section->offset << "\n";
         auto i = 0;
         for (auto byte: section->sectionData)
         {

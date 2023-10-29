@@ -8,20 +8,6 @@ using AssemblyUtil::symbol_ptr;
 using AssemblyUtil::section_ptr;
 using AssemblyUtil::relocation_ptr;
 
-namespace LinkerUtil
-{
-    typedef std::vector<symbol_ptr> SymbolTable;
-    typedef std::vector<section_ptr> SectionTable;
-    typedef std::vector<relocation_ptr> RelocationTable;
-
-    enum eInputFileState
-    {
-        SYMBOL_TABLE,
-        SECTIONS,
-        RELOCATIONS
-    };
-}
-
 class Linker
 {
 public:
@@ -31,13 +17,13 @@ public:
     void WriteOutput();
 private:
     void MergeSymbolTables();
-    void MergeRelocationTables();
-    void MergeSectionsInOrder();
-
-    std::vector<section_ptr> FindSectionInFiles(std::string& name, int currentFile);
-    section_ptr FindSectionInGlobalSectionsTable(std::string& name);
     bool HandleSymbolSecondEncounter(symbol_ptr original, symbol_ptr found);
-    void UpdateSymbolOffset(std::string& sectionName, int file, int sectionOffset);
+    void UpdateSymbolPointers();
+
+    void MergeRelocationTables();
+
+    void MergeSectionsInOrder();
+    void PopulateMergeDataVector(std::vector<SectionMergeDataPtr>& vector);
 
     void ReadInputFiles();
 

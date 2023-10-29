@@ -13,6 +13,8 @@
 #define SECOND_PASS true
 #define INSTRUCTION_SIZE 4
 #define LOCAL true
+#define DEFINED true
+#define UNDEFIED false
 #define DEFAULT_SECTION "default"
 #define PAYLOAD_MASK 0x0FFF
 
@@ -109,6 +111,20 @@ void Assembly::ContinueParsing()
             m_locationCounter += INSTRUCTION_SIZE;
         }
     }
+
+    auto last = m_sections.front();
+
+    for (auto section: m_sections) // update sections offsets
+    {
+        if (section == m_sections.front())
+        {
+            section->offset = 0;
+            continue;
+        }
+        
+        section->offset = last->offset + last->sectionData.size();
+        last = section;
+    }
 }
 
 void Assembly::PrintProgram(std::string outFile)
@@ -124,7 +140,9 @@ void Assembly::PrintProgram(std::string outFile)
     file << "\n" << "sections" << "\n";
     for (auto section: m_sections)
     {
-        file << section->name << " " << section->locationCounter << "\n";
+        file << section->name << " " << section->locationCounter
+            << " " << section->offset << "\n";
+
         auto i = 0;
         for (auto byte: section->sectionData)
         {
@@ -136,7 +154,7 @@ void Assembly::PrintProgram(std::string outFile)
             }
         }
     }
-    file << "\nrelocations \n";
+    file << "\nrelocations\n";
     for (auto relocation: m_relcationTable)
     {
         file << relocation->label << " " << relocation->section << " "
@@ -297,7 +315,7 @@ void Assembly::SectionFirstPass(AssemblyUtil::line_ptr line)
     m_currentSection = std::make_shared<SectionEntry>();
     m_currentSection->name = sectionName;
     
-    m_symbolTable.push_back(std::make_shared<SymbolTableEntry>(sectionName, sectionName)); 
+    m_symbolTable.push_back(std::make_shared<SymbolTableEntry>(sectionName, sectionName, 0, LOCAL, DEFINED)); 
 }
 
 void Assembly::EndFirstPass(AssemblyUtil::line_ptr line)
@@ -327,7 +345,7 @@ void Assembly::LabelFirstPass(AssemblyUtil::line_ptr line)
     auto entry = FindSymbol(m_symbolTable, name);
     if (entry == nullptr)
     {
-        entry = std::make_shared<SymbolTableEntry>(name, m_currentSection->name, m_locationCounter, LOCAL);
+        entry = std::make_shared<SymbolTableEntry>(name, m_currentSection->name, m_locationCounter, LOCAL, DEFINED);
         m_symbolTable.push_back(entry);
     }
     else

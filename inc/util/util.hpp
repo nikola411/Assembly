@@ -190,7 +190,6 @@ namespace AssemblyUtil
     bool WriteDataToSection(AssemblyUtil::section_ptr section, uint32_t data, int offset, int bytesToWrite);
     bool AllocateSectionData(section_ptr section, int size);
     relocation_ptr FindRelocation(std::vector<relocation_ptr>& relocations, std::string& name);
-    
     std::vector<BYTE> ReadDataFromSection(std::vector<section_ptr>& sections, std::string& name, int offsetStart, int offsetEnd);
 }
 
@@ -226,9 +225,35 @@ namespace LinkerUtil
         READ_OUTPUT = 0x01
     };
 
+    enum eInputFileState
+    {
+        SYMBOL_TABLE,
+        SECTIONS,
+        RELOCATIONS
+    };
+
+    struct SectionMergeData
+    {
+        int index;
+        std::string name;
+        std::vector<std::pair<int, AssemblyUtil::section_ptr>> sections;
+
+        void AddSection(int file, AssemblyUtil::section_ptr section)
+        {
+            sections.push_back({ file, section });
+        }
+    };
+
     int Contains(std::string& base, char c);
     bool StartsWith(std::string& base, std::string& start);
     std::vector<std::string> Split(std::string& toSplit, char c);
+    void UpdateSymbolsOffset(std::vector<AssemblyUtil::symbol_ptr>& table, std::string& sectionName, int offset);
+    void UpdateRelocationsOffset(std::vector<AssemblyUtil::relocation_ptr>& table, std::string& sectionName, int offset);
+
+    typedef std::vector<AssemblyUtil::symbol_ptr> SymbolTable;
+    typedef std::vector<AssemblyUtil::section_ptr> SectionTable;
+    typedef std::vector<AssemblyUtil::relocation_ptr> RelocationTable;
+    typedef std::shared_ptr<SectionMergeData> SectionMergeDataPtr;
 }
 
 #endif
