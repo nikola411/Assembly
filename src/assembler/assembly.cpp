@@ -132,12 +132,13 @@ void Assembly::PrintProgram(std::string outFile)
     std::fstream file;
     file.open(outFile, std::ios_base::openmode::_S_out);
 
-    file << "symbol_table" << "\n";
+    // file << "symbol_table" << "\n";
     for (auto entry: m_symbolTable)
     {
         file << entry->label << " " << entry->section << " " << std::hex << entry->offset << " " << entry->local << " " << entry->defined << "\n";
     }
-    file << "\n" << "sections" << "\n";
+    // file << "\n" << "sections" << "\n";
+    file << "\n";
     for (auto section: m_sections)
     {
         file << section->name << " " << section->locationCounter
@@ -154,11 +155,12 @@ void Assembly::PrintProgram(std::string outFile)
             }
         }
     }
-    file << "\nrelocations\n";
+    // file << "\nrelocations\n";
+    file << "\n";
     for (auto relocation: m_relcationTable)
     {
         file << relocation->label << " " << relocation->section << " "
-                    << relocation->type << " " << relocation->offset << " \n";
+                    << relocation->offset << " " << relocation->type << " \n";
     }
 
     file.close();
@@ -216,13 +218,13 @@ uint16_t Assembly::GetSymbolValue(std::string& name, eAddressingType addressingT
 
     if (entry == nullptr || !entry->local)
     {
-        CreateRelocationEntry(name, m_currentSection->name, m_locationCounter + 3, eRelocationType::REL_EXTERN);
+        CreateRelocationEntry(name, m_currentSection->name, m_locationCounter + 2, eRelocationType::REL_EXTERN);
         return 0x000;
     }
 
     if (entry->section != m_currentSection->name)
     {
-        CreateRelocationEntry(name, m_currentSection->name, m_locationCounter + 3, eRelocationType::REL_LOCAL);
+        CreateRelocationEntry(name, m_currentSection->name, m_locationCounter + 2, eRelocationType::REL_LOCAL);
         return 0x000;
     }
     

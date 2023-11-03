@@ -219,10 +219,13 @@ std::vector<std::string> LinkerUtil::Split(std::string& toSplit, char c)
 
 void LinkerUtil::UpdateSymbolsOffset(std::vector<AssemblyUtil::symbol_ptr>& table, std::string& sectionName, int offset)
 {
-     for (auto symbol: table)
+    for (auto symbol: table)
     {
         if (symbol->section == sectionName)
+        {
             symbol->offset += offset;
+            break;
+        } 
     }
 }
 
@@ -231,7 +234,10 @@ void LinkerUtil::UpdateRelocationsOffset(std::vector<AssemblyUtil::relocation_pt
     for (auto relocation: table)
     {
         if (relocation->section == sectionName)
+        {
             relocation->offset += offset;
+            break;
+        }
     }
 }
 
@@ -246,4 +252,31 @@ AssemblyUtil::relocation_ptr AssemblyUtil::FindRelocation(std::vector<AssemblyUt
 AssemblyUtil::symbol_ptr AssemblyUtil::CreateSymbolEntry(std::string label, std::string section, int offset, bool local, bool defined, int index)
 {
     return std::make_shared<SymbolTableEntry>(label, section, offset, local, defined, index);
+}
+
+bool AssemblyUtil::WriteDataToSection(std::vector<AssemblyUtil::section_ptr>& sectionTable, std::string& sectionName, uint32_t data, int offset, int bytesStart, int bytesToWrite)
+{
+    AssemblyUtil::section_ptr section = nullptr;
+    for (auto sec: sectionTable)
+    {
+        if (sec->name == sectionName)
+        {
+            section = sec;
+            break;
+        }
+    }
+
+    if (section == nullptr)
+        throw AssemblyUtil::AssemblyException("Section: " + sectionName + " does not exist.");
+
+    if (section->sectionData.size() < offset + bytesToWrite)
+        throw AssemblyUtil::AssemblyException("Trying to write out of section: " + sectionName);
+
+    for (auto i = bytesStart; i < bytesToWrite; ++i)
+    {
+        auto byte = (data >> (i * BYTE_SIZE)) & 0x0F;
+        section->sectionData[offset++] = byte;
+    }
+
+    return true;
 }

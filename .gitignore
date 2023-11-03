@@ -3,3 +3,5 @@
 ./misc/scanner/*
 ./test
 ./tests
+./linker
+./asdf

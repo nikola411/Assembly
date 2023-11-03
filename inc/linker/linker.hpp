@@ -21,6 +21,7 @@ private:
     void UpdateSymbolPointers();
 
     void MergeRelocationTables();
+    void HandleRelocations();
 
     void MergeSectionsInOrder();
     void PopulateMergeDataVector(std::vector<SectionMergeDataPtr>& vector);

@@ -161,16 +161,8 @@ namespace AssemblyUtil
     class AssemblyException: public std::exception
     {
     public:
-        AssemblyException(std::string msg)
-        {
-            m_msg = msg;
-        }
-
-        const char* what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW override
-        {
-            return m_msg.c_str();
-        }
-
+        AssemblyException(std::string msg): m_msg(msg) {}
+        std::string what(){return m_msg;}
     private:
         std::string m_msg;
     };
@@ -188,6 +180,7 @@ namespace AssemblyUtil
     bool UpdateSymbolLocality(std::vector<symbol_ptr>& table, symbol_ptr symbol, bool isLocal);
     bool WriteDataToSection(section_ptr sections, const std::vector<BYTE>& data, int offset);
     bool WriteDataToSection(AssemblyUtil::section_ptr section, uint32_t data, int offset, int bytesToWrite);
+    bool WriteDataToSection(std::vector<AssemblyUtil::section_ptr>& sectionTable, std::string& sectionName, uint32_t data, int offset, int bytesStart, int bytesToWrite);
     bool AllocateSectionData(section_ptr section, int size);
     relocation_ptr FindRelocation(std::vector<relocation_ptr>& relocations, std::string& name);
     std::vector<BYTE> ReadDataFromSection(std::vector<section_ptr>& sections, std::string& name, int offsetStart, int offsetEnd);

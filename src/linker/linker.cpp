@@ -20,22 +20,18 @@
 #define FILE first
 #define DATA second
 #define LocationCounter sectionData.size()
+#define NEXT_STATE(state) (eInputFileState)((state + 1) % 3)
 
 using AssemblyUtil::FindSymbol;
 using AssemblyUtil::AllocateSectionData;
 using AssemblyUtil::WriteDataToSection;
 using AssemblyUtil::FindRelocation;
+using AssemblyUtil::ReadDataFromSection;
+using AssemblyUtil::WriteDataToSection;
 
-std::map<std::string, eInputFileState> StateMap =
+std::vector<eInputFileState> states =
 {
-    { "symbol_table", eInputFileState::SYMBOL_TABLE },
-    { "sections",     eInputFileState::SECTIONS },
-    { "relocations",  eInputFileState::RELOCATIONS}
-};
-
-std::set<std::string> StateSet =
-{
-    "relocations", "symbol_table", "sections"
+    eInputFileState::SYMBOL_TABLE, eInputFileState::SECTIONS, eInputFileState::RELOCATIONS
 };
 
 Linker::Linker(LinkerArguments& args)
@@ -66,9 +62,9 @@ void Linker::StartLinking()
     ReadInputFiles();
     MergeSymbolTables();
     MergeRelocationTables();
-
     //Relocations phase
     MergeSectionsInOrder();
+    HandleRelocations();
     int i = 0;
 }
 
@@ -79,8 +75,6 @@ void Linker::WriteOutput()
 
 void Linker::MergeSymbolTables()
 {
-    auto currentFile = 0;
-
     for (auto table: mSymbolTableVector)
     {
         for (auto symbol: table)
@@ -98,9 +92,11 @@ void Linker::MergeSymbolTables()
             symbol->index = mSymbolTable.size();
             mSymbolTable.push_back(symbol);
         }
-
-        ++currentFile;
     }
+
+    for (auto symbol: mSymbolTable)
+        if (!symbol->defined)
+            throw LinkerException("Undefined symbol: " + symbol->label + " in section: " + symbol->section);
 
     UpdateSymbolPointers();
 }
@@ -115,6 +111,45 @@ void Linker::MergeRelocationTables()
                 throw LinkerException("Undefined symbol: " + relocation->label);
 
             mRelocationTable.push_back(relocation);
+        }
+    }
+}
+
+void Linker::HandleRelocations()
+{
+    for (auto relocation: mRelocationTable)
+    {
+        auto sectionName = relocation->section;
+        auto offset = relocation->offset;
+        auto symbolName = relocation->label;
+
+        auto entry = FindSymbol(mSymbolTable, symbolName);
+        if (entry == nullptr)
+            throw LinkerException("Undefined symbol: " + symbolName);
+
+        auto sectionOffset = 0;
+        for (auto section: mSectionTable)
+        {
+            if (section->name == entry->section)
+            {
+                sectionOffset = section->offset;
+            }
+        }
+
+        for (auto section: mSectionTable)
+        {
+            if (section->name == sectionName)
+            {
+                auto value = entry->offset + sectionOffset;
+                auto firstByte = section->sectionData[offset];
+                auto secondByte = section->sectionData[offset + 1];
+
+                firstByte |= (value >> (2 * BYTE_SIZE)) & 0x0F;
+                secondByte = (value & 0xFF);
+                
+                section->sectionData[offset] = firstByte;
+                section->sectionData[offset + 1] = secondByte;
+            }
         }
     }
 }
@@ -136,8 +171,8 @@ void Linker::MergeSectionsInOrder()
         for (auto section: entry->sections)
         {
             WriteDataToSection(baseSection, section.DATA->sectionData, baseSection->LocationCounter);
-            UpdateSymbolsOffset(mSymbolTableVector[section.FILE], sectionName, offset);
-            UpdateRelocationsOffset(mRelocationTableVector[section.FILE], sectionName, offset);     
+            UpdateSymbolsOffset(mSymbolTableVector[section.FILE], sectionName, offset - baseSection->offset);
+            UpdateRelocationsOffset(mRelocationTableVector[section.FILE], sectionName, offset - baseSection->offset);     
 
             offset += section.DATA->LocationCounter;
         }
@@ -211,18 +246,10 @@ bool Linker::HandleSymbolSecondEncounter(symbol_ptr original, symbol_ptr found)
 void Linker::UpdateSymbolPointers()
 {
     for (auto symbol: mSymbolTable) // update symbol pointers in all tables to the defined version of the symbol
-    {
         for (auto table: mSymbolTableVector)
-        {
             for (auto i = 0; i < table.size(); ++i)
-            {
                 if (table[i]->label == symbol->label)
-                {
                     table[i] = symbol;
-                }
-            }
-        }
-    }
 }
 
 void Linker::ReadInputFiles()
@@ -241,11 +268,8 @@ void Linker::ReadInputFiles()
         {
             std::getline(file, line);
             if (line == EMPTY_LINE)
-                continue;
-
-            if (StateSet.find(line) != StateSet.end())
             {
-                state = StateMap[line];
+                state = NEXT_STATE(state);
                 continue;
             }
 
@@ -281,6 +305,7 @@ void Linker::ReadSymbolTableEntry(std::string& line, SymbolTable& currentSymbolT
     symbolEntry->offset  = (int) std::stoi(symbolAttributes[OFFSET_INDEX], &size, HEX_BASE);
     symbolEntry->local   = (bool)std::stoi(symbolAttributes[LOCAL_INDEX], &size, HEX_BASE);
     symbolEntry->defined = (bool)std::stoi(symbolAttributes[DEFINED_INDEX], &size, HEX_BASE);
+    //symbolEntry->index = currentSymbolTable.size();
 
     currentSymbolTable.push_back(symbolEntry);
 }
@@ -334,12 +359,14 @@ void Linker::PrintRelocatableProgramData()
     file.open(outFile, std::ios_base::openmode::_S_out);
 
     file << "symbol_table" << "\n";
+    file << std::hex;
     for (auto entry: mSymbolTable)
     {
         file << entry->label << " " << entry->section << " "
                 << entry->offset << " " << entry->local << " "
                 << entry->defined << "\n";
     }
+
     file << "\n" << "sections" << "\n";
     for (auto section: mSectionTable)
     {
@@ -347,7 +374,7 @@ void Linker::PrintRelocatableProgramData()
         auto i = 0;
         for (auto byte: section->sectionData)
         {
-            file << std::hex << std::setw(2) << std::setfill('0') <<(short)byte << " ";
+            file << std::setw(2) << std::setfill('0') <<(short)byte << " ";
             if (++i == 4)
             {
                 i = 0;
