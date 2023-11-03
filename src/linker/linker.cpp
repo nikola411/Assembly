@@ -149,6 +149,8 @@ void Linker::HandleRelocations()
                 
                 section->sectionData[offset] = firstByte;
                 section->sectionData[offset + 1] = secondByte;
+
+                break;
             }
         }
     }
@@ -305,7 +307,7 @@ void Linker::ReadSymbolTableEntry(std::string& line, SymbolTable& currentSymbolT
     symbolEntry->offset  = (int) std::stoi(symbolAttributes[OFFSET_INDEX], &size, HEX_BASE);
     symbolEntry->local   = (bool)std::stoi(symbolAttributes[LOCAL_INDEX], &size, HEX_BASE);
     symbolEntry->defined = (bool)std::stoi(symbolAttributes[DEFINED_INDEX], &size, HEX_BASE);
-    //symbolEntry->index = currentSymbolTable.size();
+    symbolEntry->index = currentSymbolTable.size();
 
     currentSymbolTable.push_back(symbolEntry);
 }
@@ -334,7 +336,7 @@ void Linker::ReadSectionsLine(std::string& line, SectionTable& currentSectionTab
 
 void Linker::ReadRelocationsEntry(std::string& line, RelocationTable& currentRelocationTable)
 {
-    // name section type offset
+    // name section offset type
     std::size_t size;
     auto relocationInfo  = Split(line, SPACE);
     auto relocationEntry = std::make_shared<AssemblyUtil::RelocationTableEntry>();

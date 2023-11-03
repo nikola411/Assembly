@@ -30,29 +30,43 @@ DEBUG_ENABLED = 0
 
 GPP_FLAGS = 
 
-TEST_INC = ${ASSEMBLY_INCLUDES} ${LINKER_INCLUDES}
-TEST_SRC = ./tests/tests.cpp
-TEST_SRC += ${UTIL_SOURCE}
-TEST_OUT = -o ./test
 
-test:
-	g++ -g ${TEST_INC} ${GPP_FLAGS} ${TEST_SRC} ${TEST_OUT}
-
-all: asm
+all: asm lnk
+	@echo "$(COLOR_GREEN)Build successful!$(COLOR_END)"
 
 lnk:
-	g++ -g ${LINKER_INCLUDES} ${GPP_FLAGS} ${LINKER_SOURCE} ${LINKER_OUTPUT}
+	@echo "Building linker..."
+	@g++ -g ${LINKER_INCLUDES} ${GPP_FLAGS} ${LINKER_SOURCE} ${LINKER_OUTPUT}
+	@echo "$(COLOR_BLUE)Success!$(COLOR_END)"
 
 asm: flex bison
-	g++ -g ${ASSEMBLY_INCLUDES} ${GPP_FLAGS} ${ASSEMBLY_SOURCE} ${ASSEMBLY_OUTPUT}
+	@echo "Building assembly..."
+	@g++ -g ${ASSEMBLY_INCLUDES} ${GPP_FLAGS} ${ASSEMBLY_SOURCE} ${ASSEMBLY_OUTPUT}
+	@echo "$(COLOR_BLUE)Success!$(COLOR_END)"
 
 flex:
-	flex ${FLEX_SOURCE}
+	@echo "Building flex..."
+	@flex ${FLEX_SOURCE}
+	@echo "$(COLOR_BLUE)Success!$(COLOR_END)"
 
 bison:
-	bison  -o ${BISON_OUTPUT} ${BISON_SOURCE} -v
+	@echo "Building bison..."
+	@bison  -o ${BISON_OUTPUT} ${BISON_SOURCE} -v
+	@echo "$(COLOR_BLUE)Success!$(COLOR_END)"
 
 clean:
-	rm -rf misc/scanner/*.cpp misc/scanner/*.hpp
-	rm -rf misc/parser/* misc/parser/*.hpp
-	rm -rf ./asembler
+	@rm -rf misc/scanner/*.cpp misc/scanner/*.hpp
+	@rm -rf misc/parser/* misc/parser/*.hpp
+	@rm -rf ./asembler
+	@rm -rf ./linker
+	@rm -rf ./*.out
+	@rm -rf ./*.o
+	@echo "Clean finished!"
+
+
+# coloring util
+COLOR_GREEN=\033[0;32m
+COLOR_RED=\033[0;31m
+COLOR_BLUE=\033[0;34m
+COLOR_END=\033[0m
+
