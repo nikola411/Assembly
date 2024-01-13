@@ -6,12 +6,6 @@ using AssemblyUtil::instruction_ptr;
 using AssemblyUtil::Instruction;
 
 #define DO_NOTHING {}
-#define PUSH_AND_RESET_R0\
-    AddInstructionPair(0x81E00000, DO_NOTHING); \
-    AddInstructionPair(0x51000000, DO_NOTHING); \
-
-#define POP_R0\
-    AddInstructionPair(0x930E0004, DO_NOTHING); \
 
 std::map<eInstructionIdentifier, std::map<eOperandType, std::map<eAddressingType, std::vector<instructionPopulationPair>>>>
     CodesMap::InstructionCodesMap = {};
@@ -107,17 +101,13 @@ void CodesMap::PopulateMap()
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::LD, eOperandType::SYM, eAddressingType::ADDR_MEMORY);
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x91000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
         AddInstructionPair(0x93000000, {{ &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND }});
-        POP_R0
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::LD, eOperandType::LTR, eAddressingType::ADDR_MEMORY);
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x91000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
         AddInstructionPair(0x93000000, {{ &Instruction::SetInstructionRegisterA, eValueToUse::SECOND_OPERAND }});
-        POP_R0
         AddMapEntry();
     }
 
@@ -148,17 +138,13 @@ void CodesMap::PopulateMap()
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::ST, eOperandType::SYM, eAddressingType::ADDR_MEMORY);
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x91000000, {{ &Instruction::SetInstructionPayload, eValueToUse::SECOND_OPERAND }});
         AddInstructionPair(0x81000000, {{ &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND }});
-        POP_R0
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::ST, eOperandType::LTR, eAddressingType::ADDR_MEMORY);
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x91000000, {{ &Instruction::SetInstructionPayload, eValueToUse::SECOND_OPERAND }});
         AddInstructionPair(0x81000000, {{ &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND }});
-        POP_R0
         AddMapEntry();
     }
 
@@ -175,94 +161,74 @@ void CodesMap::PopulateMap()
     { // Branch methods map population
         SetMapEntry(eInstructionIdentifier::CALL, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
         AddInstructionPair(0x81E0F004, DO_NOTHING); // push pc
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x30000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
-        POP_R0
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::CALL, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
         AddInstructionPair(0x81E0F004, DO_NOTHING); // push pc
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x30000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
-        POP_R0
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::JMP, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x30000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
-        POP_R0
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::JMP, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x30000000, {{ &Instruction::SetInstructionPayload, eValueToUse::FIRST_OPERAND }});
-        POP_R0
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::BEQ, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x31000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionPayload,   eValueToUse::THIRD_OPERAND }
         });
-        POP_R0
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::BEQ, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x31000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionPayload,   eValueToUse::THIRD_OPERAND }
         });
-        POP_R0
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::BNE, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x32000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionPayload,   eValueToUse::THIRD_OPERAND }
         });
-        POP_R0
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::BNE, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x32000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionPayload,   eValueToUse::THIRD_OPERAND }
         });
-        POP_R0
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::BGT, eOperandType::SYM, eAddressingType::ADDR_DIRECT);
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x33000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionPayload,   eValueToUse::THIRD_OPERAND }
         });
-        POP_R0
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::BGT, eOperandType::LTR, eAddressingType::ADDR_DIRECT);
-        PUSH_AND_RESET_R0
         AddInstructionPair(0x33000000,
         {
             { &Instruction::SetInstructionRegisterB, eValueToUse::FIRST_OPERAND },
             { &Instruction::SetInstructionRegisterC, eValueToUse::SECOND_OPERAND },
             { &Instruction::SetInstructionPayload,   eValueToUse::THIRD_OPERAND }
         });
-        POP_R0
         AddMapEntry();
     }
 

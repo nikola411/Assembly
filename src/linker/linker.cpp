@@ -351,6 +351,27 @@ void Linker::ReadRelocationsEntry(std::string& line, RelocationTable& currentRel
 
 void Linker::PrintHexProgramData()
 {
+    std::fstream file;
+    const auto& outFile = arguments.outFile;
+
+    file.open(outFile, std::ios_base::openmode::_S_out);
+    int instructionCounter = 0;
+
+    file << std::hex;
+    for (const auto& section: mSectionTable)
+    {
+        for (const auto& byte: section->sectionData)
+        {
+            file << std::setw(2) << std::setfill('0') <<(short)byte << " ";
+            if (++instructionCounter == 4)
+            {
+                file << "\n";
+                instructionCounter = 0;
+            }
+
+            
+        }
+    }
 }
 
 void Linker::PrintRelocatableProgramData()

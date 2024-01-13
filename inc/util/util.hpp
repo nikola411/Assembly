@@ -237,9 +237,6 @@ namespace LinkerUtil
         }
     };
 
-    int Contains(std::string& base, char c);
-    bool StartsWith(std::string& base, std::string& start);
-    std::vector<std::string> Split(std::string& toSplit, char c);
     void UpdateSymbolsOffset(std::vector<AssemblyUtil::symbol_ptr>& table, std::string& sectionName, int offset);
     void UpdateRelocationsOffset(std::vector<AssemblyUtil::relocation_ptr>& table, std::string& sectionName, int offset);
 
@@ -248,5 +245,9 @@ namespace LinkerUtil
     typedef std::vector<AssemblyUtil::relocation_ptr> RelocationTable;
     typedef std::shared_ptr<SectionMergeData> SectionMergeDataPtr;
 }
+
+int Contains(std::string& base, char c);
+bool StartsWith(std::string& base, std::string& start);
+std::vector<std::string> Split(std::string& toSplit, char c);
 
 #endif
