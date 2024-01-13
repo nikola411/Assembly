@@ -26,13 +26,24 @@ LINKER_SOURCE += $(wildcard ./src/linker/*.cpp)
 LINKER_SOURCE += ${UTIL_SOURCE}
 LINKER_OUTPUT = -o ./linker
 
+
+EMULATOR_INC_DIR = ./inc/emulator
+EMULATOR_INCLUDES = -I${EMULATOR_INC_DIR} -I${UTIL}
+EMULATOR_SOURCE = 
+EMULATOR_SOURCE += $(wildcard ./src/emulator/*.cpp)
+EMULATOR_SOURCE += ${UTIL_SOURCE}
+EMULATOR_OUTPUT = -o ./emulator
+
 DEBUG_ENABLED = 0
-
 GPP_FLAGS = 
-
 
 all: asm lnk
 	@echo "$(COLOR_GREEN)Build successful!$(COLOR_END)"
+
+emu:
+	@echo "Building emulator..."
+	@g++ -g ${EMULATOR_INCLUDES} ${GPP_FLAGS} ${EMULATOR_SOURCE} ${EMULATOR_OUTPUT}
+	@echo "$(COLOR_BLUE)Success!$(COLOR_END)"
 
 lnk:
 	@echo "Building linker..."
@@ -62,7 +73,6 @@ clean:
 	@rm -rf ./*.out
 	@rm -rf ./*.o
 	@echo "Clean finished!"
-
 
 # coloring util
 COLOR_GREEN=\033[0;32m
