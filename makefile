@@ -72,6 +72,8 @@ clean:
 	@rm -rf ./linker
 	@rm -rf ./*.out
 	@rm -rf ./*.o
+	@rm -rf ./emulator
+	@rm -rf ./tests/output*.o
 	@echo "Clean finished!"
 
 # coloring util

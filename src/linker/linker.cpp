@@ -368,8 +368,6 @@ void Linker::PrintHexProgramData()
                 file << "\n";
                 instructionCounter = 0;
             }
-
-            
         }
     }
 }
@@ -404,12 +402,6 @@ void Linker::PrintRelocatableProgramData()
                 file << "\n";
             }
         }
-    }
-    file << "\nrelocations\n";
-    for (auto relocation: mRelocationTable)
-    {
-        file << relocation->label << " " << relocation->section << " "
-                    << relocation->offset << " " << relocation->type << "\n";
     }
 
     file.close();

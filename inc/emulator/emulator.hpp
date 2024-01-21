@@ -14,6 +14,7 @@ public:
     Emulator(std::string file);
     EmulatorResult ReadInputProgram();
     EmulatorResult StartEmulating();
+    void Print() const;
     ~Emulator();
 
 private:

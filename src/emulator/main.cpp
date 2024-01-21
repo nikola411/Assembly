@@ -12,8 +12,18 @@ int main(int argc, char* argv[])
     }
 
     auto emulator = std::make_shared<Emulator>(argv[1]);
-    emulator->ReadInputProgram();
-    emulator->StartEmulating();
+    EmulatorResult emulatorResult = emulator->ReadInputProgram();
+    emulatorResult = emulator->StartEmulating();
+
+    if (emulatorResult == EMU_FINISH)
+    {
+        std::cout << "SUCCESS! \n";
+        emulator->Print();
+    }
+    else
+    {
+        std::cerr << "Emulator failed with result: " << emulatorResult << " \n";   
+    }
 
     return 0;
 }

@@ -115,6 +115,21 @@ EmulatorResult Emulator::StartEmulating()
     return result;
 }
 
+void Emulator::Print() const
+{
+    std::cout << "Emulated processor executed halt instruction \n";
+    std::cout << "Emulated processor state: \n";
+
+    for (int i = 0; i < m_GPR.size(); ++i)
+    {
+        std::cout << "r" << i << std::dec << "=0x";
+        std::cout << std::hex << m_GPR[i] << std::setw(8);
+        std::cout << "    ";
+        if (i % 4 == 0)
+            std::cout << " \n";
+    }
+}
+
 Emulator::~Emulator()
 {
     delete[] m_memory;

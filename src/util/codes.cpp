@@ -48,6 +48,19 @@ void CodesMap::AddMapEntry()
     InstructionCodesMap[currentIdentifier][currentOperandType][currentAddressingType] = currentEntry;
 }
 
+static constexpr uint8_t StatusRegister = 0x00;
+static constexpr uint8_t HandlerRegister = 0x01;
+static constexpr uint8_t CauseRegister = 0x02;
+static constexpr uint8_t SPRegister = 0x0E;
+static constexpr uint8_t PCRegister = 0x0F;
+
+#define SetRegisterA(instr, reg) \
+    instr | (reg << 5 * 4 & 0x0F)
+#define SetRegisterB(instr, reg) \
+    instr | (reg << 4 * 4 & 0x0F)
+#define SetRegisterC(instr, reg) \
+    instr | (reg << 3 * 4 & 0x0F)
+
 void CodesMap::PopulateMap()
 {
     { // program control methods population
@@ -60,9 +73,16 @@ void CodesMap::PopulateMap()
         AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::IRET, eOperandType::NONE_TYPE, eAddressingType::ADDR_NONE);
+        //AddInstructionPair(0x93FE0004, DO_NOTHING);
         AddInstructionPair(0x93FE0004, DO_NOTHING);
         AddInstructionPair(0x970E0004, DO_NOTHING); // pop status
         AddMapEntry();
+
+        // fix for dumb project spec
+        // SetMapEntry(eInstructionIdentifier::IRET, eOperandType::NONE_TYPE, eAddressingType::ADDR_NONE);
+        // AddInstructionPair(0x970E0004, DO_NOTHING); // pop status
+        // AddInstructionPair(0x93FE0004, DO_NOTHING);
+        // AddMapEntry();
 
         SetMapEntry(eInstructionIdentifier::RET, eOperandType::NONE_TYPE, eAddressingType::ADDR_NONE);
         AddInstructionPair(0x93FE0004, DO_NOTHING);
