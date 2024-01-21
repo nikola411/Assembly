@@ -1,7 +1,7 @@
 #ifndef ASSEMBLY_HPP
 #define ASSEMBLY_HPP
 
-#include "util.hpp"
+#include "AssemblyUtil.hpp"
 #include "codes.hpp"
 
 #include <vector>

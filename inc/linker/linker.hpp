@@ -1,7 +1,8 @@
 #ifndef _LINKER_HPP
 #define _LINKER_HPP
 
-#include "util.hpp"
+#include "AssemblyUtil.hpp"
+#include "LinkerUtil.hpp"
 
 using namespace LinkerUtil;
 using AssemblyUtil::symbol_ptr;

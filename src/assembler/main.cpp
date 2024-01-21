@@ -3,7 +3,7 @@
 
 #include "driver.hpp"
 #include "assembly.hpp"
-#include "util.hpp"
+#include "AssemblyUtil.hpp"
 #include "instruction.hpp"
 #include "codes.hpp"
 

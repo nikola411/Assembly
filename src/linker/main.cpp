@@ -6,7 +6,10 @@
 #include <set>
 
 #include "linker.hpp"
-#include "util.hpp"
+
+#include "Util.hpp"
+#include "AssemblyUtil.hpp"
+#include "LinkerUtil.hpp"
 
 /*
     linker [opcije] <naziv_ulazne_datoteke>...

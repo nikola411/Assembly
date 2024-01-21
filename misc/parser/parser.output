@@ -1,0 +1,1239 @@
+Terminals unused in grammar
+
+    ASCII
+    EQU
+    "("
+    ")"
+    "-"
+
+
+Grammar
+
+    0 $accept: NT_Program "end of file"
+
+    1 NT_Program: NT_Program NT_Line
+    2           | NT_Line
+    3           | "end of file"
+
+    4 NT_Line: NT_Directive
+    5        | NT_ProcessorInstruction
+    6        | NT_BranchInstruction
+    7        | NT_StackInstruction
+    8        | NT_DataInstruction
+    9        | NT_MemoryInstruction
+   10        | NT_SpecialInstruction
+   11        | NT_LabelAndComment
+
+   12 NT_LabelAndComment: COMMENT
+   13                   | LABEL
+
+   14 NT_Directive: NT_DirectiveWithSymbolList
+   15             | NT_DirectiveWithList
+   16             | NT_DirectiveSingleArgument
+   17             | END
+
+   18 NT_DirectiveWithList: WORD NT_LiteralList
+   19                     | WORD NT_SymbolList
+
+   20 NT_DirectiveSingleArgument: SECTION SYMBOL
+   21                           | SKIP LITERAL
+
+   22 NT_DirectiveWithSymbolList: NT_DirectiveIdentifier NT_SymbolList
+
+   23 NT_DirectiveIdentifier: GLOBAL
+   24                       | EXTERN
+
+   25 NT_ProcessorInstruction: HALT
+   26                        | INT
+   27                        | IRET
+   28                        | RET
+
+   29 NT_BranchInstruction: NT_ConditionalJumpIdentifier NT_ConditionalJumpOperands
+   30                     | NT_UnconditionalJumpIdentifier NT_JumpOperand
+
+   31 NT_ConditionalJumpIdentifier: BEQ
+   32                             | BNE
+   33                             | BGT
+
+   34 NT_ConditionalJumpOperands: "%" GPR "," "%" GPR "," NT_JumpOperand
+
+   35 NT_UnconditionalJumpIdentifier: JMP
+   36                               | CALL
+
+   37 NT_DataInstruction: NT_DataInstructionIdentifier NT_DataInstructionOperands
+
+   38 NT_DataInstructionIdentifier: XCHG
+   39                             | ADD
+   40                             | SUB
+   41                             | MUL
+   42                             | DIV
+   43                             | NOT
+   44                             | AND
+   45                             | OR
+   46                             | XOR
+   47                             | SHL
+   48                             | SHR
+
+   49 NT_DataInstructionOperands: "%" GPR "," "%" GPR
+   50                           | "%" GPR
+
+   51 NT_MemoryInstruction: LD NT_Operand "," "%" GPR
+   52                     | ST "%" GPR "," NT_Operand
+
+   53 NT_SpecialInstruction: CSRRD "%" CSR "," "%" GPR
+   54                      | CSRWR "%" GPR "," "%" CSR
+
+   55 NT_StackInstruction: NT_StackInstructionIdentifier "%" GPR
+
+   56 NT_StackInstructionIdentifier: PUSH
+   57                              | POP
+
+   58 NT_SymbolList: NT_SymbolList "," SYMBOL
+   59              | SYMBOL
+
+   60 NT_LiteralList: NT_LiteralList "," LITERAL
+   61               | LITERAL
+
+   62 NT_JumpOperand: SYMBOL
+   63               | LITERAL
+
+   64 NT_Operand: "$" LITERAL
+   65           | "$" SYMBOL
+   66           | LITERAL
+   67           | SYMBOL
+   68           | "%" GPR
+   69           | "[" "%" GPR "]"
+   70           | "[" "%" GPR "+" LITERAL "]"
+   71           | "[" "%" GPR "+" SYMBOL "]"
+
+
+Terminals, with rules where they appear
+
+    "end of file" (0) 0 3
+    error (256)
+    GLOBAL (258) 23
+    EXTERN (259) 24
+    SECTION (260) 20
+    WORD (261) 18 19
+    SKIP (262) 21
+    ASCII (263)
+    EQU (264)
+    END (265) 17
+    HALT (266) 25
+    INT (267) 26
+    IRET (268) 27
+    RET (269) 28
+    JMP (270) 35
+    CALL (271) 36
+    PUSH (272) 56
+    POP (273) 57
+    BEQ (274) 31
+    BNE (275) 32
+    BGT (276) 33
+    XCHG (277) 38
+    ADD (278) 39
+    SUB (279) 40
+    MUL (280) 41
+    DIV (281) 42
+    NOT (282) 43
+    AND (283) 44
+    OR (284) 45
+    XOR (285) 46
+    SHL (286) 47
+    SHR (287) 48
+    LD (288) 51
+    ST (289) 52
+    CSRRD (290) 53
+    CSRWR (291) 54
+    LABEL <string> (292) 13
+    SYMBOL <string> (293) 20 58 59 62 65 67 71
+    LITERAL <string> (294) 21 60 61 63 64 66 70
+    GPR <string> (295) 34 49 50 51 52 53 54 55 68 69 70 71
+    CSR <string> (296) 53 54
+    "$" (297) 64 65
+    "]" (298) 69 70 71
+    "[" (299) 69 70 71
+    "(" (300)
+    ")" (301)
+    "%" (302) 34 49 50 51 52 53 54 55 68 69 70 71
+    "+" (303) 70 71
+    "-" (304)
+    "," (305) 34 49 51 52 53 54 58 60
+    COMMENT (306) 12
+
+
+Nonterminals, with rules where they appear
+
+    $accept (52)
+        on left: 0
+    NT_Program (53)
+        on left: 1 2 3
+        on right: 0 1
+    NT_Line (54)
+        on left: 4 5 6 7 8 9 10 11
+        on right: 1 2
+    NT_LabelAndComment (55)
+        on left: 12 13
+        on right: 11
+    NT_Directive (56)
+        on left: 14 15 16 17
+        on right: 4
+    NT_DirectiveWithList <string> (57)
+        on left: 18 19
+        on right: 15
+    NT_DirectiveSingleArgument <string> (58)
+        on left: 20 21
+        on right: 16
+    NT_DirectiveWithSymbolList <string> (59)
+        on left: 22
+        on right: 14
+    NT_DirectiveIdentifier <eInstructionIdentifier> (60)
+        on left: 23 24
+        on right: 22
+    NT_ProcessorInstruction (61)
+        on left: 25 26 27 28
+        on right: 5
+    NT_BranchInstruction (62)
+        on left: 29 30
+        on right: 6
+    NT_ConditionalJumpIdentifier <eInstructionIdentifier> (63)
+        on left: 31 32 33
+        on right: 29
+    NT_ConditionalJumpOperands <ConditionalJumpOperands> (64)
+        on left: 34
+        on right: 29
+    NT_UnconditionalJumpIdentifier <eInstructionIdentifier> (65)
+        on left: 35 36
+        on right: 30
+    NT_DataInstruction (66)
+        on left: 37
+        on right: 8
+    NT_DataInstructionIdentifier <eInstructionIdentifier> (67)
+        on left: 38 39 40 41 42 43 44 45 46 47 48
+        on right: 37
+    NT_DataInstructionOperands <vector<ParserOperand>> (68)
+        on left: 49 50
+        on right: 37
+    NT_MemoryInstruction (69)
+        on left: 51 52
+        on right: 9
+    NT_SpecialInstruction (70)
+        on left: 53 54
+        on right: 10
+    NT_StackInstruction (71)
+        on left: 55
+        on right: 7
+    NT_StackInstructionIdentifier <eInstructionIdentifier> (72)
+        on left: 56 57
+        on right: 55
+    NT_SymbolList <vector<ParserOperand>> (73)
+        on left: 58 59
+        on right: 19 22 58
+    NT_LiteralList <vector<ParserOperand>> (74)
+        on left: 60 61
+        on right: 18 60
+    NT_JumpOperand <ParserOperand> (75)
+        on left: 62 63
+        on right: 30 34
+    NT_Operand <ParserOperand> (76)
+        on left: 64 65 66 67 68 69 70 71
+        on right: 51 52
+
+
+State 0
+
+    0 $accept: • NT_Program "end of file"
+
+    "end of file"  shift, and go to state 1
+    GLOBAL         shift, and go to state 2
+    EXTERN         shift, and go to state 3
+    SECTION        shift, and go to state 4
+    WORD           shift, and go to state 5
+    SKIP           shift, and go to state 6
+    END            shift, and go to state 7
+    HALT           shift, and go to state 8
+    INT            shift, and go to state 9
+    IRET           shift, and go to state 10
+    RET            shift, and go to state 11
+    JMP            shift, and go to state 12
+    CALL           shift, and go to state 13
+    PUSH           shift, and go to state 14
+    POP            shift, and go to state 15
+    BEQ            shift, and go to state 16
+    BNE            shift, and go to state 17
+    BGT            shift, and go to state 18
+    XCHG           shift, and go to state 19
+    ADD            shift, and go to state 20
+    SUB            shift, and go to state 21
+    MUL            shift, and go to state 22
+    DIV            shift, and go to state 23
+    NOT            shift, and go to state 24
+    AND            shift, and go to state 25
+    OR             shift, and go to state 26
+    XOR            shift, and go to state 27
+    SHL            shift, and go to state 28
+    SHR            shift, and go to state 29
+    LD             shift, and go to state 30
+    ST             shift, and go to state 31
+    CSRRD          shift, and go to state 32
+    CSRWR          shift, and go to state 33
+    LABEL          shift, and go to state 34
+    COMMENT        shift, and go to state 35
+
+    NT_Program                      go to state 36
+    NT_Line                         go to state 37
+    NT_LabelAndComment              go to state 38
+    NT_Directive                    go to state 39
+    NT_DirectiveWithList            go to state 40
+    NT_DirectiveSingleArgument      go to state 41
+    NT_DirectiveWithSymbolList      go to state 42
+    NT_DirectiveIdentifier          go to state 43
+    NT_ProcessorInstruction         go to state 44
+    NT_BranchInstruction            go to state 45
+    NT_ConditionalJumpIdentifier    go to state 46
+    NT_UnconditionalJumpIdentifier  go to state 47
+    NT_DataInstruction              go to state 48
+    NT_DataInstructionIdentifier    go to state 49
+    NT_MemoryInstruction            go to state 50
+    NT_SpecialInstruction           go to state 51
+    NT_StackInstruction             go to state 52
+    NT_StackInstructionIdentifier   go to state 53
+
+
+State 1
+
+    3 NT_Program: "end of file" •
+
+    $default  reduce using rule 3 (NT_Program)
+
+
+State 2
+
+   23 NT_DirectiveIdentifier: GLOBAL •
+
+    $default  reduce using rule 23 (NT_DirectiveIdentifier)
+
+
+State 3
+
+   24 NT_DirectiveIdentifier: EXTERN •
+
+    $default  reduce using rule 24 (NT_DirectiveIdentifier)
+
+
+State 4
+
+   20 NT_DirectiveSingleArgument: SECTION • SYMBOL
+
+    SYMBOL  shift, and go to state 54
+
+
+State 5
+
+   18 NT_DirectiveWithList: WORD • NT_LiteralList
+   19                     | WORD • NT_SymbolList
+
+    SYMBOL   shift, and go to state 55
+    LITERAL  shift, and go to state 56
+
+    NT_SymbolList   go to state 57
+    NT_LiteralList  go to state 58
+
+
+State 6
+
+   21 NT_DirectiveSingleArgument: SKIP • LITERAL
+
+    LITERAL  shift, and go to state 59
+
+
+State 7
+
+   17 NT_Directive: END •
+
+    $default  reduce using rule 17 (NT_Directive)
+
+
+State 8
+
+   25 NT_ProcessorInstruction: HALT •
+
+    $default  reduce using rule 25 (NT_ProcessorInstruction)
+
+
+State 9
+
+   26 NT_ProcessorInstruction: INT •
+
+    $default  reduce using rule 26 (NT_ProcessorInstruction)
+
+
+State 10
+
+   27 NT_ProcessorInstruction: IRET •
+
+    $default  reduce using rule 27 (NT_ProcessorInstruction)
+
+
+State 11
+
+   28 NT_ProcessorInstruction: RET •
+
+    $default  reduce using rule 28 (NT_ProcessorInstruction)
+
+
+State 12
+
+   35 NT_UnconditionalJumpIdentifier: JMP •
+
+    $default  reduce using rule 35 (NT_UnconditionalJumpIdentifier)
+
+
+State 13
+
+   36 NT_UnconditionalJumpIdentifier: CALL •
+
+    $default  reduce using rule 36 (NT_UnconditionalJumpIdentifier)
+
+
+State 14
+
+   56 NT_StackInstructionIdentifier: PUSH •
+
+    $default  reduce using rule 56 (NT_StackInstructionIdentifier)
+
+
+State 15
+
+   57 NT_StackInstructionIdentifier: POP •
+
+    $default  reduce using rule 57 (NT_StackInstructionIdentifier)
+
+
+State 16
+
+   31 NT_ConditionalJumpIdentifier: BEQ •
+
+    $default  reduce using rule 31 (NT_ConditionalJumpIdentifier)
+
+
+State 17
+
+   32 NT_ConditionalJumpIdentifier: BNE •
+
+    $default  reduce using rule 32 (NT_ConditionalJumpIdentifier)
+
+
+State 18
+
+   33 NT_ConditionalJumpIdentifier: BGT •
+
+    $default  reduce using rule 33 (NT_ConditionalJumpIdentifier)
+
+
+State 19
+
+   38 NT_DataInstructionIdentifier: XCHG •
+
+    $default  reduce using rule 38 (NT_DataInstructionIdentifier)
+
+
+State 20
+
+   39 NT_DataInstructionIdentifier: ADD •
+
+    $default  reduce using rule 39 (NT_DataInstructionIdentifier)
+
+
+State 21
+
+   40 NT_DataInstructionIdentifier: SUB •
+
+    $default  reduce using rule 40 (NT_DataInstructionIdentifier)
+
+
+State 22
+
+   41 NT_DataInstructionIdentifier: MUL •
+
+    $default  reduce using rule 41 (NT_DataInstructionIdentifier)
+
+
+State 23
+
+   42 NT_DataInstructionIdentifier: DIV •
+
+    $default  reduce using rule 42 (NT_DataInstructionIdentifier)
+
+
+State 24
+
+   43 NT_DataInstructionIdentifier: NOT •
+
+    $default  reduce using rule 43 (NT_DataInstructionIdentifier)
+
+
+State 25
+
+   44 NT_DataInstructionIdentifier: AND •
+
+    $default  reduce using rule 44 (NT_DataInstructionIdentifier)
+
+
+State 26
+
+   45 NT_DataInstructionIdentifier: OR •
+
+    $default  reduce using rule 45 (NT_DataInstructionIdentifier)
+
+
+State 27
+
+   46 NT_DataInstructionIdentifier: XOR •
+
+    $default  reduce using rule 46 (NT_DataInstructionIdentifier)
+
+
+State 28
+
+   47 NT_DataInstructionIdentifier: SHL •
+
+    $default  reduce using rule 47 (NT_DataInstructionIdentifier)
+
+
+State 29
+
+   48 NT_DataInstructionIdentifier: SHR •
+
+    $default  reduce using rule 48 (NT_DataInstructionIdentifier)
+
+
+State 30
+
+   51 NT_MemoryInstruction: LD • NT_Operand "," "%" GPR
+
+    SYMBOL   shift, and go to state 60
+    LITERAL  shift, and go to state 61
+    "$"      shift, and go to state 62
+    "["      shift, and go to state 63
+    "%"      shift, and go to state 64
+
+    NT_Operand  go to state 65
+
+
+State 31
+
+   52 NT_MemoryInstruction: ST • "%" GPR "," NT_Operand
+
+    "%"  shift, and go to state 66
+
+
+State 32
+
+   53 NT_SpecialInstruction: CSRRD • "%" CSR "," "%" GPR
+
+    "%"  shift, and go to state 67
+
+
+State 33
+
+   54 NT_SpecialInstruction: CSRWR • "%" GPR "," "%" CSR
+
+    "%"  shift, and go to state 68
+
+
+State 34
+
+   13 NT_LabelAndComment: LABEL •
+
+    $default  reduce using rule 13 (NT_LabelAndComment)
+
+
+State 35
+
+   12 NT_LabelAndComment: COMMENT •
+
+    $default  reduce using rule 12 (NT_LabelAndComment)
+
+
+State 36
+
+    0 $accept: NT_Program • "end of file"
+    1 NT_Program: NT_Program • NT_Line
+
+    "end of file"  shift, and go to state 69
+    GLOBAL         shift, and go to state 2
+    EXTERN         shift, and go to state 3
+    SECTION        shift, and go to state 4
+    WORD           shift, and go to state 5
+    SKIP           shift, and go to state 6
+    END            shift, and go to state 7
+    HALT           shift, and go to state 8
+    INT            shift, and go to state 9
+    IRET           shift, and go to state 10
+    RET            shift, and go to state 11
+    JMP            shift, and go to state 12
+    CALL           shift, and go to state 13
+    PUSH           shift, and go to state 14
+    POP            shift, and go to state 15
+    BEQ            shift, and go to state 16
+    BNE            shift, and go to state 17
+    BGT            shift, and go to state 18
+    XCHG           shift, and go to state 19
+    ADD            shift, and go to state 20
+    SUB            shift, and go to state 21
+    MUL            shift, and go to state 22
+    DIV            shift, and go to state 23
+    NOT            shift, and go to state 24
+    AND            shift, and go to state 25
+    OR             shift, and go to state 26
+    XOR            shift, and go to state 27
+    SHL            shift, and go to state 28
+    SHR            shift, and go to state 29
+    LD             shift, and go to state 30
+    ST             shift, and go to state 31
+    CSRRD          shift, and go to state 32
+    CSRWR          shift, and go to state 33
+    LABEL          shift, and go to state 34
+    COMMENT        shift, and go to state 35
+
+    NT_Line                         go to state 70
+    NT_LabelAndComment              go to state 38
+    NT_Directive                    go to state 39
+    NT_DirectiveWithList            go to state 40
+    NT_DirectiveSingleArgument      go to state 41
+    NT_DirectiveWithSymbolList      go to state 42
+    NT_DirectiveIdentifier          go to state 43
+    NT_ProcessorInstruction         go to state 44
+    NT_BranchInstruction            go to state 45
+    NT_ConditionalJumpIdentifier    go to state 46
+    NT_UnconditionalJumpIdentifier  go to state 47
+    NT_DataInstruction              go to state 48
+    NT_DataInstructionIdentifier    go to state 49
+    NT_MemoryInstruction            go to state 50
+    NT_SpecialInstruction           go to state 51
+    NT_StackInstruction             go to state 52
+    NT_StackInstructionIdentifier   go to state 53
+
+
+State 37
+
+    2 NT_Program: NT_Line •
+
+    $default  reduce using rule 2 (NT_Program)
+
+
+State 38
+
+   11 NT_Line: NT_LabelAndComment •
+
+    $default  reduce using rule 11 (NT_Line)
+
+
+State 39
+
+    4 NT_Line: NT_Directive •
+
+    $default  reduce using rule 4 (NT_Line)
+
+
+State 40
+
+   15 NT_Directive: NT_DirectiveWithList •
+
+    $default  reduce using rule 15 (NT_Directive)
+
+
+State 41
+
+   16 NT_Directive: NT_DirectiveSingleArgument •
+
+    $default  reduce using rule 16 (NT_Directive)
+
+
+State 42
+
+   14 NT_Directive: NT_DirectiveWithSymbolList •
+
+    $default  reduce using rule 14 (NT_Directive)
+
+
+State 43
+
+   22 NT_DirectiveWithSymbolList: NT_DirectiveIdentifier • NT_SymbolList
+
+    SYMBOL  shift, and go to state 55
+
+    NT_SymbolList  go to state 71
+
+
+State 44
+
+    5 NT_Line: NT_ProcessorInstruction •
+
+    $default  reduce using rule 5 (NT_Line)
+
+
+State 45
+
+    6 NT_Line: NT_BranchInstruction •
+
+    $default  reduce using rule 6 (NT_Line)
+
+
+State 46
+
+   29 NT_BranchInstruction: NT_ConditionalJumpIdentifier • NT_ConditionalJumpOperands
+
+    "%"  shift, and go to state 72
+
+    NT_ConditionalJumpOperands  go to state 73
+
+
+State 47
+
+   30 NT_BranchInstruction: NT_UnconditionalJumpIdentifier • NT_JumpOperand
+
+    SYMBOL   shift, and go to state 74
+    LITERAL  shift, and go to state 75
+
+    NT_JumpOperand  go to state 76
+
+
+State 48
+
+    8 NT_Line: NT_DataInstruction •
+
+    $default  reduce using rule 8 (NT_Line)
+
+
+State 49
+
+   37 NT_DataInstruction: NT_DataInstructionIdentifier • NT_DataInstructionOperands
+
+    "%"  shift, and go to state 77
+
+    NT_DataInstructionOperands  go to state 78
+
+
+State 50
+
+    9 NT_Line: NT_MemoryInstruction •
+
+    $default  reduce using rule 9 (NT_Line)
+
+
+State 51
+
+   10 NT_Line: NT_SpecialInstruction •
+
+    $default  reduce using rule 10 (NT_Line)
+
+
+State 52
+
+    7 NT_Line: NT_StackInstruction •
+
+    $default  reduce using rule 7 (NT_Line)
+
+
+State 53
+
+   55 NT_StackInstruction: NT_StackInstructionIdentifier • "%" GPR
+
+    "%"  shift, and go to state 79
+
+
+State 54
+
+   20 NT_DirectiveSingleArgument: SECTION SYMBOL •
+
+    $default  reduce using rule 20 (NT_DirectiveSingleArgument)
+
+
+State 55
+
+   59 NT_SymbolList: SYMBOL •
+
+    $default  reduce using rule 59 (NT_SymbolList)
+
+
+State 56
+
+   61 NT_LiteralList: LITERAL •
+
+    $default  reduce using rule 61 (NT_LiteralList)
+
+
+State 57
+
+   19 NT_DirectiveWithList: WORD NT_SymbolList •
+   58 NT_SymbolList: NT_SymbolList • "," SYMBOL
+
+    ","  shift, and go to state 80
+
+    $default  reduce using rule 19 (NT_DirectiveWithList)
+
+
+State 58
+
+   18 NT_DirectiveWithList: WORD NT_LiteralList •
+   60 NT_LiteralList: NT_LiteralList • "," LITERAL
+
+    ","  shift, and go to state 81
+
+    $default  reduce using rule 18 (NT_DirectiveWithList)
+
+
+State 59
+
+   21 NT_DirectiveSingleArgument: SKIP LITERAL •
+
+    $default  reduce using rule 21 (NT_DirectiveSingleArgument)
+
+
+State 60
+
+   67 NT_Operand: SYMBOL •
+
+    $default  reduce using rule 67 (NT_Operand)
+
+
+State 61
+
+   66 NT_Operand: LITERAL •
+
+    $default  reduce using rule 66 (NT_Operand)
+
+
+State 62
+
+   64 NT_Operand: "$" • LITERAL
+   65           | "$" • SYMBOL
+
+    SYMBOL   shift, and go to state 82
+    LITERAL  shift, and go to state 83
+
+
+State 63
+
+   69 NT_Operand: "[" • "%" GPR "]"
+   70           | "[" • "%" GPR "+" LITERAL "]"
+   71           | "[" • "%" GPR "+" SYMBOL "]"
+
+    "%"  shift, and go to state 84
+
+
+State 64
+
+   68 NT_Operand: "%" • GPR
+
+    GPR  shift, and go to state 85
+
+
+State 65
+
+   51 NT_MemoryInstruction: LD NT_Operand • "," "%" GPR
+
+    ","  shift, and go to state 86
+
+
+State 66
+
+   52 NT_MemoryInstruction: ST "%" • GPR "," NT_Operand
+
+    GPR  shift, and go to state 87
+
+
+State 67
+
+   53 NT_SpecialInstruction: CSRRD "%" • CSR "," "%" GPR
+
+    CSR  shift, and go to state 88
+
+
+State 68
+
+   54 NT_SpecialInstruction: CSRWR "%" • GPR "," "%" CSR
+
+    GPR  shift, and go to state 89
+
+
+State 69
+
+    0 $accept: NT_Program "end of file" •
+
+    $default  accept
+
+
+State 70
+
+    1 NT_Program: NT_Program NT_Line •
+
+    $default  reduce using rule 1 (NT_Program)
+
+
+State 71
+
+   22 NT_DirectiveWithSymbolList: NT_DirectiveIdentifier NT_SymbolList •
+   58 NT_SymbolList: NT_SymbolList • "," SYMBOL
+
+    ","  shift, and go to state 80
+
+    $default  reduce using rule 22 (NT_DirectiveWithSymbolList)
+
+
+State 72
+
+   34 NT_ConditionalJumpOperands: "%" • GPR "," "%" GPR "," NT_JumpOperand
+
+    GPR  shift, and go to state 90
+
+
+State 73
+
+   29 NT_BranchInstruction: NT_ConditionalJumpIdentifier NT_ConditionalJumpOperands •
+
+    $default  reduce using rule 29 (NT_BranchInstruction)
+
+
+State 74
+
+   62 NT_JumpOperand: SYMBOL •
+
+    $default  reduce using rule 62 (NT_JumpOperand)
+
+
+State 75
+
+   63 NT_JumpOperand: LITERAL •
+
+    $default  reduce using rule 63 (NT_JumpOperand)
+
+
+State 76
+
+   30 NT_BranchInstruction: NT_UnconditionalJumpIdentifier NT_JumpOperand •
+
+    $default  reduce using rule 30 (NT_BranchInstruction)
+
+
+State 77
+
+   49 NT_DataInstructionOperands: "%" • GPR "," "%" GPR
+   50                           | "%" • GPR
+
+    GPR  shift, and go to state 91
+
+
+State 78
+
+   37 NT_DataInstruction: NT_DataInstructionIdentifier NT_DataInstructionOperands •
+
+    $default  reduce using rule 37 (NT_DataInstruction)
+
+
+State 79
+
+   55 NT_StackInstruction: NT_StackInstructionIdentifier "%" • GPR
+
+    GPR  shift, and go to state 92
+
+
+State 80
+
+   58 NT_SymbolList: NT_SymbolList "," • SYMBOL
+
+    SYMBOL  shift, and go to state 93
+
+
+State 81
+
+   60 NT_LiteralList: NT_LiteralList "," • LITERAL
+
+    LITERAL  shift, and go to state 94
+
+
+State 82
+
+   65 NT_Operand: "$" SYMBOL •
+
+    $default  reduce using rule 65 (NT_Operand)
+
+
+State 83
+
+   64 NT_Operand: "$" LITERAL •
+
+    $default  reduce using rule 64 (NT_Operand)
+
+
+State 84
+
+   69 NT_Operand: "[" "%" • GPR "]"
+   70           | "[" "%" • GPR "+" LITERAL "]"
+   71           | "[" "%" • GPR "+" SYMBOL "]"
+
+    GPR  shift, and go to state 95
+
+
+State 85
+
+   68 NT_Operand: "%" GPR •
+
+    $default  reduce using rule 68 (NT_Operand)
+
+
+State 86
+
+   51 NT_MemoryInstruction: LD NT_Operand "," • "%" GPR
+
+    "%"  shift, and go to state 96
+
+
+State 87
+
+   52 NT_MemoryInstruction: ST "%" GPR • "," NT_Operand
+
+    ","  shift, and go to state 97
+
+
+State 88
+
+   53 NT_SpecialInstruction: CSRRD "%" CSR • "," "%" GPR
+
+    ","  shift, and go to state 98
+
+
+State 89
+
+   54 NT_SpecialInstruction: CSRWR "%" GPR • "," "%" CSR
+
+    ","  shift, and go to state 99
+
+
+State 90
+
+   34 NT_ConditionalJumpOperands: "%" GPR • "," "%" GPR "," NT_JumpOperand
+
+    ","  shift, and go to state 100
+
+
+State 91
+
+   49 NT_DataInstructionOperands: "%" GPR • "," "%" GPR
+   50                           | "%" GPR •
+
+    ","  shift, and go to state 101
+
+    $default  reduce using rule 50 (NT_DataInstructionOperands)
+
+
+State 92
+
+   55 NT_StackInstruction: NT_StackInstructionIdentifier "%" GPR •
+
+    $default  reduce using rule 55 (NT_StackInstruction)
+
+
+State 93
+
+   58 NT_SymbolList: NT_SymbolList "," SYMBOL •
+
+    $default  reduce using rule 58 (NT_SymbolList)
+
+
+State 94
+
+   60 NT_LiteralList: NT_LiteralList "," LITERAL •
+
+    $default  reduce using rule 60 (NT_LiteralList)
+
+
+State 95
+
+   69 NT_Operand: "[" "%" GPR • "]"
+   70           | "[" "%" GPR • "+" LITERAL "]"
+   71           | "[" "%" GPR • "+" SYMBOL "]"
+
+    "]"  shift, and go to state 102
+    "+"  shift, and go to state 103
+
+
+State 96
+
+   51 NT_MemoryInstruction: LD NT_Operand "," "%" • GPR
+
+    GPR  shift, and go to state 104
+
+
+State 97
+
+   52 NT_MemoryInstruction: ST "%" GPR "," • NT_Operand
+
+    SYMBOL   shift, and go to state 60
+    LITERAL  shift, and go to state 61
+    "$"      shift, and go to state 62
+    "["      shift, and go to state 63
+    "%"      shift, and go to state 64
+
+    NT_Operand  go to state 105
+
+
+State 98
+
+   53 NT_SpecialInstruction: CSRRD "%" CSR "," • "%" GPR
+
+    "%"  shift, and go to state 106
+
+
+State 99
+
+   54 NT_SpecialInstruction: CSRWR "%" GPR "," • "%" CSR
+
+    "%"  shift, and go to state 107
+
+
+State 100
+
+   34 NT_ConditionalJumpOperands: "%" GPR "," • "%" GPR "," NT_JumpOperand
+
+    "%"  shift, and go to state 108
+
+
+State 101
+
+   49 NT_DataInstructionOperands: "%" GPR "," • "%" GPR
+
+    "%"  shift, and go to state 109
+
+
+State 102
+
+   69 NT_Operand: "[" "%" GPR "]" •
+
+    $default  reduce using rule 69 (NT_Operand)
+
+
+State 103
+
+   70 NT_Operand: "[" "%" GPR "+" • LITERAL "]"
+   71           | "[" "%" GPR "+" • SYMBOL "]"
+
+    SYMBOL   shift, and go to state 110
+    LITERAL  shift, and go to state 111
+
+
+State 104
+
+   51 NT_MemoryInstruction: LD NT_Operand "," "%" GPR •
+
+    $default  reduce using rule 51 (NT_MemoryInstruction)
+
+
+State 105
+
+   52 NT_MemoryInstruction: ST "%" GPR "," NT_Operand •
+
+    $default  reduce using rule 52 (NT_MemoryInstruction)
+
+
+State 106
+
+   53 NT_SpecialInstruction: CSRRD "%" CSR "," "%" • GPR
+
+    GPR  shift, and go to state 112
+
+
+State 107
+
+   54 NT_SpecialInstruction: CSRWR "%" GPR "," "%" • CSR
+
+    CSR  shift, and go to state 113
+
+
+State 108
+
+   34 NT_ConditionalJumpOperands: "%" GPR "," "%" • GPR "," NT_JumpOperand
+
+    GPR  shift, and go to state 114
+
+
+State 109
+
+   49 NT_DataInstructionOperands: "%" GPR "," "%" • GPR
+
+    GPR  shift, and go to state 115
+
+
+State 110
+
+   71 NT_Operand: "[" "%" GPR "+" SYMBOL • "]"
+
+    "]"  shift, and go to state 116
+
+
+State 111
+
+   70 NT_Operand: "[" "%" GPR "+" LITERAL • "]"
+
+    "]"  shift, and go to state 117
+
+
+State 112
+
+   53 NT_SpecialInstruction: CSRRD "%" CSR "," "%" GPR •
+
+    $default  reduce using rule 53 (NT_SpecialInstruction)
+
+
+State 113
+
+   54 NT_SpecialInstruction: CSRWR "%" GPR "," "%" CSR •
+
+    $default  reduce using rule 54 (NT_SpecialInstruction)
+
+
+State 114
+
+   34 NT_ConditionalJumpOperands: "%" GPR "," "%" GPR • "," NT_JumpOperand
+
+    ","  shift, and go to state 118
+
+
+State 115
+
+   49 NT_DataInstructionOperands: "%" GPR "," "%" GPR •
+
+    $default  reduce using rule 49 (NT_DataInstructionOperands)
+
+
+State 116
+
+   71 NT_Operand: "[" "%" GPR "+" SYMBOL "]" •
+
+    $default  reduce using rule 71 (NT_Operand)
+
+
+State 117
+
+   70 NT_Operand: "[" "%" GPR "+" LITERAL "]" •
+
+    $default  reduce using rule 70 (NT_Operand)
+
+
+State 118
+
+   34 NT_ConditionalJumpOperands: "%" GPR "," "%" GPR "," • NT_JumpOperand
+
+    SYMBOL   shift, and go to state 74
+    LITERAL  shift, and go to state 75
+
+    NT_JumpOperand  go to state 119
+
+
+State 119
+
+   34 NT_ConditionalJumpOperands: "%" GPR "," "%" GPR "," NT_JumpOperand •
+
+    $default  reduce using rule 34 (NT_ConditionalJumpOperands)

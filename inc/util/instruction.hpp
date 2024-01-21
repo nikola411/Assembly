@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <unordered_map>
 
-#define EMPTY_BYTE 0x00
+#define EMPTY_BYTE 0
 #define BYTE_SIZE 8
 
 typedef uint8_t BYTE;

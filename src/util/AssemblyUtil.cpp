@@ -1,32 +1,7 @@
-#include "util.hpp"
+#include "AssemblyUtil.hpp"
 #include "instruction.hpp"
 
 using namespace ParserUtil;
-
-std::unordered_map<std::string, eGPR> GPRMap =
-{
-    { "r0", eGPR::R0 },   { "r1", eGPR::R1 },   { "r2", eGPR::R2 },   { "r3", eGPR::R3 },
-    { "r4", eGPR::R4 },   { "r5", eGPR::R5 },   { "r6", eGPR::R6 },   { "r7", eGPR::R7 },
-    { "r8", eGPR::R8 },   { "r9", eGPR::R9 },   { "r10", eGPR::R10 }, { "r11", eGPR::R11 },
-    { "r12", eGPR::R12 }, { "r13", eGPR::R13 }, { "r14", eGPR::R14 }, { "r15", eGPR::R15 }
-};
-
-eGPR ParserUtil::GPRStringToEnum(std::string reg)
-{
-    return GPRMap[reg];
-}
-
-std::unordered_map<std::string, eCSR> CSRMap =
-{
-    { "status",  eCSR::STATUS },
-    { "handler", eCSR::HANDLER },
-    { "cause",   eCSR::CAUSE }
-};
-
-eCSR ParserUtil::CSRStringToEnum(std::string csr)
-{
-    return CSRMap[csr];
-}
 
 AssemblyUtil::symbol_ptr AssemblyUtil::FindSymbol(std::vector<symbol_ptr>& table, std::string& name)
 {
@@ -174,29 +149,6 @@ bool AssemblyUtil::AllocateSectionData(AssemblyUtil::section_ptr section, int si
     return true;
 }
 
-void LinkerUtil::UpdateSymbolsOffset(std::vector<AssemblyUtil::symbol_ptr>& table, std::string& sectionName, int offset)
-{
-    for (auto symbol: table)
-    {
-        if (symbol->section == sectionName)
-        {
-            symbol->offset += offset;
-            break;
-        } 
-    }
-}
-
-void LinkerUtil::UpdateRelocationsOffset(std::vector<AssemblyUtil::relocation_ptr>& table, std::string& sectionName, int offset)
-{
-    for (auto relocation: table)
-    {
-        if (relocation->section == sectionName)
-        {
-            relocation->offset += offset;
-            break;
-        }
-    }
-}
 
 AssemblyUtil::relocation_ptr AssemblyUtil::FindRelocation(std::vector<AssemblyUtil::relocation_ptr>& relocations, std::string& name)
 {
@@ -242,45 +194,3 @@ bool AssemblyUtil::WriteDataToSection(std::vector<AssemblyUtil::section_ptr>& se
 // General Utility methods
 //
 
-int Contains(std::string& base, char c)
-{
-    for (auto i = 0; i < base.size(); ++i)
-        if (base[i] == c)
-            return i;
-
-    return -1;
-}
-
-bool StartsWith(std::string& base, std::string& start)
-{
-    if (start.size() > base.size()) return false;
-    if (base.size() == 0) return false;
-
-    for (auto i = 0; i < start.size(); ++i)
-        if (base[i] != start[i])
-            return false;
-    
-    return true;
-}
-
-std::vector<std::string> Split(std::string& toSplit, char c)
-{
-    std::vector<std::string> ret = {};
-    
-    auto i = Contains(toSplit, c);
-    while (i != -1)
-    {
-        auto part = toSplit.substr(0, i);
-        if (part == " ")
-            continue;
-
-        ret.push_back(part);
-        toSplit = toSplit.substr(i + 1, toSplit.size());
-        i = Contains(toSplit, c);
-    }
-
-    if (toSplit != " " && toSplit != "")
-        ret.push_back(toSplit);
-
-    return ret;
-}

@@ -1,7 +1,7 @@
 #ifndef _CODES_HPP
 #define _CODES_HPP
 
-#include "util.hpp"
+#include "AssemblyUtil.hpp"
 #include "instruction.hpp"
 
 #include <map>

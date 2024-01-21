@@ -1,6 +1,6 @@
 #include <string>
-#include "emulator_util.hpp"
-#include "util.hpp"
+#include "EmulatorUtil.hpp"
+#include "AssemblyUtil.hpp"
 
 using namespace EmulatorUtil;
 

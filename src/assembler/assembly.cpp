@@ -1,7 +1,7 @@
 #include "assembly.hpp"
 #include "instruction.hpp"
 #include "codes.hpp"
-#include "util.hpp"
+#include "AssemblyUtil.hpp"
 
 #include <iostream>
 #include <iomanip>

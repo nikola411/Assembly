@@ -7,6 +7,8 @@
 #include <set>
 #include <algorithm>
 
+#include "Util.hpp"
+
 #define SPACE ' '
 #define HEX_BASE 16
 #define LABEL_INDEX 0

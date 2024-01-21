@@ -1,0 +1,25 @@
+Placeholder Placeholder 0 1 1
+init init 0 1 1
+promenljiva init c 1 1
+sabiranje sabiranje 0 1 1
+
+default 0 0
+Placeholder 4 0
+00 00 0f ff 
+init 10 4
+00 00 00 00 
+00 00 00 00 
+00 00 00 00 
+00 00 00 10 
+sabiranje 24 14
+91 00 00 10 
+93 10 00 00 
+50 11 10 00 
+50 11 10 00 
+91 00 00 02 
+93 20 00 00 
+50 11 20 00 
+91 00 00 00 
+93 30 00 00 
+
+promenljiva sabiranje 1e 0 
