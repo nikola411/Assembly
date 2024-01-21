@@ -1,4 +1,6 @@
 #include <string>
+
+#include "Util.hpp"
 #include "EmulatorUtil.hpp"
 #include "AssemblyUtil.hpp"
 
