@@ -33,6 +33,12 @@ namespace EmulatorUtil
         INTERRUPT_SOFTWARE = 0x04
     };
 
+    enum MemoryWriteDirection
+    {
+        MEMORY_INCREMENT = 0x01,
+        MEMORY_DECREMENT = 0x02,
+    };
+
     typedef uint32_t ADDRESS;
     typedef uint32_t DWORD;
     typedef uint16_t WORD;

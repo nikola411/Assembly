@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    auto emulator = std::make_shared<Emulator>(argv[1]);
+    auto emulator = std::make_shared<Emulator>(argv[1], true);
     EmulatorResult emulatorResult = emulator->ReadInputProgram();
     emulatorResult = emulator->StartEmulating();
 

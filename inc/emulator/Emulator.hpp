@@ -13,7 +13,7 @@ class Emulator
 {
 public:
     Emulator() = delete;
-    Emulator(std::string file);
+    Emulator(std::string file, bool debug = false);
     EmulatorResult ReadInputProgram();
     EmulatorResult StartEmulating();
     void Print() const;
@@ -26,6 +26,7 @@ private:
     EmulatorResult PopStack(BYTE& value);
     EmulatorResult PushStack(DWORD value);
     EmulatorResult PopStack(DWORD& value);
+    EmulatorResult WriteToMemory(DWORD& value, ADDRESS& address, MemoryWriteDirection direction);
 
     const BYTE FetchInstructionCode(DWORD instr) const;
     const BYTE FetchInstructionSubCode(DWORD instr) const;
@@ -59,6 +60,8 @@ private:
     std::vector<DWORD> m_GPR;
     std::vector<DWORD> m_CSR;
     BYTE* m_memory;
+
+    bool m_debug;
 };
 
 

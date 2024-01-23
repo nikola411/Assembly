@@ -33,10 +33,17 @@
     if (csr > 2 || csr < 0) \
         return EMU_INVALID_STATUS_REGISTER
 
-Emulator::Emulator(std::string inputFile) :
+#define PAYLOAD_SIGN_MASK 0x01 << 11
+#define PAYLOAD_VALUE_MASK 0xFFF
+
+#define PAYLOAD_SIGNED_VALUE(payload) \
+    payload & PAYLOAD_SIGN_MASK ? -((~payload) & PAYLOAD_VALUE_MASK) - 1 : payload
+
+Emulator::Emulator(std::string inputFile, bool debug) :
     m_pcIndex(15),
     m_stackIndex(14),
-    m_inputFile(inputFile)   
+    m_inputFile(inputFile),
+    m_debug(debug)
 {
     m_memory = new BYTE[MemorySize];
     if (m_memory == nullptr)
@@ -129,9 +136,30 @@ void Emulator::Print() const
             std::cout << " \n";
     }
 
-    for (int i = StackStart; i > StackStart - 100; --i)
+    if (m_debug)
     {
-        std::cout << std::hex << (unsigned short)m_memory[i] << " ";
+        // memory dump
+        std::string line("");
+        std::ofstream file("memory.dump", std::ios_base::openmode::_S_out);
+        file << "First 1024 locations \n";
+        file << "   Memory   |    Stack   \n";
+                // "00 00 00 00 | 00 00 00 00"
+        file << std::hex;
+        for (int i = 0; i < 1024; )
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                file << std::setw(2) << std::setfill('0') << (unsigned short) m_memory[ProgramStart + i + j] << " ";
+            }
+            file << "| ";
+            for (int j = 0; j < 4; j++)
+            {
+                file << std::setw(2) << std::setfill('0') << (unsigned short) m_memory[StackStart - i - j] << " ";
+            }
+            file << "\n";
+            i += 4;
+        }
+        
     }
 }
 
@@ -190,6 +218,18 @@ EmulatorResult Emulator::PopStack(DWORD& value)
     }
 
     return result;
+}
+
+EmulatorResult Emulator::WriteToMemory(DWORD& value, ADDRESS& address, MemoryWriteDirection direction)
+{
+    if (direction == MemoryWriteDirection::MEMORY_INCREMENT)
+        for (int i = 0; i < 4; ++i)
+            m_memory[address + i] = (BYTE)(value >> i * BYTE_SIZE);
+    else
+        for (int i = 0; i < 4; ++i)
+            m_memory[address - i] = (BYTE)(value >> (3 - i) * BYTE_SIZE);
+            
+    return EMU_SUCCESS;;
 }
 
 void Emulator::InitActionsMap()
@@ -424,16 +464,20 @@ EmulatorResult Emulator::DataStoreOperation(BYTE subcode, BYTE regA, BYTE regB, 
     if (subcode > 2 || subcode < 0)
         return EMU_UNKNOWN_INSTRUCTION;
 
+    int32_t signedPayload = PAYLOAD_SIGNED_VALUE(payload);
+
     if (subcode == 0x1) // gpr[A]<=gpr[A]+D; mem32[gpr[A]]<=gpr[C];
     {
-        m_GPR[regA] = m_GPR[regA] + payload;
+        
+        m_GPR[regA] =(DWORD)((int32_t)m_GPR[regA] + signedPayload);
         CHECK_PC_OVERFLOW(m_GPR[regA]);
-        m_memory[m_GPR[regA]] = m_GPR[regC];
+
+        WriteToMemory(m_GPR[regC], m_GPR[regA], MemoryWriteDirection::MEMORY_DECREMENT);
 
         return EMU_SUCCESS;
     }
 
-    DWORD address = m_GPR[regA] + m_GPR[regB] + payload;
+    DWORD address = m_GPR[regA] + m_GPR[regB] + PAYLOAD_SIGNED_VALUE(payload);
     CHECK_PC_OVERFLOW(address);
     if (subcode == 0x2) // mem32[mem32[gpr[A]+gpr[B]+D]]<=gpr[C]
         address = m_memory[address];        

@@ -77,6 +77,7 @@ csrwr return yy::parser::make_CSRWR(loc);
 %   return yy::parser::make_PERCENT(loc);
 \+  return yy::parser::make_PLUS(loc);
 -   return yy::parser::make_MINUS(loc);
+\$  return yy::parser::make_DOLLAR(loc);
 
 [a-zA-Z_0-9]+:            return yy::parser::make_LABEL(yytext, loc);
 status|handler|cause   return yy::parser::make_CSR(yytext, loc);
