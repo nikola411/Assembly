@@ -1,5 +1,5 @@
 #include "AssemblyUtil.hpp"
-#include "instruction.hpp"
+#include "Instruction.hpp"
 
 using namespace ParserUtil;
 
@@ -189,8 +189,3 @@ bool AssemblyUtil::WriteDataToSection(std::vector<AssemblyUtil::section_ptr>& se
 
     return true;
 }
-
-//
-// General Utility methods
-//
-

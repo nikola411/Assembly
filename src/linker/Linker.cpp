@@ -1,4 +1,4 @@
-#include "linker.hpp"
+#include "Linker.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -77,9 +77,9 @@ void Linker::WriteOutput()
 
 void Linker::MergeSymbolTables()
 {
-    for (auto table: mSymbolTableVector)
+    for (const auto& table: mSymbolTableVector)
     {
-        for (auto symbol: table)
+        for (const auto& symbol: table)
         {
             auto entry = FindSymbol(mSymbolTable, symbol->label);
             if (entry != nullptr)
@@ -96,7 +96,7 @@ void Linker::MergeSymbolTables()
         }
     }
 
-    for (auto symbol: mSymbolTable)
+    for (const auto& symbol: mSymbolTable)
         if (!symbol->defined)
             throw LinkerException("Undefined symbol: " + symbol->label + " in section: " + symbol->section);
 
@@ -105,9 +105,9 @@ void Linker::MergeSymbolTables()
 
 void Linker::MergeRelocationTables()
 {
-    for (auto relocationTable: mRelocationTableVector)
+    for (const auto& relocationTable: mRelocationTableVector)
     {
-        for (auto relocation: relocationTable)
+        for (const auto& relocation: relocationTable)
         {
             if (FindSymbol(mSymbolTable, relocation->label) == nullptr)
                 throw LinkerException("Undefined symbol: " + relocation->label);
@@ -146,7 +146,7 @@ void Linker::HandleRelocations()
                 auto firstByte = section->sectionData[offset];
                 auto secondByte = section->sectionData[offset + 1];
 
-                firstByte |= (value >> (2 * BYTE_SIZE)) & 0x0F;
+                firstByte |= (value >> BYTE_SIZE) & 0x0F;
                 secondByte = (value & 0xFF);
                 
                 section->sectionData[offset] = firstByte;
@@ -165,7 +165,7 @@ void Linker::MergeSectionsInOrder()
     
     auto offset = 0;
 
-    for (auto entry: mergeVector)
+    for (const auto& entry: mergeVector)
     {
         auto sectionName = entry->sections.front().DATA->name;
         auto baseSection = std::make_shared<AssemblyUtil::SectionEntry>();
@@ -191,9 +191,9 @@ void Linker::PopulateMergeDataVector(std::vector<SectionMergeDataPtr>& vector)
     auto index = 0;
     auto file  = 0;
 
-    for (auto fileSections: mSectionTableVector)
+    for (const auto& fileSections: mSectionTableVector)
     {
-        for (auto section: fileSections)
+        for (const auto& section: fileSections)
         {
             if (sectionsMap.find(section->name) == sectionsMap.end())
             {
@@ -211,13 +211,18 @@ void Linker::PopulateMergeDataVector(std::vector<SectionMergeDataPtr>& vector)
         ++file;
     }
 
-    for (auto sectionEntry: sectionsMap)
+    for (const auto& sectionEntry: sectionsMap)
     {
         auto sectionMergeData = sectionEntry.second;
         vector.push_back(sectionMergeData);
     }
 
-    std::sort(vector.begin(), vector.end(), [](SectionMergeDataPtr first, SectionMergeDataPtr second){ return first->index < second->index; });
+    auto orderFunction = [](SectionMergeDataPtr first, SectionMergeDataPtr second)
+    {
+        return first->index < second->index;
+    };
+
+    std::sort(vector.begin(), vector.end(), orderFunction);
 }
 
 bool Linker::HandleSymbolSecondEncounter(symbol_ptr original, symbol_ptr found)
@@ -249,8 +254,8 @@ bool Linker::HandleSymbolSecondEncounter(symbol_ptr original, symbol_ptr found)
 
 void Linker::UpdateSymbolPointers()
 {
-    for (auto symbol: mSymbolTable) // update symbol pointers in all tables to the defined version of the symbol
-        for (auto table: mSymbolTableVector)
+    for (const auto&  symbol: mSymbolTable) // update symbol pointers in all tables to the defined version of the symbol
+        for (auto& table: mSymbolTableVector)
             for (auto i = 0; i < table.size(); ++i)
                 if (table[i]->label == symbol->label)
                     table[i] = symbol;
@@ -330,7 +335,7 @@ void Linker::ReadSectionsLine(std::string& line, SectionTable& currentSectionTab
         return;
     }
 
-    for (auto byte: bytes)
+    for (const auto& byte: bytes)
     {
         currentSectionTable.back()->sectionData.push_back(std::stoi(byte, &size, HEX_BASE));
     }
@@ -383,7 +388,7 @@ void Linker::PrintRelocatableProgramData()
 
     file << "symbol_table" << "\n";
     file << std::hex;
-    for (auto entry: mSymbolTable)
+    for (const auto&  entry: mSymbolTable)
     {
         file << entry->label << " " << entry->section << " "
                 << entry->offset << " " << entry->local << " "
@@ -391,11 +396,11 @@ void Linker::PrintRelocatableProgramData()
     }
 
     file << "\n" << "sections" << "\n";
-    for (auto section: mSectionTable)
+    for (const auto&  section: mSectionTable)
     {
         file << section->name << " " << section->offset << "\n";
         auto i = 0;
-        for (auto byte: section->sectionData)
+        for (const auto&  byte: section->sectionData)
         {
             file << std::setw(2) << std::setfill('0') <<(short)byte << " ";
             if (++i == 4)

@@ -1,5 +1,4 @@
-#ifndef _UTIL_HPP
-#define _UTIL_HPP
+#pragma once
 
 #include <stdint.h>
 #include <string>
@@ -8,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "instruction.hpp"
+#include "Instruction.hpp"
 #include "ParserUtil.hpp"
 
 #define EMPTY_BYTE 0
@@ -83,5 +82,3 @@ namespace AssemblyUtil
     relocation_ptr FindRelocation(std::vector<relocation_ptr>& relocations, std::string& name);
     std::vector<BYTE> ReadDataFromSection(std::vector<section_ptr>& sections, std::string& name, int offsetStart, int offsetEnd);
 }
-
-#endif

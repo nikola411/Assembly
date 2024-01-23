@@ -5,7 +5,7 @@
 #include <map>
 #include <set>
 
-#include "linker.hpp"
+#include "Linker.hpp"
 
 #include "Util.hpp"
 #include "AssemblyUtil.hpp"
@@ -84,9 +84,13 @@ int main(int argc, char* argv[])
         linker.StartLinking();
         linker.WriteOutput();
     }
-    catch(const std::exception& e)
+    catch(LinkerException& e)
     {
-        std::cerr << "\033[31m ERROR: " << e.what() << '\n';
+        std::cerr << "\033[31mERROR: " << e.what() << '\n';
+    }
+    catch(std::exception& e)
+    {
+        std::cerr << "\033[31m ERROR: Caught unhandled exception! \n";
     }
     
     return 0;

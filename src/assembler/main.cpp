@@ -1,11 +1,11 @@
 #include <iostream>
 #include <string>
 
-#include "driver.hpp"
-#include "assembly.hpp"
+#include "Driver.hpp"
+#include "Assembly.hpp"
 #include "AssemblyUtil.hpp"
-#include "instruction.hpp"
-#include "codes.hpp"
+#include "Instruction.hpp"
+#include "InstructionUtil.hpp"
 
 #include <bitset>
 #include <memory>

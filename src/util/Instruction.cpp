@@ -1,4 +1,4 @@
-#include "instruction.hpp"
+#include "Instruction.hpp"
 
 #define UNIT_SIZE 4
 

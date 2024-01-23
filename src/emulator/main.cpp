@@ -1,4 +1,4 @@
-#include "emulator.hpp"
+#include "Emulator.hpp"
 
 #include <iostream>
 #include <string>

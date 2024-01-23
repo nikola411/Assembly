@@ -5,6 +5,7 @@
 
 #include <string>
 #include <iostream>
+#include <thread>
 
 struct termios config_out;
 struct termios config_in;

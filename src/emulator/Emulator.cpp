@@ -1,4 +1,4 @@
-#include "emulator.hpp"
+#include "Emulator.hpp"
 
 #include <map>
 #include <vector>
@@ -127,6 +127,11 @@ void Emulator::Print() const
         std::cout << "    ";
         if (i % 4 == 0)
             std::cout << " \n";
+    }
+
+    for (int i = StackStart; i > StackStart - 100; --i)
+    {
+        std::cout << std::hex << (unsigned short)m_memory[i] << " ";
     }
 }
 

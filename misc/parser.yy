@@ -12,7 +12,7 @@
  
 %code requires
 {
-    #include "assembly.hpp"
+    #include "Assembly.hpp"
     
     class Driver;
     class Assembly;
@@ -39,7 +39,7 @@
     #include <string>
 
     #include "AssemblyUtil.hpp"
-    #include "driver.hpp"
+    #include "Driver.hpp"
 }
  
 %define api.token.prefix {TOK_}

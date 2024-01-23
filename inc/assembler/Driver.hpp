@@ -6,7 +6,7 @@
 #include "parser.hpp"
 #include "location.hh"
 
-#include "assembly.hpp"
+#include "Assembly.hpp"
 
 // Give Flex the prototype of yylex we want ...
 # define YY_DECL \

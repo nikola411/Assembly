@@ -1,6 +1,6 @@
-#include "assembly.hpp"
-#include "instruction.hpp"
-#include "codes.hpp"
+#include "Assembly.hpp"
+#include "Instruction.hpp"
+#include "InstructionUtil.hpp"
 #include "AssemblyUtil.hpp"
 
 #include <iostream>
@@ -31,7 +31,7 @@ using namespace ParserUtil;
 Assembly::Assembly():
     m_end(FIRST_PASS), m_locationCounter(0)
 {
-    ProcessorUtil::CodesMap::PopulateMap();
+    InstructionUtil::CodesMap::PopulateMap();
     InitializeHandleMap();
 
     m_currentSection = std::make_shared<SectionEntry>();
@@ -93,7 +93,7 @@ void Assembly::ContinueParsing()
         auto addressingType = line->addressingType;
         auto operandType = GetOperandType(operands, line);
        
-        auto manipulationData = ProcessorUtil::CodesMap::GetInstructionCodes(identifier, operandType, addressingType);
+        auto manipulationData = InstructionUtil::CodesMap::GetInstructionCodes(identifier, operandType, addressingType);
 
         for (auto entry: manipulationData)
         {
@@ -193,7 +193,7 @@ bool Assembly::CanOperandHaveOffset(AssemblyUtil::line_ptr line) const
     return false;
 }
 
-uint16_t Assembly::GetDataValue(std::vector<ParserUtil::ParserOperand>& operands, ProcessorUtil::eValueToUse operandNumber)
+uint16_t Assembly::GetDataValue(std::vector<ParserUtil::ParserOperand>& operands, InstructionUtil::eValueToUse operandNumber)
 {
     auto hasOffset = operandNumber > 2;
     auto index = hasOffset ? operandNumber - 3           : operandNumber; // -3 to normalize (we are looking for offset, not operand but still need operand index)
@@ -446,7 +446,7 @@ void Assembly::OtherTypeFirstPass(AssemblyUtil::line_ptr line)
     auto operands = line->operands;
     auto operandType =  GetOperandType(operands, line);
 
-    auto instructionCount = ProcessorUtil::CodesMap::GetInstructionCount(line->instruction, operandType, addressingType);
+    auto instructionCount = InstructionUtil::CodesMap::GetInstructionCount(line->instruction, operandType, addressingType);
 
     m_locationCounter += instructionCount * INSTRUCTION_SIZE; // updating location counter based on number of processor instructions that one asm instruction takes
     line->addressingType = addressingType;

@@ -1,8 +1,7 @@
-#ifndef _CODES_HPP
-#define _CODES_HPP
+#pragma once
 
 #include "AssemblyUtil.hpp"
-#include "instruction.hpp"
+#include "Instruction.hpp"
 
 #include <map>
 
@@ -12,7 +11,7 @@ using ParserUtil::eAddressingType;
 using ParserUtil::eInstructionIdentifier;
 using ParserUtil::eOperandType;
 
-namespace ProcessorUtil
+namespace InstructionUtil
 {
     enum eValueToUse
     {
@@ -55,5 +54,3 @@ namespace ProcessorUtil
         static std::map<eInstructionIdentifier, std::map<eOperandType, std::map<eAddressingType, std::vector<instructionPopulationPair>>>> InstructionCodesMap;
     };
 }
-
-#endif
