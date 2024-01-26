@@ -52,9 +52,13 @@ int main(int argc, char* argv[])
 
         delete assembly;
     }
+    catch(AssemblyUtil::AssemblyException e)
+    {
+        std::cerr << "\033[31mERROR: " << e.what() << '\n';
+    }
     catch(const std::exception& e)
     {
-        std::cerr << "\033[31m ERROR: " <<  e.what() << '\n';
+        std::cerr << "\033[31mERROR: " <<  e.what() << '\n';
     }
     
     

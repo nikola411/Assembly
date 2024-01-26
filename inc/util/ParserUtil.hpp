@@ -28,13 +28,14 @@ namespace ParserUtil
     enum eInstructionType
     {
         DIRECTIVE = 0x00,
-        BRANCH = 0x01,
-        PROCESSOR = 0x02,
-        STACK = 0x03,
-        DATA = 0x04,
-        MEMORY = 0x05,
-        SPECIAL = 0x06,
-        LABEL = 0x07
+        LABEL = 0x01,
+        BRANCH = 0x02,
+        
+        PROCESSOR = 0x03,
+        STACK = 0x04,
+        DATA = 0x05,
+        MEMORY = 0x06,
+        SPECIAL = 0x07,
     };
 
     enum eOperandType
@@ -57,15 +58,17 @@ namespace ParserUtil
     enum eRelocationType
     {
         REL_LOCAL,
-        REL_EXTERN
+        REL_EXTERN,
+        REL_RELATIVE,
+        REL_NONE
     };
 
     enum eGPR
     {
-        R0 = 0x00,  R1 = 0x01,  R2 = 0x02,  R3 = 0x03,
-        R4 = 0x04,  R5 = 0x05,  R6 = 0x06,  R7 = 0x07,
-        R8 = 0x08,  R9 = 0x09,  R10 = 0x0A, R11 = 0x0B,
-        R12 = 0x0C, R13 = 0x0D, R14 = 0x0E, R15 = 0x0F
+        R0  = 0x00,  R1 = 0x01,  R2  = 0x02,  R3  = 0x03,
+        R4  = 0x04,  R5 = 0x05,  R6  = 0x06,  R7  = 0x07,
+        R8  = 0x08,  R9 = 0x09,  R10 = 0x0A, R11  = 0x0B,
+        R12 = 0x0C, R13 = 0x0D, R14  = 0x0E, R15  = 0x0F
     };
 
     enum eCSR

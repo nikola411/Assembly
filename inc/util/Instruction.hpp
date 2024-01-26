@@ -18,17 +18,18 @@ namespace AssemblyUtil
     public:
         Instruction();
         Instruction(uint32_t instructionCode);
+        virtual ~Instruction();
 
-        void SetInstructionCode(uint16_t code);
-        void SetInstructionRegisterA(uint16_t rA);
-        void SetInstructionRegisterB(uint16_t rB);
-        void SetInstructionRegisterC(uint16_t rC);
-        void SetInstructionPayload(uint16_t payload);
-        void DoNothing(uint16_t payload);
+        virtual void SetInstructionCode(uint16_t code);
+        virtual void SetInstructionRegisterA(uint16_t rA);
+        virtual void SetInstructionRegisterB(uint16_t rB);
+        virtual void SetInstructionRegisterC(uint16_t rC);
+        virtual void SetInstructionPayload(uint16_t payload);
+        virtual void DoNothing(uint16_t payload);
 
-        std::vector<BYTE> GetInstructionVector();
-        uint32_t GetInstructionUInt32() const;
-    private:
+        virtual std::vector<BYTE> GetInstructionVector();
+        virtual uint32_t GetInstructionUInt32() const;
+    protected:
         std::vector<BYTE> m_instructionData;
         uint32_t m_intInstructionData;
     };

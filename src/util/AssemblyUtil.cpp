@@ -189,3 +189,17 @@ bool AssemblyUtil::WriteDataToSection(std::vector<AssemblyUtil::section_ptr>& se
 
     return true;
 }
+
+bool AssemblyUtil::WriteDataTableToSection(section_ptr section)
+{
+    for (const auto& entry: section->valueMap)
+    {
+        auto result = WriteDataToSection(section, entry, section->locationCounter, 4);
+        if (!result)
+            return result;
+            
+        section->locationCounter += 4;
+    }
+
+    return true;
+}

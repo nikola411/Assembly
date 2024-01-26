@@ -7,11 +7,11 @@
 
 namespace LinkerUtil
 {
-    static const std::string OUT_FLAG("-o");
-    static const std::string HEX_FLAG("-hex");
-    static const std::string RELOCATABLE_FLAG("-relocatable");
-    static const std::string LINKER_FLAG("./linker");
-    static const std::string PLACE_FLAG("-place=");
+    static const std::string FlagOut("-o");
+    static const std::string FlagHex("-hex");
+    static const std::string FlagRelocatable("-relocatable");
+    static const std::string FlagLinker("./linker");
+    static const std::string FlagPlace("-place=");
 
     class LinkerException: std::exception
     {
@@ -26,9 +26,19 @@ namespace LinkerUtil
     {
         bool hex;
         bool relocatable;
-        std::vector<std::string> place;
+        std::vector<std::pair<std::string, unsigned long>> place;
         std::string outFile;
         std::vector<std::string> inFiles;
+
+        /*
+            linker [opcije] <naziv_ulazne_datoteke>...
+            [opcije]:
+                * -hex
+                * -o <naziv_izlazne_datoteke>
+                * -place=<ime_sekcije>@<adresa>
+                * -relocatable
+        */
+        void ParseArguments(std::vector<std::string>& argVector);
     };
 
     enum ArgumentParsingState
@@ -58,6 +68,7 @@ namespace LinkerUtil
 
     void UpdateSymbolsOffset(std::vector<AssemblyUtil::symbol_ptr>& table, std::string& sectionName, int offset);
     void UpdateRelocationsOffset(std::vector<AssemblyUtil::relocation_ptr>& table, std::string& sectionName, int offset);
+    void ReadSectionLiteralPoolInReverse(AssemblyUtil::section_ptr section);
 
     typedef std::vector<AssemblyUtil::symbol_ptr> SymbolTable;
     typedef std::vector<AssemblyUtil::section_ptr> SectionTable;

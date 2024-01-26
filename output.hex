@@ -1,2 +1,9 @@
-91 10 01 ff 
-81 e0 1f fc 
+0: ff ff ff ff 
+4: 38 f0 00 0c 
+8: de ad be ef 
+c: 38 f0 00 08 
+10: ee ee aa aa 
+14: 38 f0 00 10 
+18: ea ea ea ea 
+1c: 38 f0 00 0c 
+20: 00 00 00 00 

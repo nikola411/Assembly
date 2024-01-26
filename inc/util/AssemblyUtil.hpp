@@ -22,9 +22,10 @@ namespace AssemblyUtil
         bool local;
         bool defined;
         int index;
+        int poolEntry;
 
         SymbolTableEntry(std::string label = "", std::string section = "", int offset = 0, bool local = true, bool defined = false, int index = 0)
-            :label(label), section(section), offset(offset), local(local), defined(defined), index(index)
+            :label(label), section(section), offset(offset), local(local), defined(defined), index(index), poolEntry(-1)
         {
         }
     };
@@ -44,6 +45,8 @@ namespace AssemblyUtil
         std::vector<BYTE> sectionData;
         int locationCounter;
         int offset;
+        std::vector<uint32_t> valueMap;
+        int valueMapSize;
     };
 
     struct ProgramLine
@@ -78,6 +81,7 @@ namespace AssemblyUtil
     bool WriteDataToSection(section_ptr sections, const std::vector<BYTE>& data, int offset);
     bool WriteDataToSection(AssemblyUtil::section_ptr section, uint32_t data, int offset, int bytesToWrite);
     bool WriteDataToSection(std::vector<AssemblyUtil::section_ptr>& sectionTable, std::string& sectionName, uint32_t data, int offset, int bytesStart, int bytesToWrite);
+    bool WriteDataTableToSection(section_ptr section);
     bool AllocateSectionData(section_ptr section, int size);
     relocation_ptr FindRelocation(std::vector<relocation_ptr>& relocations, std::string& name);
     std::vector<BYTE> ReadDataFromSection(std::vector<section_ptr>& sections, std::string& name, int offsetStart, int offsetEnd);

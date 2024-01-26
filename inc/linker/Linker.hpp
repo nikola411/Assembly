@@ -25,10 +25,13 @@ private:
     void HandleRelocations();
 
     void MergeSectionsInOrder();
+    void MergeSections();
+
     void PopulateMergeDataVector(std::vector<SectionMergeDataPtr>& vector);
+    void UpdateSectionPoolEntries(section_ptr base, section_ptr next);
 
     void ReadInputFiles();
-
+ 
     void ReadSymbolTableEntry(std::string& line, SymbolTable& currentSymbolTable);
     void ReadSectionsLine(std::string& line, SectionTable& currentSectionTable);
     void ReadRelocationsEntry(std::string& line, RelocationTable& currentRelocationTable);
@@ -43,6 +46,8 @@ private:
     std::vector<SymbolTable> mSymbolTableVector;
     std::vector<SectionTable> mSectionTableVector;
     std::vector<RelocationTable> mRelocationTableVector;
+
+    std::vector<uint32_t> mGlobalLiteralPool;
 
     LinkerArguments arguments;
 };

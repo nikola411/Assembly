@@ -9,14 +9,21 @@
 
 #include "Util.hpp"
 
+    /*
+        1: init init 0 1 1
+        2: meta meta 0 1 1
+        3: looping looping 0 1 1
+        4: loop looping 0 1 1
+    */
+
 #define SPACE ' '
 #define HEX_BASE 16
-#define LABEL_INDEX 0
-#define SECTION_INDEX 1
-#define OFFSET_INDEX 2
-#define LOCAL_INDEX 3
-#define TYPE_INDEX 3
-#define DEFINED_INDEX 4
+#define LABEL_INDEX 1
+#define SECTION_INDEX 2
+#define OFFSET_INDEX 3
+#define LOCAL_INDEX 4
+#define TYPE_INDEX 4
+#define DEFINED_INDEX 5
 #define EMPTY_LINE ""
 
 #define FILE first
@@ -31,9 +38,11 @@ using AssemblyUtil::FindRelocation;
 using AssemblyUtil::ReadDataFromSection;
 using AssemblyUtil::WriteDataToSection;
 
-std::vector<eInputFileState> states =
+static std::map<std::string, eInputFileState> states = 
 {
-    eInputFileState::SYMBOL_TABLE, eInputFileState::SECTIONS, eInputFileState::RELOCATIONS
+    { "SYMBOL TABLE:", eInputFileState::SYMBOL_TABLE },
+    { "SECTIONS:", eInputFileState::SECTIONS },
+    { "RELOCATIONS:", eInputFileState::RELOCATIONS },
 };
 
 Linker::Linker(LinkerArguments& args)
@@ -171,19 +180,86 @@ void Linker::MergeSectionsInOrder()
         auto baseSection = std::make_shared<AssemblyUtil::SectionEntry>();
         baseSection->name = sectionName;
         baseSection->offset = offset;
-    
+
         for (auto section: entry->sections)
         {
             WriteDataToSection(baseSection, section.DATA->sectionData, baseSection->LocationCounter);
             UpdateSymbolsOffset(mSymbolTableVector[section.FILE], sectionName, offset - baseSection->offset);
-            UpdateRelocationsOffset(mRelocationTableVector[section.FILE], sectionName, offset - baseSection->offset);     
+            UpdateRelocationsOffset(mRelocationTableVector[section.FILE], sectionName, offset - baseSection->offset);
 
             offset += section.DATA->LocationCounter;
         }
 
         mSectionTable.push_back(baseSection);
     }
+
+    if (arguments.place.size() != 0)
+    {
+        auto compare = [](std::pair<std::string, unsigned long> first, std::pair<std::string, unsigned long> second)
+        {
+            return first.second > second.second;
+        };
+
+        std::sort(arguments.place.begin(), arguments.place.end(), compare);
+
+        for (const auto& place : arguments.place)
+        {
+            for (auto& section : mSectionTable)
+            {
+                if (section->name == place.first)
+                {
+                    section->offset = place.second;
+                    break;
+                }
+            }
+        }
+    }
 }
+
+// void Linker::MergeSections()
+// {
+//     std::map<std::string, section_ptr> sections = {};
+//     int offset = 0;
+
+//     for (int file = 0; file < mSectionTableVector.size(); ++file)
+//     {
+//         auto currentSectionVector = mSectionTableVector[file];
+//         for (const auto& section : currentSectionVector)
+//         {
+//             if (sections.find(section->name) == sections.end())
+//             {
+//                 auto newSection = std::make_shared<AssemblyUtil::SectionEntry>();
+//                 newSection->name = section->name;
+//                 newSection->offset = offset;
+
+//                 for (const auto byte : section->sectionData)
+//                 {
+//                     newSection->sectionData.push_back(byte);
+//                 }
+
+//                 for (const auto entry : section->valueMap)
+//                 {
+//                     newSection->valueMap.push_back(entry);
+//                 }
+
+//                 newSection->locationCounter = section->locationCounter;
+                
+//                 offset += newSection->sectionData.size();
+//                 continue;
+//             }
+
+//             auto& baseSection = sections[section->name];
+
+//             for (auto entry : baseSection->valueMap)
+//             {
+//                 // check if present in next section
+//                 bool present = false;
+//                 for (auto secondEntry : section->valueMap)
+//                     if (secondEntry == )
+//             }
+//         }
+//     }
+// }
 
 void Linker::PopulateMergeDataVector(std::vector<SectionMergeDataPtr>& vector)
 {
@@ -223,6 +299,10 @@ void Linker::PopulateMergeDataVector(std::vector<SectionMergeDataPtr>& vector)
     };
 
     std::sort(vector.begin(), vector.end(), orderFunction);
+}
+
+void Linker::UpdateSectionPoolEntries(section_ptr base, section_ptr next)
+{
 }
 
 bool Linker::HandleSymbolSecondEncounter(symbol_ptr original, symbol_ptr found)
@@ -277,8 +357,12 @@ void Linker::ReadInputFiles()
         {
             std::getline(file, line);
             if (line == EMPTY_LINE)
+                continue;
+            
+            std::string strippedLine = Strip(line);
+            if (states.find(strippedLine) != states.end())
             {
-                state = NEXT_STATE(state);
+                state = states[strippedLine];
                 continue;
             }
 
@@ -295,6 +379,11 @@ void Linker::ReadInputFiles()
                 break;
             }
         }
+
+        // read literal pool from last section that appeared since we don't read it for only that seciton
+        auto& lastSection = currentSectionsTable.back();
+        ReadSectionLiteralPoolInReverse(lastSection);
+        std::reverse(lastSection->valueMap.begin(), lastSection->valueMap.end());
 
         mSymbolTableVector.push_back(currentSymbolTable);
         mSectionTableVector.push_back(currentSectionsTable);
@@ -323,21 +412,29 @@ void Linker::ReadSectionsLine(std::string& line, SectionTable& currentSectionTab
 {
     std::size_t size;
     auto bytes = Split(line, SPACE);
-    
-    if (bytes.size() == 3)
+
+    if (bytes.size() == 4)
     {
         auto section = std::make_shared<AssemblyUtil::SectionEntry>();
-        section->name = bytes.front();
-        section->locationCounter = std::stoi(bytes.back(), &size, HEX_BASE);
-        section->offset = std::stoi(bytes.back(), &size, HEX_BASE);
+        section->name = bytes.front(); 
+        section->locationCounter = std::stoi(bytes[1], &size, HEX_BASE);
+        section->offset = std::stoi(bytes[2], &size, HEX_BASE);
+        section->valueMapSize = std::stoi(bytes[3].substr(0, bytes[3].size() - 1), &size, HEX_BASE);
+
+        if (!currentSectionTable.empty()) //read last sections valueMap (literal pool)
+        {
+            ReadSectionLiteralPoolInReverse(currentSectionTable.back());
+            //reverese since we are reading from the back
+            std::reverse(section->valueMap.begin(), section->valueMap.end());
+        }
 
         currentSectionTable.push_back(section);
         return;
     }
-
-    for (const auto& byte: bytes)
+    //skipping first byte since that byte represents the address of the instruction 
+    for (int i = 1; i < bytes.size(); ++i)
     {
-        currentSectionTable.back()->sectionData.push_back(std::stoi(byte, &size, HEX_BASE));
+        currentSectionTable.back()->sectionData.push_back(std::stoi(bytes[i], &size, HEX_BASE));
     }
 }
 
@@ -348,6 +445,7 @@ void Linker::ReadRelocationsEntry(std::string& line, RelocationTable& currentRel
     auto relocationInfo  = Split(line, SPACE);
     auto relocationEntry = std::make_shared<AssemblyUtil::RelocationTableEntry>();
 
+    relocationEntry->index   = std::stoi(Strip(relocationInfo.front(), ':'));
     relocationEntry->label   = relocationInfo[LABEL_INDEX];
     relocationEntry->section = relocationInfo[SECTION_INDEX];
     relocationEntry->offset  = std::stoi(relocationInfo[OFFSET_INDEX], &size, HEX_BASE);
@@ -367,13 +465,25 @@ void Linker::PrintHexProgramData()
     file << std::hex;
     for (const auto& section: mSectionTable)
     {
+        if (section->sectionData.size() == 0)
+            continue;
+        
+        unsigned long address = section->offset;
+        unsigned long written = 0;
+        file << address << ": ";
         for (const auto& byte: section->sectionData)
         {
             file << std::setw(2) << std::setfill('0') <<(short)byte << " ";
+            ++written;
             if (++instructionCounter == 4)
             {
                 file << "\n";
                 instructionCounter = 0;
+                if (written != section->sectionData.size())
+                {
+                    address += 4;
+                    file << address << ": ";
+                }
             }
         }
     }
@@ -409,6 +519,13 @@ void Linker::PrintRelocatableProgramData()
                 file << "\n";
             }
         }
+    }
+
+        int i = 0;
+    for (auto relocation : mRelocationTable)
+    {
+        file << ++i << ": " << relocation->label << SPACE << relocation->section << SPACE
+            << relocation->offset << SPACE << relocation->type << " \n";
     }
 
     file.close();

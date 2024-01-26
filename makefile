@@ -37,7 +37,7 @@ EMULATOR_OUTPUT = -o ./emulator
 DEBUG_ENABLED = 0
 GPP_FLAGS = 
 
-all: asm lnk
+all: flex bison asm lnk
 	@echo "$(COLOR_GREEN)Build successful!$(COLOR_END)"
 
 emu:
@@ -50,7 +50,7 @@ lnk:
 	@g++ -g ${LINKER_INCLUDES} ${GPP_FLAGS} ${LINKER_SOURCE} ${LINKER_OUTPUT}
 	@echo "$(COLOR_BLUE)Success!$(COLOR_END)"
 
-asm: flex bison
+asm:
 	@echo "Building assembly..."
 	@g++ -g ${ASSEMBLY_INCLUDES} ${GPP_FLAGS} ${ASSEMBLY_SOURCE} ${ASSEMBLY_OUTPUT}
 	@echo "$(COLOR_BLUE)Success!$(COLOR_END)"

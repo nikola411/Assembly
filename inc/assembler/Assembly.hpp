@@ -32,7 +32,9 @@ private:
     uint16_t GetDataValue(std::vector<ParserUtil::ParserOperand>& operands, InstructionUtil::eValueToUse value);
     uint16_t GetSymbolValue(std::string& name, ParserUtil::eAddressingType adressingType);
     uint16_t GetRegisterValue(std::string& name, ParserUtil::eOperandType type);
-    uint16_t GetLiteralValue(std::string& value);
+    uint16_t GetLiteralMapEntry(std::string& value);
+    uint16_t GetLiteralMapEntry(uint32_t value);
+    uint32_t GetLiteralValue(std::string& value);
     ParserUtil::eOperandType GetOperandType(std::vector<ParserUtil::ParserOperand>& operands, AssemblyUtil::line_ptr line);
 
     bool InsertSection(AssemblyUtil::section_ptr section);
@@ -43,6 +45,8 @@ private:
     void EndFirstPass(AssemblyUtil::line_ptr line);
     void ExternFirstPass(AssemblyUtil::line_ptr line);
     void LabelFirstPass(AssemblyUtil::line_ptr line);
+    void SkipFirstPass(AssemblyUtil::line_ptr line);
+    void WordFirstPass(AssemblyUtil::line_ptr line);
 
     void SectionSecondPass(AssemblyUtil::line_ptr line);
     void EndSecondPass(AssemblyUtil::line_ptr line);
@@ -63,6 +67,8 @@ private:
     std::vector<AssemblyUtil::section_ptr> m_sections;
     std::vector<AssemblyUtil::relocation_ptr> m_relcationTable;
     std::map<bool, std::map<ParserUtil::eInstructionType, std::map<ParserUtil::eInstructionIdentifier, HandleMethodPtr>>> m_handles;
+
+    std::map<uint16_t, uint32_t> m_symbolAndLiteralPool;
 
     AssemblyUtil::section_ptr m_currentSection;
     bool m_end; // .END encountered

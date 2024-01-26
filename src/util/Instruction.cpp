@@ -21,13 +21,17 @@ using namespace AssemblyUtil;
 Instruction::Instruction()
 {
     m_instructionData = { EMPTY_BYTE, EMPTY_BYTE, EMPTY_BYTE, EMPTY_BYTE };
-    m_intInstructionData = 0xFFFFFFFF;
+    m_intInstructionData = 0x00000000;
 }
 
 Instruction::Instruction(uint32_t instructionCode)
 {
     m_instructionData = { EMPTY_BYTE, EMPTY_BYTE, EMPTY_BYTE, EMPTY_BYTE };
     m_intInstructionData = instructionCode;
+}
+
+AssemblyUtil::Instruction::~Instruction()
+{
 }
 
 void Instruction::SetInstructionCode(uint16_t code)

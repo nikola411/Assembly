@@ -59,4 +59,6 @@ namespace EmulatorUtil
 
     static constexpr DWORD MaxStackSize = StackStart - 0;
     static constexpr DWORD StackChunkCount = MaxStackSize / StackChunkSize;
+
+    void Dump(BYTE* memory);
 }

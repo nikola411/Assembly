@@ -2,6 +2,7 @@
 #include "Instruction.hpp"
 #include "InstructionUtil.hpp"
 #include "AssemblyUtil.hpp"
+#include "Util.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -28,7 +29,7 @@
 using namespace AssemblyUtil;
 using namespace ParserUtil;
 
-Assembly::Assembly():
+Assembly::Assembly() :
     m_end(FIRST_PASS), m_locationCounter(0)
 {
     InstructionUtil::CodesMap::PopulateMap();
@@ -36,6 +37,8 @@ Assembly::Assembly():
 
     m_currentSection = std::make_shared<SectionEntry>();
     m_currentSection->name = DEFAULT_SECTION;
+
+    m_symbolAndLiteralPool = {};
 }
 
 void Assembly::SetInstruction(eInstructionIdentifier instruction, eInstructionType type)
@@ -57,7 +60,7 @@ void Assembly::SetOperand(ParserOperand& operand)
 
 void Assembly::SetMultipleOperands(std::vector<ParserOperand> operands)
 {
-    for (auto op: operands)
+    for (auto op : operands)
     {
         m_currentLine->operands.push_back(op);
     }
@@ -80,25 +83,25 @@ void Assembly::ContinueParsing()
     if (m_end == FIRST_PASS)
         throw AssemblyUtil::AssemblyException("Assembly code did not finish with .end directive.");
 
-    for (auto line: m_program)
+    for (auto line : m_program)
     {
         if (line->type == eInstructionType::LABEL || line->type == eInstructionType::DIRECTIVE)
         {
             CallAssemblyMethod(m_end, line);
             continue;
         }
-        
+
         auto operands = line->operands;
         auto identifier = line->instruction;
         auto addressingType = line->addressingType;
         auto operandType = GetOperandType(operands, line);
-       
+
         auto manipulationData = InstructionUtil::CodesMap::GetInstructionCodes(identifier, operandType, addressingType);
 
-        for (auto entry: manipulationData)
+        for (auto entry : manipulationData)
         {
             auto instruction = entry.first;
-            for (auto function: entry.second)
+            for (auto function : entry.second)
             {
                 if (function != nullptr)
                 {
@@ -114,14 +117,14 @@ void Assembly::ContinueParsing()
 
     auto last = m_sections.front();
 
-    for (auto section: m_sections) // update sections offsets
+    for (auto section : m_sections) // update sections offsets
     {
         if (section == m_sections.front())
         {
             section->offset = 0;
             continue;
         }
-        
+
         section->offset = last->offset + last->sectionData.size();
         last = section;
     }
@@ -132,35 +135,70 @@ void Assembly::PrintProgram(std::string outFile)
     std::fstream file;
     file.open(outFile, std::ios_base::openmode::_S_out);
 
-    // file << "symbol_table" << "\n";
-    for (auto entry: m_symbolTable)
+#define SPACE " "
+#define DETAILED false
+
+    file << "SYMBOL TABLE:" << "\n";
+    if (DETAILED)
     {
-        file << entry->label << " " << entry->section << " " << std::hex << entry->offset << " " << entry->local << " " << entry->defined << "\n";
+        file << ";Index "
+            << "Label "
+            << "Section "
+            << "Offset "
+            << "Local "
+            << "Defined "
+            << "Value \n";
+    }
+
+    int j = 0;
+    for (auto entry : m_symbolTable)
+    {
+        file
+            << ++j << ": "
+            << entry->label << " "
+            << entry->section << " "
+            << std::hex << entry->offset << " "
+            << entry->local << " "
+            << entry->defined << " "
+            << entry->poolEntry << "\n";
     }
     // file << "\n" << "sections" << "\n";
-    file << "\n";
-    for (auto section: m_sections)
+    file << "\nSECTIONS:\n";
+    for (auto section : m_sections)
     {
-        file << section->name << " " << section->locationCounter
-            << " " << section->offset << "\n";
+        file << "<" << section->name << "> " << section->locationCounter
+            << " " << section->offset << " " << section->valueMap.size() << ": \n";
+
+        if (section->sectionData.size() == 0)
+            continue;
 
         auto i = 0;
-        for (auto byte: section->sectionData)
+        auto lines = 0;
+
+        for (int i = 0; i < section->sectionData.size(); i += 4)
         {
-            file << std::hex << std::setw(2) << std::setfill('0') <<(short)byte << " ";
-            if (++i == 4)
+            file << std::hex << std::setw(8) << std::setfill('0') << lines << ": ";
+            for (int j = i; j < i + 4; ++j)
             {
-                i = 0;
-                file << "\n";
+                file << std::setw(2) << std::setfill('0') << (short)section->sectionData[j] << SPACE;
             }
+            lines += 4;
+            file << "\n";
         }
+
     }
-    // file << "\nrelocations\n";
-    file << "\n";
-    for (auto relocation: m_relcationTable)
+
+    file << "\nRELOCATIONS:\n";
+    if (DETAILED)
     {
-        file << relocation->label << " " << relocation->section << " "
-                    << relocation->offset << " " << relocation->type << " \n";
+        file << ";Index | Label | Section | Offset | Type \n";
+    }
+
+    int i = 0;
+    for (auto relocation : m_relcationTable)
+    {
+        file << ++i << ": " << relocation->label << SPACE << relocation->section << SPACE
+            << relocation->offset << SPACE << relocation->type << " \n";
     }
 
     file.close();
@@ -170,18 +208,18 @@ int Assembly::GetVariantOperandNumber(AssemblyUtil::line_ptr line) const
 {
     switch (line->instruction)
     {
-        case eInstructionIdentifier::LD:
-        case eInstructionIdentifier::JMP:
-        case eInstructionIdentifier::CALL:
-            return 1;
-        case eInstructionIdentifier::ST:
-            return 2;
-        case eInstructionIdentifier::BEQ:
-        case eInstructionIdentifier::BNE:
-        case eInstructionIdentifier::BGT:
-            return 3;
-        default:
-            return 0;
+    case eInstructionIdentifier::LD:
+    case eInstructionIdentifier::JMP:
+    case eInstructionIdentifier::CALL:
+        return 1;
+    case eInstructionIdentifier::ST:
+        return 2;
+    case eInstructionIdentifier::BEQ:
+    case eInstructionIdentifier::BNE:
+    case eInstructionIdentifier::BGT:
+        return 3;
+    default:
+        return 0;
     }
 }
 
@@ -189,15 +227,15 @@ bool Assembly::CanOperandHaveOffset(AssemblyUtil::line_ptr line) const
 {
     if (line->instruction == eInstructionIdentifier::LD || line->instruction == eInstructionIdentifier::ST)
         return true;
-    
+
     return false;
 }
 
 uint16_t Assembly::GetDataValue(std::vector<ParserUtil::ParserOperand>& operands, InstructionUtil::eValueToUse operandNumber)
 {
     auto hasOffset = operandNumber > 2;
-    auto index = hasOffset ? operandNumber - 3           : operandNumber; // -3 to normalize (we are looking for offset, not operand but still need operand index)
-    auto type =  hasOffset ? operands[index].offsetType  : operands[index].type;
+    auto index = hasOffset ? operandNumber - 3 : operandNumber; // -3 to normalize (we are looking for offset, not operand but still need operand index)
+    auto type = hasOffset ? operands[index].offsetType : operands[index].type;
     auto value = hasOffset ? operands[(int)index].offset : operands[(int)index].value;
     auto addressingType = operands[index].addressingType;
 
@@ -205,7 +243,10 @@ uint16_t Assembly::GetDataValue(std::vector<ParserUtil::ParserOperand>& operands
         return GetSymbolValue(value, addressingType);
 
     if (type == eOperandType::LTR)
-        return GetLiteralValue(value);    
+    {
+        auto poolIndex = GetLiteralMapEntry(value);
+        return m_currentSection->sectionData.size() + poolIndex - m_locationCounter;
+    }
 
     auto operand = operands[(int)index];
     return GetRegisterValue(operand.value, operand.type);
@@ -214,7 +255,6 @@ uint16_t Assembly::GetDataValue(std::vector<ParserUtil::ParserOperand>& operands
 uint16_t Assembly::GetSymbolValue(std::string& name, eAddressingType addressingType)
 {
     auto entry = FindSymbol(m_symbolTable, name);
-    std::vector<BYTE> dataToConvert = { 0x00, 0x00 };
 
     if (entry == nullptr || !entry->local)
     {
@@ -227,14 +267,16 @@ uint16_t Assembly::GetSymbolValue(std::string& name, eAddressingType addressingT
         CreateRelocationEntry(name, m_currentSection->name, m_locationCounter + 2, eRelocationType::REL_LOCAL);
         return 0x000;
     }
-    
-    if (addressingType == eAddressingType::ADDR_DIRECT)
-        return (uint16_t)entry->offset;
 
-    dataToConvert = ReadDataFromSection(m_sections, entry->section, entry->offset, 2);
-    uint16_t data = (dataToConvert[0] & 0x0F) << 8 | (dataToConvert[1]);
+    uint16_t entryIndex = GetLiteralMapEntry(entry->offset);
 
-    return data;
+    if (entry->poolEntry == 0xFFFFFFFF)
+        entry->poolEntry = entryIndex;
+
+    CreateRelocationEntry(name, m_currentSection->name, m_locationCounter + 2, eRelocationType::REL_RELATIVE);
+
+    uint32_t offset = m_currentSection->sectionData.size() + (entryIndex * INSTRUCTION_SIZE) - m_locationCounter;
+    return offset;
 }
 
 uint16_t Assembly::GetRegisterValue(std::string& name, eOperandType type)
@@ -243,27 +285,47 @@ uint16_t Assembly::GetRegisterValue(std::string& name, eOperandType type)
         return (uint16_t)CSRStringToEnum(name);
     else
         return (uint16_t)GPRStringToEnum(name);
-    
+
     return 0;
 }
 
-uint16_t Assembly::GetLiteralValue(std::string& value)
+uint16_t Assembly::GetLiteralMapEntry(std::string& value)
+{
+    uint32_t literalValue = GetLiteralValue(value);
+    return GetLiteralMapEntry(literalValue);
+}
+
+uint16_t Assembly::GetLiteralMapEntry(uint32_t value)
+{
+    auto& valueMap = m_currentSection->valueMap;
+    uint16_t entry = 0;
+
+    for (entry = 0; entry < valueMap.size(); ++entry)
+    {
+        if (valueMap[entry] == value)
+            break;
+    }
+
+    if (entry == valueMap.size())
+        valueMap.push_back(value);
+
+    return entry;
+}
+
+uint32_t Assembly::GetLiteralValue(std::string& value)
 {
     std::size_t pos{};
     int base(16);
-
-    uint16_t data = std::stoi(value, &pos, base);
-    data &= PAYLOAD_MASK;
-    
+    uint32_t data = std::stoul(value, &pos, base);
     return data;
 }
 
 ParserUtil::eOperandType Assembly::GetOperandType(std::vector<ParserUtil::ParserOperand>& operands, AssemblyUtil::line_ptr line)
 {
-    auto variantOperandNumber = GetVariantOperandNumber(line);       
-    auto operandType =  variantOperandNumber != 0 ? operands[variantOperandNumber - 1].type :
-                        operands.size()      == 0 ? eOperandType::NONE_TYPE : 
-                        eOperandType::GPR;
+    auto variantOperandNumber = GetVariantOperandNumber(line);
+    auto operandType = variantOperandNumber != 0 ? operands[variantOperandNumber - 1].type :
+        operands.size() == 0 ? eOperandType::NONE_TYPE :
+        eOperandType::GPR;
 
     return operandType;
 }
@@ -271,7 +333,7 @@ ParserUtil::eOperandType Assembly::GetOperandType(std::vector<ParserUtil::Parser
 bool Assembly::InsertSection(AssemblyUtil::section_ptr section)
 {
     bool isInserted = false;
-    for (auto elem: m_sections)
+    for (auto elem : m_sections)
     {
         if (elem->name == section->name)
         {
@@ -282,7 +344,7 @@ bool Assembly::InsertSection(AssemblyUtil::section_ptr section)
 
     if (!isInserted)
         m_sections.push_back(section);
-    
+
     return isInserted;
 }
 
@@ -316,8 +378,8 @@ void Assembly::SectionFirstPass(AssemblyUtil::line_ptr line)
     m_locationCounter = 0;
     m_currentSection = std::make_shared<SectionEntry>();
     m_currentSection->name = sectionName;
-    
-    m_symbolTable.push_back(std::make_shared<SymbolTableEntry>(sectionName, sectionName, 0, LOCAL, DEFINED)); 
+
+    m_symbolTable.push_back(std::make_shared<SymbolTableEntry>(sectionName, sectionName, 0, LOCAL, DEFINED));
 }
 
 void Assembly::EndFirstPass(AssemblyUtil::line_ptr line)
@@ -325,14 +387,14 @@ void Assembly::EndFirstPass(AssemblyUtil::line_ptr line)
     if (m_currentSection->sectionData.size() < m_locationCounter)
         AllocateSectionData(m_currentSection, m_locationCounter - m_currentSection->sectionData.size());
 
-    InsertSection(m_currentSection);    
+    InsertSection(m_currentSection);
 
     m_end = SECOND_PASS;
 }
 
 void Assembly::ExternFirstPass(AssemblyUtil::line_ptr line)
 {
-    for (auto operand: m_currentLine->operands)
+    for (auto operand : m_currentLine->operands)
     {
         auto entry = std::make_shared<SymbolTableEntry>(operand.value, m_currentSection->name, m_locationCounter, false);
         m_symbolTable.push_back(entry);
@@ -360,11 +422,11 @@ void Assembly::LabelFirstPass(AssemblyUtil::line_ptr line)
 void Assembly::SectionSecondPass(AssemblyUtil::line_ptr line)
 {
     m_currentSection->locationCounter = m_locationCounter;
+    WriteDataTableToSection(m_currentSection);
     m_currentSection = nullptr; // m_sections has a reference to the current section so this just resets current section
-
     auto sectionName = line->operands.front().value;
 
-    for (auto section: m_sections)
+    for (auto section : m_sections)
     {
         if (section->name == sectionName)
         {
@@ -383,28 +445,45 @@ void Assembly::SectionSecondPass(AssemblyUtil::line_ptr line)
 void Assembly::EndSecondPass(AssemblyUtil::line_ptr line)
 {
     m_currentSection->locationCounter = m_locationCounter;
+    WriteDataTableToSection(m_currentSection);
+}
+
+void Assembly::SkipFirstPass(AssemblyUtil::line_ptr line)
+{
+    auto value = line->operands.front().value;
+    auto bytes = GetLiteralValue(value);
+    AllocateSectionData(m_currentSection, bytes);
+    // for (auto i = 0; i < bytes; ++i)
+    //     m_currentSection->sectionData.push_back(0x00);
+    m_locationCounter += bytes;
+}
+
+void Assembly::WordFirstPass(AssemblyUtil::line_ptr line)
+{
+    for (const auto& operand : line->operands)
+    {
+        WriteDataToSection(m_currentSection, 0x0, m_locationCounter, INSTRUCTION_SIZE);
+        m_locationCounter += INSTRUCTION_SIZE;
+    }
 }
 
 void Assembly::SkipSecondPass(AssemblyUtil::line_ptr line)
 {
-    auto value = line->operands.front().value;
-    auto bytes = GetLiteralValue(value);
-    for (auto i = 0; i < bytes; ++i)
-        m_currentSection->sectionData.push_back(0x00);
+    auto bytes = GetLiteralValue(line->operands.front().value);
     m_locationCounter += bytes;
 }
 
 void Assembly::WordSecondPass(AssemblyUtil::line_ptr line)
 {
     auto memoryData = 0x0000;
-    for (auto operand: line->operands)
+    for (auto operand : line->operands)
     {
         if (operand.type == eOperandType::LTR)
         {
             auto value = GetLiteralValue(operand.value);
             memoryData |= value;
         }
-        else            
+        else
         // if (operand.type == eOperandType::SYM)
         {
             auto value = GetSymbolValue(operand.value, eAddressingType::ADDR_DIRECT);
@@ -434,8 +513,8 @@ void Assembly::LabelSecondPass(AssemblyUtil::line_ptr line)
 
 void Assembly::GlobalSecondPass(AssemblyUtil::line_ptr line)
 {
-    for (auto operand: line->operands)
-        for (auto symbol: m_symbolTable)
+    for (auto operand : line->operands)
+        for (auto symbol : m_symbolTable)
             if (symbol->label == operand.value)
                 symbol->local = false;
 }
@@ -443,13 +522,20 @@ void Assembly::GlobalSecondPass(AssemblyUtil::line_ptr line)
 void Assembly::OtherTypeFirstPass(AssemblyUtil::line_ptr line)
 {
     auto addressingType = eAddressingType::ADDR_DIRECT;
+    if (line->instruction == eInstructionIdentifier::HALT)
+        addressingType = eAddressingType::ADDR_NONE;
     auto operands = line->operands;
-    auto operandType =  GetOperandType(operands, line);
+    auto operandType = GetOperandType(operands, line);
 
     auto instructionCount = InstructionUtil::CodesMap::GetInstructionCount(line->instruction, operandType, addressingType);
 
-    m_locationCounter += instructionCount * INSTRUCTION_SIZE; // updating location counter based on number of processor instructions that one asm instruction takes
     line->addressingType = addressingType;
+
+    for (int i = 0; i < instructionCount; ++i)
+        WriteDataToSection(m_currentSection, 0x0000, m_locationCounter, INSTRUCTION_SIZE);
+
+    m_locationCounter += instructionCount * INSTRUCTION_SIZE; // updating location counter based on number of processor instructions that one asm instruction takes
+
 }
 
 void Assembly::MemoryTypeFirstPass(AssemblyUtil::line_ptr line)
@@ -457,7 +543,14 @@ void Assembly::MemoryTypeFirstPass(AssemblyUtil::line_ptr line)
     if (line->instruction == eInstructionIdentifier::LD)
         line->addressingType = line->operands.front().addressingType;
     if (line->instruction == eInstructionIdentifier::ST)
+    {
         line->addressingType = line->operands.back().addressingType;
+        if (line->addressingType == eAddressingType::ADDR_DIRECT)
+            throw AssemblyException("Wrong addressing for the ST instruction:");
+    }
+
+    WriteDataToSection(m_currentSection, 0x0000, m_locationCounter, INSTRUCTION_SIZE);
+    m_locationCounter += INSTRUCTION_SIZE;
 }
 
 void Assembly::DoNothing(AssemblyUtil::line_ptr line)
@@ -471,9 +564,9 @@ void Assembly::InitializeHandleMap()
     {
         { eInstructionIdentifier::SECTION, &Assembly::SectionFirstPass },
         { eInstructionIdentifier::END,     &Assembly::EndFirstPass },
-        { eInstructionIdentifier::SKIP,    NO_ACTION },
+        { eInstructionIdentifier::SKIP,    &Assembly::SkipFirstPass },
         { eInstructionIdentifier::EXTERN,  &Assembly::ExternFirstPass },
-        { eInstructionIdentifier::WORD,    NO_ACTION },
+        { eInstructionIdentifier::WORD,    &Assembly::WordFirstPass },
         { eInstructionIdentifier::GLOBAL,  NO_ACTION }
     };
 
@@ -496,7 +589,7 @@ void Assembly::InitializeHandleMap()
     {
         { eInstructionIdentifier::LBL, &Assembly::LabelSecondPass }
     };
-        
+
     m_handles[FIRST_PASS][eInstructionType::MEMORY] =
     {
         { eInstructionIdentifier::LD, &Assembly::MemoryTypeFirstPass },

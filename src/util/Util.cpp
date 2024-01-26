@@ -1,5 +1,8 @@
 #include "Util.hpp"
 
+#include <string>
+#include <sstream>
+
 int Contains(std::string& base, char c)
 {
     for (auto i = 0; i < base.size(); ++i)
@@ -41,4 +44,26 @@ std::vector<std::string> Split(std::string& toSplit, char c)
         ret.push_back(toSplit);
 
     return ret;
+}
+
+std::string Strip(std::string toStrip, char c)
+{
+    int i = 0;
+    for (i; i < toStrip.size(); ++i)
+        if (toStrip[i] != c)
+            break;
+
+    int j = toStrip.size();
+    for (j; j >= 0; --j)
+        if (toStrip[j] != c)
+            break;
+    
+    return toStrip.substr(i, j);
+}
+
+std::string IntToHex(const uint32_t val)
+{
+    std::stringstream ss;
+    ss << std::hex << val;
+    return ss.str();
 }
